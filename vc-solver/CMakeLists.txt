@@ -42,4 +42,6 @@ add_executable(${PROJECT_NAME}
         reductions/kernel.h
         lowerbounds/clique_cover.cpp
         lowerbounds/clique_cover.h
+        ../clique-solver/branch_and_bound.cpp
+        ../clique-solver/branch_and_bound.h
         )
