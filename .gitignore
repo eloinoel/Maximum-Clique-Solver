@@ -34,3 +34,7 @@
 # Local Environment files
 .DS_Store
 .vscode
+
+# Logs and Build files
+**/build
+**/logs

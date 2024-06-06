@@ -52,8 +52,15 @@ size_t solve_k(Graph& G){
     for(size_t k = 0; k <= G.N; k++){
         G.k = k;
         G.set_restore();
+        #if DEBUG
         cout << "k = " << k + G.sol_size << " | branches = " << G.num_branches  << "\r" << flush;
-        if(vc_branch(G)){ cout << "\n" << flush ;return G.sol_size;}
+        #endif
+        if(vc_branch(G)){
+            #if DEBUG
+            cout << "\n" << flush ;
+            #endif
+            return G.sol_size;
+        }
         G.restore();
     }
     //this shouldn't be reached

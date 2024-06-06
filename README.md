@@ -1,63 +1,90 @@
+# Maximum Clique Solver
 ## Overview
 
-This script is designed to automate the process of checking the correctness of a program on a set of input files.
-It runs the program on each input file by piping the contents of the file to the program's stdin and then checks the
-correctness of the output.
+Solver is developed in C++. Benchmark script and instruction on how to run it can be found under `/benchmark/`. Run the benchmark script from there in order to not get spammed with log files.
 
 ## Requirements:
 
-- Python (version 3.x recommended)
-- timeout utility available in the PATH (usually comes with UNIX-based OS, for Windows use WSL)
+- Development tools (compiler, dependencies, ...)
 
-## How to Execute the exact script:
+  - Ubuntu/Debian:
+    ```bash
+    sudo apt update
+    sudo apt install build-essential
+    ```
 
-Execute the script using Python:
+- CMake >= 3.14
 
+  - Ubuntu/Debian:
+    ```bash
+    sudo apt install cmake
+    ```
+
+## Build
+
+Execute one of the following commands:
 ```bash
-python3 benchmark.py <executable> [--time_limit <time_in_seconds>] [--max_time_limit_exceeded <max_limit>]
+  echo bash compile.sh --release
+  echo bash compile.sh --debug
+  echo bash compile.sh --profile
 ```
 
-Where:
+## Execute
 
-- `executable`: Path or command (into the executable you want to run on the input files or a command to execute the program
-- `time_limit`: (Optional) The time limit for each execution. Default is 60 seconds.
-- `max_limit`: (Optional) The maximum number of times the time limit can be exceeded before the script stops.
-  Default is 10.
-
-## Examples:
-
-A few examples for some common languages:
-
-### Java
-
+Pipe input data into the solver, e.g.:
 ```bash
-python3 benchmark.py "java -jar my_java.jar"
+./build/release/mc_solver < data/000_random_10_4.dimacs
 ```
 
-### C
+Or use the benchmark script found under `/benchmark/`.
 
+## Useful commands:
+
+##### Build & execute one instance
 ```bash
-python3 benchmark.py /home/algeng/uni/my_c_program
+bash compile.sh --release && ./build/release/mc_solver < data/000_random_10_4.dimacs
 ```
 
-### Python
-
+##### Run benchmark on release build
+From root directory run:
 ```bash
-python3 benchmark.py "python3 program.py"
+bash compile.sh --release && cd benchmark && python3 benchmark.py "./../build/release/mc_solver" && cd ..
 ```
 
-## Output Format:
+## Input/Out Specification
+### Input
 
-The script will print the results in the following CSV format:
+The input should be in the following format ("edge list").
+Each line contains exactly two numbers x and y in no particular order, separated by one or more whitespaces.
+Each such pair of numbers constitutes an edge between x and y.
+No order may be assumed on the edges and the nodes within one line.
+Comments line start with # and should be ignored
+The first line of the file is always a comment containing the number of nodes (n) and edges (m). The vertices are always numbers in the range [1, ..., n]
 
-```csv
-file,status,time,return,stderr
+Example:
+```bash
+  # 10 11
+  1 2
+  1 4
+  1 7
+  1 9
+  2 9
+  3 1
+  4 2
+  4 9
+  6 4
+  7 2
+  10 7
 ```
+### Output
 
-Where:
+Program outputs a maximum clique in the input graph, one node per line.
+Output node names correspond to the node names in the input file.
 
-- `file`: The name of the input file
-- `status`:  Status of execution (OK, Wrong, timelimit).
-- `time`: Execution time in seconds.
-- `return`: Return code of the program.
-- `stderr`: The output of the program on stderr.
+Example:
+```bash
+  4
+  9
+  1
+  2
+```
