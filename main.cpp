@@ -25,9 +25,13 @@ int main(int argc, char**argv){
         G.timer.start("solve");
     #endif
 
-    //int max_clique_size = branch_and_bound(G);
-    size_t vc_size = solve_k(G);
-    G.output_vc();
+    //get maximum clique
+    vector<Vertex*> maximum_clique = branch_and_bound(G);
+
+    //print maximum clique
+    for(Vertex* v : maximum_clique){
+        cout << G.name_table[v->id] << "\n";
+    }
 
     #if DEBUG
         cout << "max clique has size " << max_clique_size << std::endl;
