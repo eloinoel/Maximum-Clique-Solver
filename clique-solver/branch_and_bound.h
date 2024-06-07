@@ -1,3 +1,4 @@
 #include "../vc-solver/graph.h"
 
-int branch_and_bound(Graph& G);
+//Basic branch and bound framework for maximum clique
+vector<Vertex*> branch_and_bound(Graph& G);
