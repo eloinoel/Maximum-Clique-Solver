@@ -38,3 +38,4 @@
 # Logs and Build files
 **/build
 **/logs
+*user_out.txt

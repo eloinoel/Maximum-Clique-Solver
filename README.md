@@ -1,7 +1,7 @@
 # Maximum Clique Solver
 ## Overview
 
-Solver is developed in C++. Benchmark script and instruction on how to run it can be found under `/benchmark/`. Run the benchmark script from there in order to not get spammed with log files.
+Solver is developed in C++. Benchmark script and instructions on how to run it can be found under `/benchmark/`.
 
 ## Requirements:
 

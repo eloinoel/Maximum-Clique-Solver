@@ -27,7 +27,10 @@ int main(int argc, char**argv){
 
     //int max_clique_size = branch_and_bound(G);
     size_t vc_size = solve_k(G);
-    G.output_vc();
+
+    #if RELEASE
+        G.output_vc();
+    #endif
 
     #if DEBUG
         cout << "max clique has size " << max_clique_size << std::endl;
