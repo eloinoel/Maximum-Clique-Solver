@@ -20,6 +20,7 @@ include_directories("${PROJECT_SOURCE_DIR}/vc-solver/solve")
 include_directories("${PROJECT_SOURCE_DIR}/vc-solver/lowerbounds")
 include_directories("${PROJECT_SOURCE_DIR}/vc-solver")
 include_directories("${PROJECT_SOURCE_DIR}/clique-solver")
+include_directories("${PROJECT_SOURCE_DIR}/clique-solver/orderings")
 
 # All source files need to be listed explicitly here.
 add_executable(${PROJECT_NAME}
@@ -37,6 +38,7 @@ add_executable(${PROJECT_NAME}
     vc-solver/lowerbounds/clique_cover.cpp
 
     clique-solver/branch_and_bound.cpp
+    clique-solver/orderings/degeneracy_ordering.cpp
 )
 
 # Define the RELEASE symbol for release builds
