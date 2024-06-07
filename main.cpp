@@ -25,11 +25,15 @@ int main(int argc, char**argv){
         G.timer.start("solve");
     #endif
 
-    //int max_clique_size = branch_and_bound(G);
-    size_t vc_size = solve_k(G);
+    //size_t vc_size = solve_k(G);
+    vector<Vertex*> maximum_clique = branch_and_bound(G);
 
     #if RELEASE
-        G.output_vc();
+        //G.output_vc();
+        //print maximum clique
+        for(Vertex* v : maximum_clique){
+            cout << G.name_table[v->id] << "\n";
+        }
     #endif
 
     #if DEBUG
