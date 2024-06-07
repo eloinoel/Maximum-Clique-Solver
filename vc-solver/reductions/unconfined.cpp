@@ -1,4 +1,119 @@
 #include "unconfined.h"
+#include "deg_rules.h"
+
+bool domination_rule_single(Graph& G, Vertex* v){
+    G.new_timestamp();
+
+    for(Vertex* n : v->neighbors){
+        n->marked = G.timestamp;
+    }
+
+    v->marked = G.timestamp;
+
+    // check if v dominates a vertex n
+    for(Vertex* n : v->neighbors){
+        if(deg(n) > deg(v)){
+            continue;
+        }
+
+        for(Vertex* w : n->neighbors){
+            if(w->marked != G.timestamp){
+                goto fail;
+            }
+        }
+
+        //here, n is dominated by v
+        G.MM_vc_add_vertex(v);
+        return true;
+
+        fail:
+        continue;
+    }
+
+    return false;
+}
+
+bool domination_rule_known(Graph& G, Vertex* v){
+    G.new_timestamp();
+    for(Vertex* n : v->neighbors){
+        n->marked = G.timestamp;
+    }
+
+    v->marked = G.timestamp;
+
+    // check which neighbor dominates v
+	for (Vertex* u : v->neighbors) {
+		if (deg(u) < deg(v)) {
+			continue;
+		}
+
+        size_t count = 0;
+        int max_skip = static_cast<int>(deg(u) - deg(v));
+		for (Vertex* n : u->neighbors) {        
+            max_skip -= (n->marked != G.timestamp);
+            if(max_skip < 0){
+                break;
+            }
+            count += (n->marked == G.timestamp);
+
+            if(count == deg(v)){
+                // u dominates v
+                G.MM_vc_add_vertex(u);
+                return true;
+            }
+		}
+    }   
+    
+    return false;
+
+}
+
+bool domination_rule(Graph& G){
+    G.new_timestamp();
+    vector<Vertex*> V;
+    for(size_t i = G.deg_lists.size() - 1; -- i != 0;){
+        for(Vertex* v : G.deg_lists[i]){
+            V.push_back(v);
+            assert(v->status == UNKNOWN);
+        }
+    }
+    size_t count = V.size();
+    bool reduced = false;
+    bool reduced_once = false;
+   
+    do{
+        reduced = false;
+        for(size_t i = 0; i < count; i++){
+            Vertex* v = V[i];
+            if(deg(v) > 0 && v->status == UNKNOWN){
+                if(domination_rule_single(G, v)){
+                    reduced = true;
+                    reduced_once = true;
+                }
+            }
+        }
+        //prevent having to clear the vector, reuse memory
+        if(reduced){
+            count = G.N;
+            size_t i = 0;
+            for(size_t j = G.deg_lists.size() - 1; -- j != 0;){
+                for(Vertex* v : G.deg_lists[j]){
+                    V[i] = v;
+                    i++;
+                    if(i + 1 == count)
+                        goto full;
+                }
+            }
+            full:
+            continue;
+        }
+    }while(reduced && G.k > 0);
+    #if !AUTO_DEG0
+    deg0_rule(G);
+    #endif
+    return reduced_once;
+}
+
 
 bool is_unconfined(Graph& G, Vertex* v){
     unsigned long long mark = G.timestamp;
@@ -90,9 +205,9 @@ bool unconfined_rule(Graph& G){
         reduced = false;
         for(size_t i = 0; i < count; i++){
             Vertex* v = V[i];
-            if(v->degree() > 0 && v->status == UNKNOWN){
+            if(deg(v) > 0 && v->status == UNKNOWN){
                 if(is_unconfined(G, v)){
-                    G.MM_select_vertex(v);
+                    G.MM_vc_add_vertex(v);
                     reduced = true;
                     reduced_once = true;
                 }
@@ -106,10 +221,17 @@ bool unconfined_rule(Graph& G){
                 for(Vertex* v : G.deg_lists[j]){
                     V[i] = v;
                     i++;
+                    if(i + 1 == count)
+                        goto full;
                 }
             }
+            full:
+            continue;
         }
     }while(reduced && G.k > 0);
 
+    #if !AUTO_DEG0
+    deg0_rule(G);
+    #endif
     return reduced_once;
 }

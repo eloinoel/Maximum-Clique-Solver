@@ -84,7 +84,7 @@ void load_graph(Graph& G){
     }
 
     G.name_table = name_table;
-    G.total_N = G.N;
-    G.total_M = G.M;
+    G.N = G.total_N;
+    //G.M = G.total_M;
 
 }

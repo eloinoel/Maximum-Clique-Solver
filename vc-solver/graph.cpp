@@ -1,14 +1,17 @@
 #include "graph.h"
 
+
 Vertex* Graph::add_vertex(){
-    return add_vertex(N);
+    return add_vertex(total_N);
 }
 
 Vertex* Graph::add_vertex(size_t id){
+    
     Vertex *v = new Vertex;
     v->id = id;
+    v->v_idx = V.size();
     V.push_back(v);
-    N++;
+    total_N++;
     return v;
 }
 
@@ -32,29 +35,29 @@ void Graph::MM_discard_vertex(Vertex* v){
     history.emplace_back(op);
 }
 
-void Graph::MM_select_vertex(Vertex* v){
+void Graph::MM_vc_add_vertex(Vertex* v){
     delete_vertex(v);
     assert(v->status == UNKNOWN);
-    v->status = INCLUDED;
+    v->status = VC;
     k--;
     sol_size++;
     auto op = new OP_SelectVertex(v);
     history.emplace_back(op);
 }
 
-void Graph::MM_select_neighbors(Vertex* v){
-    size_t deg = v->degree();
-    k -= deg;
-    sol_size += deg;
+void Graph::MM_vc_add_neighbors(Vertex* v){
+    size_t d = deg(v);
+    k -= d;
+    sol_size += d;
 
-    vector<Vertex*> selected(deg);
+    vector<Vertex*> selected(d);
 
     size_t i = 0;
     while(!v->neighbors.empty()){
         Vertex* n = v->neighbors.back();
-        n->status = INCLUDED;
+        n->status = VC;
         delete_vertex(n);
-        selected[deg - 1 - i] = n;
+        selected[d - 1 - i] = n;
         i++;
     }
     
@@ -62,6 +65,30 @@ void Graph::MM_select_neighbors(Vertex* v){
     history.emplace_back(new OP_SelectVertex(selected));
 
     //discard_vertex(v);
+}
+
+
+bool Graph::MM_clique_add_vertex(Vertex* candidate){
+    assert(candidate->status == UNKNOWN);
+    new_timestamp();
+    for(Vertex* c : partial){
+        c->marked = timestamp;
+    }
+
+    size_t count = 0;
+    for(Vertex* n : candidate->neighbors){
+        count += (n->marked == timestamp);
+        
+        if(count == partial.size()){
+            candidate->status = CLIQUE;
+            partial.push_back(candidate);
+            k--;
+            sol_size++;
+            history.push_back(new OP_AddClique());
+            return true;
+        }
+    }
+    return false;
 }
 
 void Graph::restore_vertex(Vertex* v){
@@ -81,19 +108,32 @@ void Graph::restore_vertex(Vertex* v){
 
         update_deglists(u);
 
+        #if AUTO_DEG0
         // if u was deg 0, it is now restored
-        if(u->degree() == 1){
+        if(deg(u) == 1){
             N++;
             u->status = UNKNOWN;
         }
+        #endif
     }
     update_deglists(v);
 }
 
+void Graph::MM_induced_subgraph(vector<Vertex*>& induced_set){
+    history.push_back(new OP_InducedSubgraph(induced_set, *this));
+}
+
+void Graph::MM_induced_neighborhood(Vertex* v){
+    vector<Vertex*> nv = v->neighbors;
+    nv.push_back(v);
+    MM_induced_subgraph(nv);
+}
+
 Edge* Graph::add_edge(Vertex* u, Vertex* v){
+    assert(!u->adjacent_to(v));
     Edge *e = new Edge;
-    e->ends[0] = {u, static_cast<size_t>(u->degree())};
-    e->ends[1] = {v, static_cast<size_t>(v->degree())};
+    e->ends[0] = {u, static_cast<size_t>(deg(u))};
+    e->ends[1] = {v, static_cast<size_t>(deg(v))};
 
     e->idx = E.size();
     E.push_back(e);
@@ -108,6 +148,31 @@ Edge* Graph::add_edge(Vertex* u, Vertex* v){
     update_deglists(u);
     update_deglists(v);
     return e;
+}
+
+Edge* Graph::MM_add_edge(Vertex* u, Vertex* v){
+    Edge* e = add_edge(u,v);
+    history.push_back(new OP_AddEdge(e));
+    return e;
+}
+
+void Graph::pop_edge(size_t edge_idx){
+    E.back()->idx = edge_idx;
+    swap(E[edge_idx], E.back());
+    E.pop_back();
+}
+
+void Graph::pop_edge(Edge* e){
+    E.back()->idx = e->idx;
+    swap(E[e->idx], E.back());
+    E.pop_back();
+}
+
+void Graph::pop_vertex(Vertex* v){
+    V.back()->v_idx = v->v_idx;
+    swap(V[v->v_idx], V.back());
+    V.pop_back();
+
 }
 
 void Graph::delete_edge(Edge* e){
@@ -126,10 +191,12 @@ void Graph::delete_edge(Edge* e){
 
         update_deglists(u);
 
-        if(u->degree() == 0 && u->status == UNKNOWN){
+        #if AUTO_DEG0
+        if(deg(u) == 0 && u->status == UNKNOWN){
             u->status = EXCLUDED; // add some explicit deg0_removal op for clarity?
             N--;
         }
+        #endif
     }
 
     E.back()->idx = e->idx;
@@ -141,36 +208,32 @@ void Graph::delete_edge(Edge* e){
 }
 
 void Graph::delete_edge_lazy(Edge* e, Vertex* v){
-    for(auto& end : e->ends){
-        Vertex* u = end.v;
+    
+    //get endpoint that is not on v's side
+    Endpoint& end = (e->ends[0].v != v)? e->ends[0] : e->ends[1];
 
-        if(u == v)
-            continue;   
+    Vertex* u = end.v;
+ 
+    assert(deg(u) > 0);
 
-        #if DEBUG
-            cout << u->name << "\n";
-        #endif
-        assert(u->degree() > 0);
-
-        swap(u->neighbors[end.idx], u->neighbors.back());
-        u->neighbors.pop_back();
+    swap(u->neighbors[end.idx], u->neighbors.back());
+    u->neighbors.pop_back();
         
+    Edge* back_edge = u->edges.back();
+    size_t side = (u == back_edge->ends[0].v) ? 0 : 1; // updates the edge with the new position
+    back_edge->ends[side].idx = end.idx;
 
-        Edge* back_edge = u->edges.back();
-        size_t side = (u == back_edge->ends[0].v) ? 0 : 1; // updates the edge with the new position
-        back_edge->ends[side].idx = end.idx;
+    swap(u->edges[end.idx], u->edges.back());
+    u->edges.pop_back();
 
-        swap(u->edges[end.idx], u->edges.back());
-        u->edges.pop_back();
+    update_deglists(u);
 
-
-       
-        update_deglists(u);
-        if(u->degree() == 0 && u->status == UNKNOWN){
-            u->status = EXCLUDED; // add some explicit deg0_removal op for clarity?
-            N--;
-        }
+    #if AUTO_DEG0
+    if(deg(u) == 0 && u->status == UNKNOWN){
+        u->status = EXCLUDED; // add some explicit deg0_removal op for clarity?
+        N--;
     }
+    #endif
 
     if(UPDATE_G_EDGELIST){
         E.back()->idx = e->idx;
@@ -184,15 +247,19 @@ void Graph::update_deglists(Vertex* v){
         remove_from_deglist(v);
     }
 
-    max_degree = max(v->degree(), max_degree);
+    max_degree = max(deg(v), max_degree);
 
-    if(v->degree() >= deg_lists.size()){
-        deg_lists.resize(v->degree() + 5); //arbitrary constant >= 1
+    #if USE_MIN_DEG
+    min_degree = min(deg(v), min_degree);
+    #endif
+
+    if(deg(v) >= deg_lists.size()){
+        deg_lists.resize(deg(v) + 1); //arbitrary constant >= 1
     }
 
-    v->deg_idx = deg_lists[v->degree()].size();
-    deg_lists[v->degree()].push_back(v);
-    v->list_idx = v->degree();
+    v->deg_idx = deg_lists[deg(v)].size();
+    deg_lists[deg(v)].push_back(v);
+    v->list_idx = deg(v);
 }
 
 void Graph::remove_from_deglist(Vertex* v){
@@ -211,7 +278,19 @@ void Graph::remove_from_deglist(Vertex* v){
             }
         }
         max_degree = 0;
+        //deg_lists.resize(max_degree);
     }
+    #if USE_MIN_DEG
+    else if(v->list_idx == min_degree && deg.empty()){
+        for(int i = 0; i < static_cast<int>(deg_lists.size()); i++){
+            if(!deg_lists[i].empty()){
+                min_degree = i;
+                return;
+            }
+        }
+        min_degree = 0;
+    }
+    #endif
 }
 
 
@@ -222,6 +301,22 @@ void Graph::delete_from_deglist(Vertex* v){
     #if DEBUG
         cout << "deleted " << v->name << " from lists" << "\n";
     #endif
+}
+
+
+Graph Graph::shallow_copy(){
+    Graph H;
+    for(Vertex* v : V){
+        H.add_vertex(v->id);
+    }
+
+    for(Edge* e : E){
+        H.add_edge(e->ends[0].v, e->ends[1].v);
+    }
+
+    H.name_table = name_table;
+    H.N = H.total_N;
+    return H;
 }
 
 void Graph::undo(){
@@ -253,19 +348,17 @@ void Graph::increase_timestamp(unsigned long long offset){
 // missing deg2-resolve, so currently not correct (but sol_size is correct)
 void Graph::output_vc(){
     for(Vertex* v : V){
-        if(v->status == INCLUDED)
+        if(v->status == VC)
             cout << name_table[v->id] << "\n";
     }
 }
 
-size_t Vertex::degree() const {
-    return neighbors.size();
-}
+
 
 bool Vertex::adjacent_to(Vertex* u){
     Vertex* v = this; 
     // v has smaller neighborhood
-    if(v->degree() > u->degree())
+    if(deg(v) > deg(u))
         swap(v, u);
 
     for(Vertex* n: v->neighbors){

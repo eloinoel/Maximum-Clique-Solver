@@ -6,6 +6,7 @@
 
 class Graph;
 class Vertex;
+class Edge;
 
 using namespace std;
 
@@ -50,4 +51,40 @@ public:
     explicit OP_SelectVertex(Vertex* selected);
     void undo(Graph* G) const override;
 };
+
+class OP_DeleteDeg0 : public Operation {
+private:
+    std::vector<Vertex*> deg0;
+public:
+    explicit OP_DeleteDeg0(vector<Vertex*> deg0);
+    explicit OP_DeleteDeg0(Vertex* deg0);
+    void undo(Graph* G) const override;
+};
+
+class OP_AddEdge : public Operation {
+private:
+    vector<Edge*> e_added;
+public:
+    explicit OP_AddEdge(vector<Edge*> e_added);
+    explicit OP_AddEdge(Edge* e_added);
+    void undo(Graph* G) const override;
+};
+
+class OP_AddClique : public Operation {
+public:
+    explicit OP_AddClique();
+    void undo(Graph* G) const override;
+};
+
+class OP_InducedSubgraph : public Operation {
+private:
+    mutable vector<Vertex*> old_V;
+    mutable vector<Edge*> old_E;
+    mutable vector<vector<Vertex*>> old_list; // deg list before changing to induced subgraph
+    mutable vector<Edge*> deleted_edges; // requires that edges have v in induced set as endpoint[0]!!!!
+public: 
+    explicit OP_InducedSubgraph(vector<Vertex*> induced_set, Graph& G);
+    void undo(Graph* G) const override;
+};
+
 
