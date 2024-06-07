@@ -38,3 +38,6 @@ add_executable(${PROJECT_NAME}
 
     clique-solver/branch_and_bound.cpp
 )
+
+# Define the RELEASE symbol for release builds
+target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:RELEASE>)

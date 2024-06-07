@@ -33,7 +33,7 @@ Execute one of the following commands:
 
 Pipe input data into the solver, e.g.:
 ```bash
-./build/release/mc_solver < data/000_random_10_4.dimacs
+./build/release/mc_solver < benchmark/data/000_random_10_4.dimacs
 ```
 
 Or use the benchmark script found under `/benchmark/`.
@@ -42,7 +42,7 @@ Or use the benchmark script found under `/benchmark/`.
 
 ##### Build & execute one instance
 ```bash
-bash compile.sh --release && ./build/release/mc_solver < data/000_random_10_4.dimacs
+bash compile.sh --release && ./build/release/mc_solver < benchmark/data/000_random_10_4.dimacs
 ```
 
 ##### Run benchmark on release build

@@ -28,7 +28,8 @@ int main(int argc, char**argv){
     //size_t vc_size = solve_k(G);
     vector<Vertex*> maximum_clique = branch_and_bound(G);
 
-    #if RELEASE
+
+    #ifdef RELEASE
         //G.output_vc();
         //print maximum clique
         for(Vertex* v : maximum_clique){
