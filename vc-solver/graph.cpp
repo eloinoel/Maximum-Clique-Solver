@@ -60,15 +60,24 @@ void Graph::MM_vc_add_neighbors(Vertex* v){
         selected[d - 1 - i] = n;
         i++;
     }
-    
 
     history.emplace_back(new OP_SelectVertex(selected));
 
     //discard_vertex(v);
 }
 
+void Graph::MM_clique_add_vertex(Vertex* v)
+{
+    delete_vertex(v);
+    assert(v->status == UNKNOWN);
+    v->status = CLIQUE;
+    partial.push_back(v);
+    k--;
+    sol_size++;
+    history.push_back(new OP_AddClique());
+}
 
-bool Graph::MM_clique_add_vertex(Vertex* candidate){
+bool Graph::MM_clique_add_vertex_if_valid(Vertex* candidate){
     assert(candidate->status == UNKNOWN);
     new_timestamp();
     for(Vertex* c : partial){
@@ -78,7 +87,7 @@ bool Graph::MM_clique_add_vertex(Vertex* candidate){
     size_t count = 0;
     for(Vertex* n : candidate->neighbors){
         count += (n->marked == timestamp);
-        
+
         if(count == partial.size()){
             candidate->status = CLIQUE;
             partial.push_back(candidate);

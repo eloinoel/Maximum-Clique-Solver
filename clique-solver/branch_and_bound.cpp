@@ -20,7 +20,7 @@ Vertex* get_candidate(Graph& G){
 
 /**
  * @brief We reduce P to P ∩ (N(v) ∪ {v})
- * 
+ *
  * @param G our current graph
  * @param v our current branching vertex
  */
@@ -28,7 +28,7 @@ void MM_discard_strangers(Graph& G, Vertex* v){
 
     std::vector<Vertex*> candidates;
     std::vector<Vertex*> strangers;
-    
+
     //get the candidate set P stored implicitly in G
     for(int i=G.max_degree; i>=1; i--){
         for(Vertex* u: G.deg_lists[i]){
@@ -72,7 +72,7 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
         //C^* = C
         maximum_clique.clear();
         for(Vertex* v : G.V){
-            if(v->status == INCLUDED){
+            if(v->status == CLIQUE){
                 maximum_clique.push_back(v);
             }
         }
@@ -87,7 +87,7 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
         MM_discard_strangers(G, branch_vertex);
 
         //C' = C ∪ {v} & P' = P'\{v}
-        G.MM_select_vertex(branch_vertex);
+        G.MM_clique_add_vertex(branch_vertex);
 
         //recursive call of BnB(P', C', C^*)
         branch_and_bound(G, maximum_clique);

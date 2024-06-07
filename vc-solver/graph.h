@@ -39,7 +39,7 @@ typedef struct{
 class Graph {
 public:
     size_t total_N = 0;   //total N, M of initial instance
-    size_t total_M = 0; 
+    size_t total_M = 0;
 
     size_t N = 0;   //remaining N, M
     size_t M = 0;
@@ -60,7 +60,7 @@ public:
 
     int UB = numeric_limits<int>::max();
     int best = numeric_limits<int>::max();
-    
+
     size_t max_degree = 0;
 
     #if USE_MIN_DEG
@@ -121,9 +121,9 @@ public:
     /* INTERNAL METHOD, only for Bruno
      * use when vertex state stays UNKNOWN
      */
-    void delete_vertex(Vertex* v); 
+    void delete_vertex(Vertex* v);
 
-    /** 
+    /**
      * Functions prefixed with MM_ are already memory managed
      * that is, the changes of the operations are saved in the history
      * and can be automatically reversed with undo()
@@ -142,15 +142,19 @@ public:
     /* EXCLUDE vertex from solution and INCLUDE N(v)*/
     void MM_vc_add_neighbors(Vertex* v);
 
+
+    /** simple add without consistency check */
+    void MM_clique_add_vertex(Vertex* v);
+
     /**
      * tries to add v to current clique C
      * returns true if v could be added (adjancent to all c in C), adds operation that can be undone
      * returns false otherwise, no operation or changes made
-     * 
+     *
      * CURRENTLY IT IS ASSUMED THE ORDER OF THE PARTIAL SOLUTION IS NOT MODIFIED,
      * IF YOU WANT THIS TO BE CHANGED, TELL ME - Bruno
      */
-    bool MM_clique_add_vertex(Vertex* canditate); 
+    bool MM_clique_add_vertex_if_valid(Vertex* candidate);
 
     void MM_induced_subgraph(vector<Vertex*>& induced_set);
 
@@ -189,12 +193,12 @@ class Edge{
 public:
     Endpoint ends[2];
 
-    size_t idx; // index of Edge in E 
+    size_t idx; // index of Edge in E
 
     void flip(){
         swap(ends[0], ends[1]);
     }
-    
+
 };
 
 
@@ -205,15 +209,15 @@ public:
     #endif
 
     size_t id;
-    state status = UNKNOWN; 
+    state status = UNKNOWN;
     unsigned long long marked = 0;
 
     size_t v_idx = -1; // because id won't match for components/induced subgraph and copying the vertex >could< lead to memory issues
     size_t deg_idx = -1; // index in degree list, needed to remove without search
     size_t list_idx = 0;
-    
 
-    std::vector<Vertex*> neighbors; 
+
+    std::vector<Vertex*> neighbors;
     std::vector<Edge*> edges;
 
     union data_union{
@@ -227,7 +231,7 @@ public:
     }data;
 
     /* convenience like above
-     * requires the correct index of this vertex's end of the edge 
+     * requires the correct index of this vertex's end of the edge
      */
     void pop_edge(size_t end_idx, size_t side){
         assert(end_idx < edges.size());
@@ -259,7 +263,7 @@ public:
         neighbors.pop_back();
     }
 
-    /** 
+    /**
      * linear search through smaller neighborhood, sufficient for sparse graphs
      * however, since clique will usually deal with dense ones, maybe change?
      * potentially tree for log complexity?
@@ -267,7 +271,10 @@ public:
     bool adjacent_to(Vertex* u);
 
     // somewhat dangerous as size_t because of underflows, maybe turn into int
-    [[nodiscard]] size_t inline degree() const;
+    [[nodiscard]] size_t inline degree() const
+    {
+        return neighbors.size();
+    };
 
 };
 
