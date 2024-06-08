@@ -1,21 +1,23 @@
 #include "../vc-solver/graph.h"
+#include "boundings.h"
 
 /**
- * @brief Get one candidate v ∈ P
+ * @brief Get candidate set P
  * 
  * @param G out current Graph
- * @return candidate v ∈ P
+ * @return P
  */
-Vertex* get_candidate(Graph& G){
+vector<Vertex*> get_candidates(Graph& G){
     
-    //we return the first vertex we find in the degree list
-    for(int i=1; i<=G.max_degree; i++){
+    std::vector<Vertex*> candidates;
+    
+    //get the candidate set P stored implicitly in G
+    for(int i=G.max_degree; i>=1; i--){
         for(Vertex* u: G.deg_lists[i]){
-            return u;
+            candidates.push_back(u);
         }
     }
-
-    return nullptr;
+    return candidates;
 }
 
 /**
@@ -26,17 +28,12 @@ Vertex* get_candidate(Graph& G){
  */
 void MM_discard_strangers(Graph& G, Vertex* v){
 
-    std::vector<Vertex*> candidates;
-    std::vector<Vertex*> strangers;
     
     //get the candidate set P stored implicitly in G
-    for(int i=G.max_degree; i>=1; i--){
-        for(Vertex* u: G.deg_lists[i]){
-            candidates.push_back(u);
-        }
-    }
+    vector<Vertex*> candidates = get_candidates(G);
 
     //if there is a candidate in P that is not in N(v) and not v itself then its a stranger
+    std::vector<Vertex*> strangers;
     for(Vertex* candidate : candidates){
         if(candidate!=v && !v->adjacent_to(candidate)){
             strangers.push_back(candidate);
@@ -66,6 +63,11 @@ void MM_discard_strangers(Graph& G, Vertex* v){
 void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^*)
     G.set_restore();
 
+    if(bounding1(G,maximum_clique)==Bounding_status::CUTOFF){
+        G.restore();
+        return;
+    }
+
     //if C > C^* then
     if(G.sol_size+1>maximum_clique.size()){
 
@@ -80,7 +82,13 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
     }
 
     //for all v ∈ P
-    for(Vertex* branch_vertex = get_candidate(G); branch_vertex!=nullptr; branch_vertex = get_candidate(G)){
+    vector<Vertex*> candidates = get_candidates(G);
+    for(Vertex* branch_vertex: candidates){
+        //we can ignore degree zero verticies because we use them implicitly
+        if(branch_vertex->degree()==0){
+            continue;
+        }
+
         G.set_restore();
 
         //P' = P ∩ (N(v) ∪ {v})

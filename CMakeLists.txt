@@ -37,4 +37,5 @@ add_executable(${PROJECT_NAME}
     vc-solver/lowerbounds/clique_cover.cpp
 
     clique-solver/branch_and_bound.cpp
+    clique-solver/boundings.cpp
 )
