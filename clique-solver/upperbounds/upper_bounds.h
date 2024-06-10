@@ -23,6 +23,7 @@ inline int community_degeneracy_UB(int community_degeneracy)
 
 /**
  * @returns gap between degeneracy based upper bound and maximum clique size
+ * didn't know where to put this - Eloi
  */
 inline int clique_core_gap(int degeneracy, int mc_number)
 {
