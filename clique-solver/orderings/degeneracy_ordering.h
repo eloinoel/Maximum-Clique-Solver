@@ -8,8 +8,6 @@
 #include <vector>
 #include <utility> //contains std::pair
 
-using namespace std;
-
 class Graph;
 class Vertex;
 
@@ -20,4 +18,4 @@ class Vertex;
  * @returns minimum degree/degeneracy ordering,
  * @returns degeneracy of the current graph
  */
-pair<vector<Vertex*>, int> degeneracy_ordering(Graph& G);
+std::pair<std::vector<Vertex*>, int> degeneracy_ordering(Graph& G);

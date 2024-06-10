@@ -1,6 +1,7 @@
 #include "degeneracy_ordering.h"
 #include "graph.h"
 
+using namespace std;
 
 /**
  * assumes that G.max_degree > 0
