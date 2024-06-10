@@ -1,6 +1,7 @@
 #include "degeneracy_ordering.h"
 #include "graph.h"
 
+
 /**
  * assumes that G.max_degree > 0
  * delete this method, if min_degree is maintained in graph
@@ -15,21 +16,27 @@
 //     }
 // }
 
-/** O(E + V), source: https://dl.acm.org/doi/pdf/10.1145/2402.322385
- * Degeneracy ordering is also a minimum degree ordering.
- *
- */
-vector<Vertex*> degeneracy_ordering(Graph& G)
+pair<vector<Vertex*>, int> degeneracy_ordering(Graph& G)
 {
     G.set_restore();
 
+    int degeneracy = 0;
     vector<Vertex*> ordering = vector<Vertex*>();
     while(G.max_degree > 0)
     {
         Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree][0];
         ordering.push_back(lowest_degree_vertex);
+
+        //in our bucket graph, the degree of the current min vertex is also the rightDegree in the ordering
+        int rightDegree = deg(lowest_degree_vertex);
+        if(rightDegree > degeneracy)
+        {
+            degeneracy = rightDegree;
+        }
+
         G.MM_discard_vertex(lowest_degree_vertex);
     }
+
     G.restore();
-    return ordering;
+    return make_pair(ordering, degeneracy);
 }
