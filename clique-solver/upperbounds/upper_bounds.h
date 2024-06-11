@@ -16,10 +16,11 @@ inline int degeneracy_UB(int degeneracy)
  * @returns simple upper bound on the maximum clique size
  * @note source: https://optimization-online.org/wp-content/uploads/2018/07/6710.pdf
  */
-inline int community_degeneracy_UB(int community_degeneracy)
-{
-    return community_degeneracy + 2;
-}
+//CANNOT BE USED WITHOUT K-TRUSS
+// inline int community_degeneracy_UB(int community_degeneracy)
+// {
+//     return community_degeneracy + 2;
+// }
 
 /**
  * @returns gap between degeneracy based upper bound and maximum clique size
