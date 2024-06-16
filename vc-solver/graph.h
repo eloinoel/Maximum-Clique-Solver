@@ -231,10 +231,11 @@ public:
     }data;
 
     /* convenience like above
-     * requires the correct index of this vertex's end of the edge
+     * requires the correct index of this vertex's end of the edge 
      */
-    void pop_edge(size_t end_idx, size_t side){
+    void pop_edge(size_t end_idx){
         assert(end_idx < edges.size());
+        size_t side = (edges.back()->ends[0].v == this)? 0 : 1;
         edges.back()->ends[side].idx = end_idx;
         swap(edges[end_idx], edges.back());
         edges.pop_back();

@@ -77,21 +77,24 @@ OP_InducedSubgraph::OP_InducedSubgraph(vector<Vertex*> induced_set, Graph& G)
         while(j < v->neighbors.size()){
             Vertex* n = v->neighbors[j];
             Edge*   e = v->edges[j];
-
+    
             // either keep edge and update its idx or delete it
             if(n->marked == G.timestamp){
-                size_t side = (e->ends[0].v == v)? 0 : 1;
-                e->ends[side].idx = j;
-                j++;
-                e->idx = old_E.size();
-                old_E.push_back(e); // old_E will be the new E after swap
+                if(n < v){
+                    G.pop_edge(e);
+                    e->idx        = old_E.size();
+                    old_E.push_back(e); // old_E will be the new E after swap
+                }
+                size_t side       = (e->ends[0].v == v)? 0 : 1;
+                e->ends[side].idx = j++;
             }
             else{
-                if(e->ends[0].v != v) // important to keep this consistent! As the edge is not gonna be in the graph following this operation, unless you do weird things, this shouldn't be a problem....
+                if(e->ends[0].v != v){ // important to keep this consistent! As the edge is not gonna be in the graph following this operation, unless you do weird things, this shouldn't be a problem....
                     e->flip();
-                
-                v->pop_edge(e->ends[0].idx, 0);
-                v->pop_neighbor(e->ends[0].idx);
+                }
+               
+                v->pop_edge(j);
+                v->pop_neighbor(j);
                 G. pop_edge(e);
 
                 deleted_edges.push_back(e);
@@ -150,6 +153,7 @@ void OP_InducedSubgraph::undo(Graph* G) const {
     G->M = G->E.size();
     G->N = G->V.size();
 }
+
 
 
 OP_RestorePoint::OP_RestorePoint() {}

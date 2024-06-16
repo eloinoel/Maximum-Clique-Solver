@@ -9,8 +9,8 @@
 vector<Vertex*> get_candidates(Graph& G){
     
     std::vector<Vertex*> candidates;
-    for(vector<Vertex*> list: G.deg_lists){
-        for(Vertex* u: list){
+    for(vector<Vertex*> candidates_of_same_degree: G.deg_lists){
+        for(Vertex* u: candidates_of_same_degree){
             candidates.push_back(u);
         }
     }
@@ -21,8 +21,7 @@ vector<Vertex*> get_candidates(Graph& G){
 /**
  * @brief Basic branch and bound framework that can be extended with bounds, reductions and orderings.
  * 
- * The current graph has the candidate set P and our previously constructed local clique C implicitly stored with
- * P = {v in G.V | with v.status = UNKNOWN} and C = {v in G.V | with v.status = INCLUDE}
+ * The current graph has the candidate set P and our previously constructed local clique C implicitly stored
  * 
  * 
  * @param G our current graph
@@ -44,11 +43,11 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
 
         G.set_restore();
 
-        //P' = P ∩ (N(v) ∪ {v})
-        G.MM_induced_neighborhood(branch_vertex);
-
-        //C' = C ∪ {v} & P' = P'\{v}
+        //C' = C ∪ {v} 
         G.MM_clique_add_vertex(branch_vertex);
+        
+        //P' = P ∩ N(v)
+        G.MM_induced_subgraph(branch_vertex->neighbors);
 
         //recursive call of BnB(P', C', C^*)
         branch_and_bound(G, maximum_clique);

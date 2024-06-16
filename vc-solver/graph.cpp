@@ -62,13 +62,10 @@ void Graph::MM_vc_add_neighbors(Vertex* v){
     }
 
     history.emplace_back(new OP_SelectVertex(selected));
-
-    //discard_vertex(v);
 }
 
 void Graph::MM_clique_add_vertex(Vertex* v)
 {
-    delete_vertex(v);
     assert(v->status == UNKNOWN);
     v->status = CLIQUE;
     partial.push_back(v);
@@ -223,7 +220,7 @@ void Graph::delete_edge_lazy(Edge* e, Vertex* v){
 
     Vertex* u = end.v;
  
-    assert(deg(u) > 0);
+    //assert(deg(u) > 0);
 
     swap(u->neighbors[end.idx], u->neighbors.back());
     u->neighbors.pop_back();
