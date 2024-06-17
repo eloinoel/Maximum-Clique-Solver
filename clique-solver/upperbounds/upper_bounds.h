@@ -38,4 +38,12 @@ enum BOUNDING{
     NO_CUTOFF
 };
 
-BOUNDING bounding1(Graph G,vector<Vertex*> candidates, vector<Vertex*> maximum_clique);
+/**
+ * @brief if |C|+|P|<=|C*|
+ * 
+ * @param G contains C
+ * @param candidates is P
+ * @param maximum_clique is C*
+ * @return CUTOFF or NO_CUTOFF
+ */
+BOUNDING upper_bound(Graph G, vector<Vertex*> maximum_clique);

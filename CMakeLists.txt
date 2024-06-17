@@ -39,6 +39,7 @@ add_executable(${PROJECT_NAME}
 
     clique-solver/branch_and_bound.cpp
     clique-solver/upperbounds/upper_bounds.cpp
+    clique-solver/reductions/color_branching.cpp
     clique-solver/orderings/degeneracy_ordering.cpp
 )
 

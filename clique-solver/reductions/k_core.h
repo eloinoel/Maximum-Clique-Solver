@@ -4,8 +4,8 @@
 */
 
 #pragma once
+#include "graph.h"
 
-class Graph;
 
 /**
  * @brief Discard vertices which can't be in the maximum clique.
@@ -13,5 +13,12 @@ class Graph;
  * the 'L-1'-core can be applied to discard vertices that have less than L-1 neighbours.
  * @note O(V + E)
  */
-void apply_k_core(Graph& G, int lowerCliqueBound);
+inline void apply_k_core(Graph &G, vector<Vertex*> maximum_clique){
+    int to_low_degree = maximum_clique.size()-G.partial.size()-2;
+    for(int i = min(to_low_degree, (int)G.deg_lists.size()-1); i>=0 ;i--){
+        while(!G.deg_lists[i].empty()){
+            G.MM_discard_vertex(G.deg_lists[i].back());
+        }
+    }
+}
 

@@ -28,6 +28,7 @@ vector<Vertex*> get_candidates(Graph& G){
  * @param maximum_clique so far (C^*) 
  */
 void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^*)
+    G.num_branches++;
     G.set_restore();
 
     //if C > C^* then
@@ -36,18 +37,23 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
         maximum_clique= G.partial;
     }
 
-    //get P
-    vector<Vertex*> candidates = get_candidates(G);
-
-    if(bounding1(G, candidates, maximum_clique)==BOUNDING::CUTOFF){
+    //bounding
+    if(upper_bound(G, maximum_clique) == CUTOFF){
         G.restore();
         return;
     }
 
-    //for all v ∈ P
-    while(!candidates.empty()){
-        Vertex* branch_vertex = candidates.back();
-        candidates.pop_back();
+    //reduction of candidate set P
+    apply_k_core(G, maximum_clique);
+    
+    //reduction of branching set B
+    vector<Vertex*> branching_verticies = get_candidates(G);
+    branching_verticies = reduce_B_by_coloring(G.partial, branching_verticies, maximum_clique);
+
+    //for all v ∈ B
+    while(!branching_verticies.empty()){
+        Vertex* branch_vertex = branching_verticies.back();
+        branching_verticies.pop_back();
 
         G.set_restore();
 
