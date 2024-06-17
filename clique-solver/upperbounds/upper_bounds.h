@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graph.h"
+
 /**
  * @param degeneracy obtain this value with the function `degeneracy_ordering()`
  * @returns simple upper bound on the maximum clique size
@@ -30,3 +32,10 @@ inline int clique_core_gap(int degeneracy, int mc_number)
 {
     return degeneracy_UB(degeneracy) - mc_number;
 }
+
+enum BOUNDING{
+    CUTOFF,
+    NO_CUTOFF
+};
+
+BOUNDING bounding1(Graph G,vector<Vertex*> candidates, vector<Vertex*> maximum_clique);

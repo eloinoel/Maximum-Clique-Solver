@@ -38,6 +38,7 @@ add_executable(${PROJECT_NAME}
     vc-solver/lowerbounds/clique_cover.cpp
 
     clique-solver/branch_and_bound.cpp
+    clique-solver/upperbounds/upper_bounds.cpp
     clique-solver/orderings/degeneracy_ordering.cpp
 )
 

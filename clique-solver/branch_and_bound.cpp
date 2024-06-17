@@ -1,4 +1,4 @@
-#include "../vc-solver/graph.h"
+#include "branch_and_bound.h"
 
 /**
  * @brief Get candidate set P
@@ -36,10 +36,18 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
         maximum_clique= G.partial;
     }
 
-    //for all v ∈ P
+    //get P
     vector<Vertex*> candidates = get_candidates(G);
+
+    if(bounding1(G, candidates, maximum_clique)==BOUNDING::CUTOFF){
+        G.restore();
+        return;
+    }
+
+    //for all v ∈ P
     while(!candidates.empty()){
         Vertex* branch_vertex = candidates.back();
+        candidates.pop_back();
 
         G.set_restore();
 
@@ -55,8 +63,7 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
         G.restore();
 
         //P = P\{v}
-        candidates.pop_back();
-        G.MM_induced_subgraph(candidates);
+        G.MM_discard_vertex(branch_vertex);
  
     }
 
