@@ -3,20 +3,21 @@
 
 using namespace std;
 
-pair<unique_ptr<vector<Vertex*>>, unique_ptr<vector<int>>> degeneracy_ordering(Graph& G)
+pair<vector<Vertex*>, vector<int>> degeneracy_ordering(Graph& G)
 {
     G.set_restore();
 
-    unique_ptr<vector<Vertex*>> ordering = make_unique<vector<Vertex*>>();
-    unique_ptr<vector<int>> right_degrees = make_unique<vector<int>>(G.V, -1); //init with -1
+    vector<Vertex*> ordering = vector<Vertex*>(G.V.size());
+    vector<int> right_degrees = vector<int>(G.V.size(), -1); //init with -1
 
-    while(G.max_degree > 0)
+    for(int i = 0; G.max_degree > 0; ++i)
     {
         Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree][0];
-        ordering->push_back(lowest_degree_vertex);
+        assert(i < (int) ordering.size());
+        ordering[i] = lowest_degree_vertex;
 
         //in our bucket graph, the degree of the current min vertex is also the rightDegree in the ordering
-        right_degrees->at(lowest_degree_vertex->id) = deg(lowest_degree_vertex);
+        right_degrees[lowest_degree_vertex->id] = deg(lowest_degree_vertex);
         G.MM_discard_vertex(lowest_degree_vertex);
     }
 
@@ -25,30 +26,31 @@ pair<unique_ptr<vector<Vertex*>>, unique_ptr<vector<int>>> degeneracy_ordering(G
 }
 
 /** Makes a copy of the current state of the neighbours */
-const vector<Vertex*> get_neighbours(const Graph& G, const Vertex* v)
+const vector<Vertex*> get_neighbours(const Vertex* v)
 {
     vector<Vertex*> neighbours = vector<Vertex*>(v->neighbors.size());
-    for(int i = 0; i < v->neighbors.size(); ++i)
+    for(int i = 0; i < (int) v->neighbors.size(); ++i)
     {
         neighbours[i] = v->neighbors[i];
     }
     return neighbours;
 }
 
-pair<unique_ptr<vector<Vertex*>>, unique_ptr<vector<vector<Vertex*>>>> degeneracy_ordering_rN(Graph& G)
+pair<vector<Vertex*>, vector<vector<Vertex*>>> degeneracy_ordering_rN(Graph& G)
 {
     G.set_restore();
 
-    unique_ptr<vector<Vertex*>> ordering = make_unique<vector<Vertex*>>();
-    unique_ptr<vector<vector<Vertex*>>> right_neighbourhoods = make_unique<vector<vector<Vertex*>>>(G.V);
+    vector<Vertex*> ordering = vector<Vertex*>(G.V.size());
+    vector<vector<Vertex*>> right_neighbourhoods = vector<vector<Vertex*>>(G.V.size());
 
-    while(G.max_degree > 0)
+    for(int i = 0; G.max_degree > 0; ++i)
     {
         Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree][0];
-        ordering->push_back(lowest_degree_vertex);
+        assert(i < (int) ordering.size());
+        ordering[i] = lowest_degree_vertex;
 
-        //in our bucket graph, the neighbours of the current min vertex are also the right-neighbourhood in the
-        (right_neighbourhoods.get())->at(lowest_degree_vertex->id) = get_neighbours(G, lowest_degree_vertex);
+        //in our bucket graph, the degree of the current min vertex is also the rightDegree in the ordering
+        right_neighbourhoods[lowest_degree_vertex->id] = get_neighbours(lowest_degree_vertex);
         G.MM_discard_vertex(lowest_degree_vertex);
     }
 
@@ -62,7 +64,7 @@ pair<unique_ptr<vector<Vertex*>>, unique_ptr<vector<vector<Vertex*>>>> degenerac
 int degeneracy(vector<Vertex*>& degeneracy_ordering, vector<int>& right_degrees)
 {
     int degeneracy = 0;
-    for(int i = 0; i < degeneracy_ordering.size(); ++i)
+    for(int i = 0; i < (int) degeneracy_ordering.size(); ++i)
     {
         int right_degree = right_degrees[degeneracy_ordering[i]->id];
         if(right_degree > degeneracy)
@@ -76,7 +78,7 @@ int degeneracy(vector<Vertex*>& degeneracy_ordering, vector<int>& right_degrees)
 int degeneracy(vector<Vertex*>& degeneracy_ordering, vector<vector<Vertex*>>& right_neighbourhoods)
 {
     int degeneracy = 0;
-    for(int i = 0; i < degeneracy_ordering.size(); ++i)
+    for(int i = 0; i < (int) degeneracy_ordering.size(); ++i)
     {
         int right_degree = right_neighbourhoods[degeneracy_ordering[i]->id].size();
         if(right_degree > degeneracy)

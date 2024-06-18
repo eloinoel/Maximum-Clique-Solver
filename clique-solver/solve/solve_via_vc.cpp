@@ -3,17 +3,21 @@
 #include "upper_bounds.h"
 #include "lower_bounds.h"
 
+using namespace std;
 
 //TODO:
 int SolverViaVC::solve_via_vc(Graph& G)
 {
     //compute degeneracy ordering and degeneracy d of G
-    std::tie(degeneracy_ordering, right_neighbourhoods) = std::move(degeneracy_ordering_rN(G));
-    d = degeneracy(*(degeneracy_ordering.get()), *(right_neighbourhoods.get()));
+    auto result = degeneracy_ordering_rN(G);
+    degeneracy_ordering = move(result.first);
+    right_neighbourhoods = move(result.second);
+    d = degeneracy(degeneracy_ordering, right_neighbourhoods);
 
     //check lower and upper bounds
     cliqueUB = degeneracy_UB(d);
-    cliqueLB = degeneracy_ordering_LB(*(degeneracy_ordering.get()), *(right_neighbourhoods.get()));
+    cliqueLB = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoods);
+
 
     //call `solve_via_vc_for_p` for different values of p
 }

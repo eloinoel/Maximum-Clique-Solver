@@ -1,4 +1,3 @@
-#pragma once
 #include "upper_bounds.h"
 #include "graph.h"
 

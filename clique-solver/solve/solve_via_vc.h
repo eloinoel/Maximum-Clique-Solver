@@ -5,7 +5,6 @@
 */
 #pragma once
 
-#include <memory>
 #include <vector>
 
 class Graph;
@@ -18,8 +17,8 @@ public:
 
     Graph* G;
 
-    std::unique_ptr<std::vector<Vertex*>> degeneracy_ordering;
-    std::unique_ptr<std::vector<std::vector<Vertex*>>> right_neighbourhoods;
+    std::vector<Vertex*> degeneracy_ordering;
+   std::vector<std::vector<Vertex*>> right_neighbourhoods;
     int d;
 
     int cliqueUB;

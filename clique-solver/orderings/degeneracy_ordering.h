@@ -7,7 +7,6 @@
 
 #include <vector>
 #include <utility> //contains std::pair
-#include <memory> //std::unique_ptr
 
 class Graph;
 class Vertex;
@@ -19,8 +18,8 @@ class Vertex;
  * @returns minimum degree/degeneracy ordering,
  * @returns right_degrees of vertices in the ordering, other vertices have value -1
  */
-std::pair<std::unique_ptr<std::vector<Vertex*>>, std::unique_ptr<std::vector<int>>> degeneracy_ordering(Graph& G);
-std::pair<std::unique_ptr<std::vector<Vertex*>>, std::unique_ptr<std::vector<std::vector<Vertex*>>>> degeneracy_ordering_rN(Graph& G);
+std::pair<std::vector<Vertex*>,std::vector<int>> degeneracy_ordering(Graph& G);
+std::pair<std::vector<Vertex*>, std::vector<std::vector<Vertex*>>> degeneracy_ordering_rN(Graph& G);
 /**
  * The degeneracy of a graph can be computed from the degeneracy ordering.
  * First execute function `degeneracy_ordering(Graph& G)` and input return values into this fn
