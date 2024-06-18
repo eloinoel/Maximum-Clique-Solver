@@ -36,6 +36,11 @@ Pipe input data into the solver, e.g.:
 ./build/release/mc_solver < benchmark/data/000_random_10_4.dimacs
 ```
 
+Use Debug build instead:
+```bash
+./build/debug/mc_solver < benchmark/data/000_random_10_4.dimacs
+```
+
 Or use the benchmark script found under `/benchmark/`.
 
 ## Useful commands:
