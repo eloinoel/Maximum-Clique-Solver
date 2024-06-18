@@ -1,7 +1,8 @@
 #pragma once
 #include "upper_bounds.h"
+#include "graph.h"
 
-BOUNDING upper_bound(Graph G, vector<Vertex *> maximum_clique)
+BOUNDING upper_bound(Graph& G, vector<Vertex*>& maximum_clique)
 {
     int candidate_set_size = 0;
     for(vector<Vertex*> candidates_of_same_degree: G.deg_lists){

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "graph.h"
+#include <vector>
+
+class Vertex;
+class Graph;
 
 /**
  * @param degeneracy obtain this value with the function `degeneracy_ordering()`
@@ -40,10 +43,10 @@ enum BOUNDING{
 
 /**
  * @brief if |C|+|P|<=|C*|
- * 
+ *
  * @param G contains C
  * @param candidates is P
  * @param maximum_clique is C*
  * @return CUTOFF or NO_CUTOFF
  */
-BOUNDING upper_bound(Graph G, vector<Vertex*> maximum_clique);
+BOUNDING upper_bound(Graph& G, std::vector<Vertex*>& maximum_clique);

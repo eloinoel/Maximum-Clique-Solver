@@ -1,8 +1,16 @@
 #pragma once
 
-#include "upperbounds/upper_bounds.h"
-#include "reductions/k_core.h"
-#include "reductions/color_branching.h"
+#include <vector>
 
-//Basic branch and bound framework for maximum clique
-vector<Vertex*> branch_and_bound(Graph& G);
+class Graph;
+class Vertex;
+
+/**
+ * @brief recursive branch and bound algorithm
+ */
+void branch_and_bound(Graph& G, std::vector<Vertex*>& maximum_clique);
+
+/**
+ * @brief Branch and bound wrapper, call this from externally
+ */
+std::vector<Vertex*> branch_and_bound_mc(Graph& G);

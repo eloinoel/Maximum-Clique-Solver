@@ -26,7 +26,7 @@ int main(int argc, char**argv){
     #endif
 
     //size_t vc_size = solve_k(G);
-    vector<Vertex*> maximum_clique = branch_and_bound(G);
+    vector<Vertex*> maximum_clique = branch_and_bound_mc(G);
 
 
     #ifdef RELEASE
