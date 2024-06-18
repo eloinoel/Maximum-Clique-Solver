@@ -125,6 +125,48 @@ void Graph::restore_vertex(Vertex* v){
     update_deglists(v);
 }
 
+void Graph::delete_all(){
+    for(Vertex* v : V){
+        while(!v->edges.empty()){
+            delete_edge(v->edges.back());
+        }
+    }
+    for(Vertex* v : V)
+        delete v;
+}
+
+Graph Graph::complementary_graph(Graph& G){
+    Graph H;
+    H.name_table = G.name_table;
+
+    vector<Vertex*> G_to_H(G.N); // from v in G to v in H
+
+    for(Vertex* v : G.V){
+        Vertex* vh = H.add_vertex();
+        vh->id = v->id;
+        G_to_H[v->id] = vh;
+    }
+
+    for(Vertex* v : G.V){
+        G.new_timestamp();
+        auto v_iter = G.timestamp;
+        v->marked = v_iter;         // prevent self loops
+        for(Vertex* n : v->neighbors){
+            n->marked = G.timestamp;
+        }
+
+        for(Vertex* w : G.V){
+            if(w->marked != v_iter && w < v){
+                H.add_edge(G_to_H[v->id], G_to_H[w->id]);
+            }
+        }
+    }
+
+    H.N = H.total_N;
+    //G.delete_all();
+    return H;
+}
+
 void Graph::MM_induced_subgraph(vector<Vertex*>& induced_set){
     history.push_back(new OP_InducedSubgraph(induced_set, *this));
 }

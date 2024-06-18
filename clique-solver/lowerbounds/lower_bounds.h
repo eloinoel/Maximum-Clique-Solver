@@ -10,5 +10,5 @@ class Vertex;
  * @note O(V), source: https://optimization-online.org/wp-content/uploads/2018/07/6710.pdf
  * @returns degeneracy of the current graph
  */
-int degeneracy_ordering_LB(std::vector<Vertex*>& degeneracy_ordering, std::vector<int>& right_degrees);
-int degeneracy_ordering_LB(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vector<Vertex*>>& right_neighbourhoods);
+int degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<int>& right_degrees);
+int degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<std::vector<Vertex*>>& right_neighbourhoods);

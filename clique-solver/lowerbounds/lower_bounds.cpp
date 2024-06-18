@@ -1,7 +1,7 @@
 #include "lower_bounds.h"
 #include "graph.h"
 
-int degeneracy_ordering_LB(std::vector<Vertex*>& degeneracy_ordering, std::vector<int>& right_degrees)
+int degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<int>& right_degrees)
 {
     int lower_bound = 0;
     int n = degeneracy_ordering.size();
@@ -17,7 +17,7 @@ int degeneracy_ordering_LB(std::vector<Vertex*>& degeneracy_ordering, std::vecto
     return lower_bound;
 }
 
-int degeneracy_ordering_LB(std::vector<Vertex*>& degeneracy_ordering, std::vector<vector<Vertex*>>& right_neighbourhoods)
+int degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<vector<Vertex*>>& right_neighbourhoods)
 {
     int lower_bound = 0;
     int n = degeneracy_ordering.size();

@@ -123,6 +123,10 @@ public:
      */
     void delete_vertex(Vertex* v);
 
+    void delete_all();
+
+    Graph complementary_graph(Graph& G);
+
     /**
      * Functions prefixed with MM_ are already memory managed
      * that is, the changes of the operations are saved in the history
