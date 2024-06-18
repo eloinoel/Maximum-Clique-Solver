@@ -26,10 +26,13 @@ include_directories("${PROJECT_SOURCE_DIR}/clique-solver/lowerbounds")
 include_directories("${PROJECT_SOURCE_DIR}/clique-solver/upperbounds")
 include_directories("${PROJECT_SOURCE_DIR}/clique-solver/reductions")
 include_directories("${PROJECT_SOURCE_DIR}/clique-solver/solve")
+include_directories("$(PROJECT_SOURCE_DIR)/utils")
 
 # All source files need to be listed explicitly here.
 add_executable(${PROJECT_NAME}
     main.cpp
+
+    utils/debug_utils.cpp
 
     vc-solver/graph.cpp
     vc-solver/load.cpp

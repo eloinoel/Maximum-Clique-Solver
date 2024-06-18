@@ -29,11 +29,22 @@ Execute one of the following commands:
   echo bash compile.sh --profile
 ```
 
+### Manual Build
+```bash
+cmake . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
 ## Execute
 
 Pipe input data into the solver, e.g.:
 ```bash
 ./build/release/mc_solver < benchmark/data/000_random_10_4.dimacs
+```
+
+Use Debug build instead:
+```bash
+./build/debug/mc_solver < benchmark/data/000_random_10_4.dimacs
 ```
 
 Or use the benchmark script found under `/benchmark/`.

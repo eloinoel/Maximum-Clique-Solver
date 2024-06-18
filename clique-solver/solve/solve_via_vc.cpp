@@ -13,8 +13,11 @@ using namespace std;
 //TODO: maybe optimise subgraph/complement graph construction
 //TODO: use better data reductions
 //TODO: make better use of lower and upper Bounds, eg. heuristical lower bound
-int SolverViaVC::solve_via_vc(Graph& G)
+int SolverViaVC::solve(Graph& G)
 {
+    #if DEBUG
+        
+    #endif
     //compute degeneracy ordering and degeneracy d of G
     auto result = degeneracy_ordering_rN(G);
     degeneracy_ordering = move(result.first);
