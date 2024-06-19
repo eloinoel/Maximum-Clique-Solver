@@ -15,18 +15,18 @@ public:
 #define assertTrue(exp, msg) assert(((void)msg, exp))
 #define assertFalse(exp, msg) assert(((void)msg, !exp))
 
-void printError(std::string errorMessage,
+void print_error(std::string errorMessage,
                 std::string functionName = __builtin_FUNCTION(),
                 unsigned int lineNumber = __builtin_LINE());
 
-void printWarning(std::string warningMessage,
+void print_warning(std::string warningMessage,
                 std::string functionName = __builtin_FUNCTION(),
                 unsigned int lineNumber = __builtin_LINE());
 
-void printSuccess(std::string successMessage);
+void print_success(std::string successMessage);
 
-void printCurrentDirectory();
+void print_current_directory();
 
-int randomInteger(int minimum, int maximum);
+int random_integer(int minimum, int maximum);
 
-float randomFloat(float minimum, float maximum);
+float random_float(float minimum, float maximum);

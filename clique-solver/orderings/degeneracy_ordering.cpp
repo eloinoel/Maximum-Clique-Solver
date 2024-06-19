@@ -12,7 +12,7 @@ pair<vector<Vertex*>, vector<int>> degeneracy_ordering(Graph& G)
 
     for(int i = 0; G.max_degree > 0; ++i)
     {
-        Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree][0];
+        Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree].front();
         assert(i < (int) ordering.size());
         ordering[i] = lowest_degree_vertex;
 
@@ -45,7 +45,7 @@ pair<vector<Vertex*>, vector<vector<Vertex*>>> degeneracy_ordering_rN(Graph& G)
 
     for(int i = 0; G.max_degree > 0; ++i)
     {
-        Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree][0];
+        Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree].front();
         assert(i < (int) ordering.size());
         ordering[i] = lowest_degree_vertex;
 

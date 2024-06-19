@@ -5,6 +5,7 @@
 #include "lower_bounds.h"
 #include "k_core.h"
 #include "graph.h"
+#include <debug_utils.h>
 
 using namespace std;
 
@@ -15,21 +16,38 @@ using namespace std;
 //TODO: make better use of lower and upper Bounds, eg. heuristical lower bound
 int SolverViaVC::solve(Graph& G)
 {
-    #if DEBUG
-        
+    #if !NDEBUG
+        print_success("Starting MC solver using VC solver");
+        size_t initial_N = G.N;
+        size_t initial_M = G.M;
     #endif
+
+    if(G.N == 0){ return 0; }
+
     //compute degeneracy ordering and degeneracy d of G
     auto result = degeneracy_ordering_rN(G);
     degeneracy_ordering = move(result.first);
     right_neighbourhoods = move(result.second);
     d = degeneracy(degeneracy_ordering, right_neighbourhoods);
 
+    #if !NDEBUG
+        cout << "Graph with N=" << initial_N << " and M=" << initial_M << " has degeneracy d=" << d << std::endl;
+    #endif
+
     //check lower and upper bounds
     cliqueUB = degeneracy_UB(d);
     cliqueLB = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoods);
 
+    #if !NDEBUG
+        cout << "Computed LB=" << cliqueLB << ", UB=" << cliqueUB << std::endl;
+    #endif
+
     //data reduction
     apply_k_core(G, cliqueLB);
+
+    #if !NDEBUG
+        cout << "Applied Data Reductions. new_N=" << G.N << "new_M=" << G.M << std::endl;
+    #endif
 
     for(int p = cliqueUB; p >= cliqueLB; p--)
     {
