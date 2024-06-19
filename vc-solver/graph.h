@@ -64,7 +64,7 @@ public:
     size_t max_degree = 0;
 
     #if USE_MIN_DEG
-    size_t min_degree = int::max();
+    size_t min_degree = numeric_limits<int>::max();
     #endif
 
     /* vertices are never really deleted, only status update*/

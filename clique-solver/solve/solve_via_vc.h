@@ -6,6 +6,7 @@
 #pragma once
 
 #include <vector>
+#include <cstddef>
 
 class Graph;
 class Vertex;

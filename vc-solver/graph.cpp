@@ -336,7 +336,7 @@ void Graph::remove_from_deglist(Vertex* v){
                 return;
             }
         }
-        min_degree = 0;
+        min_degree = numeric_limits<int>::max();
     }
     #endif
 }

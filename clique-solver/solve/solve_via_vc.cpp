@@ -5,7 +5,7 @@
 #include "lower_bounds.h"
 #include "k_core.h"
 #include "graph.h"
-#include <debug_utils.h>
+#include "debug_utils.h"
 
 using namespace std;
 
@@ -44,6 +44,8 @@ int SolverViaVC::solve(Graph& G)
 
     //data reduction
     apply_k_core(G, cliqueLB);
+
+    //TODO: Possibly need to exclude vertices from ordering which were excluded by k-core
 
     #if !NDEBUG
         cout << "Applied Data Reductions. new_N=" << G.N << "new_M=" << G.M << std::endl;

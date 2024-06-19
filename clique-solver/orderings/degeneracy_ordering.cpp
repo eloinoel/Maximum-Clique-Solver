@@ -10,7 +10,8 @@ pair<vector<Vertex*>, vector<int>> degeneracy_ordering(Graph& G)
     vector<Vertex*> ordering = vector<Vertex*>(G.V.size());
     vector<int> right_degrees = vector<int>(G.V.size(), -1); //init with -1
 
-    for(int i = 0; G.max_degree > 0; ++i)
+    int N = G.N;
+    for(int i = 0; i < N; ++i)
     {
         Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree].front();
         assert(i < (int) ordering.size());
@@ -42,8 +43,9 @@ pair<vector<Vertex*>, vector<vector<Vertex*>>> degeneracy_ordering_rN(Graph& G)
 
     vector<Vertex*> ordering = vector<Vertex*>(G.V.size());
     vector<vector<Vertex*>> right_neighbourhoods = vector<vector<Vertex*>>(G.V.size());
-
-    for(int i = 0; G.max_degree > 0; ++i)
+    
+    int N = G.N;
+    for(int i = 0; i < N; ++i)
     {
         Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree].front();
         assert(i < (int) ordering.size());

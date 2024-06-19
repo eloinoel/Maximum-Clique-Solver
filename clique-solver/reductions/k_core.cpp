@@ -13,7 +13,7 @@ void apply_k_core(Graph &G, int lowerCliqueBound)
 {
     while((int) G.min_degree < lowerCliqueBound - 1)
     {
-        Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree][0];
+        Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree].front();
         G.MM_discard_vertex(lowest_degree_vertex);
     }
 }
