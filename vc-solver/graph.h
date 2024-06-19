@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <list>
+#include <unordered_map>
 #include <cassert>
 #include <chrono>
 #include <memory>
@@ -64,7 +65,7 @@ public:
     size_t max_degree = 0;
 
     #if USE_MIN_DEG
-    size_t min_degree = 0;
+    size_t min_degree = numeric_limits<int>::max();
     #endif
 
     /* vertices are never really deleted, only status update*/
