@@ -125,7 +125,7 @@ void deg2_rule_single(Graph& G){
 
 bool deg2_rule(Graph& G){
     bool reduced = false;
-    while(!G.deg_lists[2].empty()){
+    while(G.max_degree >= 2 && !G.deg_lists[2].empty()){
         deg2_rule_single(G);
         deg1_rule(G); //ensures min deg > 1, otherwise need to special case deg = 1 to avoid unnecessary folds
         reduced = true;
@@ -284,7 +284,7 @@ bool deg3_rule(Graph& G){
     bool reduced = false;
     G.new_timestamp();
    
-    while(!G.deg_lists[3].empty()){
+    while(G.max_degree >= 3 && !G.deg_lists[3].empty()){
         Vertex* v = G.deg_lists[3].back();
         assert(deg(v) == 3);
         Vertex* a = v->neighbors[0];

@@ -14,7 +14,7 @@ using namespace std;
 //TODO: maybe optimise subgraph/complement graph construction
 //TODO: use better data reductions
 //TODO: make better use of lower and upper Bounds, eg. heuristical lower bound
-int SolverViaVC::solve(Graph& G)
+int SolverViaVC::solve_via_vc(Graph& G)
 {
     #if !NDEBUG
         print_success("Starting MC solver using VC solver");
@@ -48,7 +48,7 @@ int SolverViaVC::solve(Graph& G)
     //TODO: Possibly need to exclude vertices from ordering which were excluded by k-core
 
     #if !NDEBUG
-        cout << "Applied Data Reductions. new_N=" << G.N << "new_M=" << G.M << std::endl;
+        cout << "Applied Data Reductions. new_N=" << G.N << ", new_M=" << G.M << std::endl;
     #endif
 
     for(int p = cliqueUB; p >= cliqueLB; p--)

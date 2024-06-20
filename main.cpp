@@ -30,7 +30,7 @@ int main(int argc, char**argv){
     //size_t vc_size = solve_k(G);
     //vector<Vertex*> maximum_clique = branch_and_bound_mc(G);
     SolverViaVC solver = SolverViaVC();
-    int max_clique_size = solver.solve(G);
+    int max_clique_size = solver.solve_via_vc(G);
 
     #if !NDEBUG
         print_success("Found maximum clique of size " + std::to_string(max_clique_size));

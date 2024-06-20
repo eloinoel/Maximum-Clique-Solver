@@ -35,7 +35,7 @@ public:
      * vertex cover solver. Uses the observation that MC(G) = N - VC(¬G).
      * @returns maximum clique size in the graph G
      */
-    int solve(Graph& G);
+    int solve_via_vc(Graph& G);
 
 private:
     /**
