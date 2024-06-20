@@ -62,6 +62,14 @@ From root directory run:
 bash compile.sh --release && cd benchmark && python3 benchmark.py "./../build/release/mc_solver" && cd ..
 ```
 
+##### Run precise benchmark data into build/benchmark/output.csv
+From root directory run:
+```bash
+bash benchmark.sh
+```
+
+
+
 ## Input/Out Specification
 ### Input
 

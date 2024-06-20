@@ -7,6 +7,7 @@
 #include "graph.h"
 #include "load.h"
 #include "branch_and_bound.h"
+#include "../vc-solver/benchmark.h"
 #include "solve.h" // only for testing
 
 enum class execute_dOmega { YES, NO };
@@ -28,6 +29,9 @@ int main(int argc, char**argv){
     //size_t vc_size = solve_k(G);
     vector<Vertex*> maximum_clique = branch_and_bound_mc(G);
 
+    #ifdef BENCHMARK
+        save_benchmark_data(G, maximum_clique.size());
+    #endif
 
     #ifdef RELEASE
         //G.output_vc();

@@ -44,6 +44,7 @@ add_executable(${PROJECT_NAME}
     vc-solver/reductions/unconfined.cpp
     vc-solver/reductions/kernel.cpp
     vc-solver/lowerbounds/clique_cover.cpp
+    vc-solver/benchmark.cpp
 
     clique-solver/branch_and_bound.cpp
     clique-solver/upperbounds/upper_bounds.cpp
@@ -55,4 +56,5 @@ add_executable(${PROJECT_NAME}
 )
 
 # Define the RELEASE symbol for release builds
+target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Benchmark>:BENCHMARK>)
 target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:RELEASE>)
