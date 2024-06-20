@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "graph.h"
 #include "debug_utils.h"
+#include "colors.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -9,8 +10,8 @@ using namespace std;
 
 void test_graph_consistency(Graph& G)
 {
-    cout << "Starting Graph consistency test..." << endl;
-    cout << "G has N=" << G.N << " and M=" << G.M << endl;
+    cout << CYAN << "----------------- Graph Consistency Test -----------------" << RESET << endl;
+    cout << CYAN << "G has N=" << G.N << " and M=" << G.M << RESET << endl;
 
     test_N_M(G);
 
@@ -21,7 +22,7 @@ void test_graph_consistency(Graph& G)
     test_deg_lists(G);
 
     //test Vertex neighbors, edges correct
-
+    cout << CYAN << "------------------------ END TEST ------------------------" << RESET << endl;
 }
 
 void test_N_M(Graph& G)
@@ -33,6 +34,7 @@ void test_N_M(Graph& G)
             N++;
     }
     assert(G.N == N);
+
     for(Edge* e : G.E){
         assert(e->ends[0].v != nullptr);
         assert(e->ends[1].v != nullptr);
@@ -45,17 +47,17 @@ void test_N_M(Graph& G)
 
 void test_min_max_degree(Graph& G)
 {
-    size_t max_deg = -1;
+    int max_deg = -1;
     size_t min_deg = numeric_limits<int>::max();
     for(Vertex* v : G.V){
         if(v->status != UNKNOWN)
             continue;
-        if(deg(v) > max_deg)
-            max_deg = deg(v);
+        if((int) deg(v) > max_deg)
+            max_deg = (int) deg(v);
         if(deg(v) < min_deg)
             min_deg = deg(v);
     }
-    assert(max_deg == G.max_degree);
+    assert(max_deg == (int) G.max_degree);
     assert(min_deg == G.min_degree);
     print_success("Passed max/min degree test");
 }
@@ -68,10 +70,25 @@ void test_vertices(Graph& G)
             assert(n->status == UNKNOWN);
             assert(v->id != n->id);
             assert(n->id < G.N);
-            assert(v->id >= 0);
-            assert(n->id >= 0);
         }
     }
+
+    //consistent with edges
+    // for(Vertex* v : G.V)
+    // {
+    //     for(Edge* e : G.E) {
+    //         assert(e->ends[0].v == v || e->ends[1].v == v);
+    //         bool consistent = false;
+    //         Vertex* expected[2] = {e->ends[0].v, e->ends[1].v};
+    //         Vertex* found[2];
+    //         for (size_t i = 0; i < 2; i++){
+    //             found[i] = e->ends[i].v->neighbors[e->ends[i].idx];
+    //             consistent |= found[i] == this;
+    //         }
+    //         assert(consistent);
+    //     }
+    // }
+    
     print_success("Passed vertex test. All neighbours are valid.");
 
 }
