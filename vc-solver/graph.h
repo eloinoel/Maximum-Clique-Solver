@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <list>
+#include <unordered_map>
 #include <cassert>
 #include <chrono>
 #include <memory>
