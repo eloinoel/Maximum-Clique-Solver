@@ -322,6 +322,8 @@ void Graph::remove_from_deglist(Vertex* v){
         for(int i = static_cast<int>(deg_lists.size()) - 1; i >= 0; i--){
             if(!deg_lists[i].empty()){
                 max_degree = i;
+                if(v->list_idx == min_degree && deg.empty())
+                    goto min;
                 return;
             }
         }
@@ -329,7 +331,8 @@ void Graph::remove_from_deglist(Vertex* v){
         //deg_lists.resize(max_degree);
     }
     #if USE_MIN_DEG
-    else if(v->list_idx == min_degree && deg.empty()){
+    if(v->list_idx == min_degree && deg.empty()){
+        min:
         for(int i = 0; i < static_cast<int>(deg_lists.size()); i++){
             if(!deg_lists[i].empty()){
                 min_degree = i;
