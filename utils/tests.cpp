@@ -65,11 +65,11 @@ void test_min_max_degree(Graph& G)
 void test_vertices(Graph& G)
 {
     for(Vertex* v : G.V) {
-        assert(v->id < G.N);
+        assert(v->v_idx < G.N);
         for(Vertex* n : v->neighbors){
             assert(n->status == UNKNOWN);
             assert(v->id != n->id);
-            assert(n->id < G.N);
+            assert(n->v_idx < G.N);
         }
     }
 

@@ -23,7 +23,6 @@ void start_solver_threads(execute_bnb bnb_flag, execute_dOmega dOmega_flag)
 int main(int argc, char**argv){
     Graph G;
     load_graph(G);
-    test_graph_consistency(G);
 
     #if DEBUG
         G.timer.start("solve");
