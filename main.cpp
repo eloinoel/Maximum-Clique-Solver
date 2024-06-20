@@ -10,6 +10,7 @@
 #include "solve.h" // only for testing
 #include "solve_via_vc.h"
 #include "debug_utils.h"
+#include "tests.h"
 
 enum class execute_dOmega { YES, NO };
 enum class execute_bnb { YES, NO };
@@ -22,6 +23,7 @@ void start_solver_threads(execute_bnb bnb_flag, execute_dOmega dOmega_flag)
 int main(int argc, char**argv){
     Graph G;
     load_graph(G);
+    test_graph_consistency(G);
 
     #if DEBUG
         G.timer.start("solve");

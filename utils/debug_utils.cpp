@@ -1,7 +1,6 @@
 #include "colors.h"
 #include "debug_utils.h"
 
-#include <iostream>
 #include <filesystem>
 #include <float.h>
 #include <random>

@@ -82,7 +82,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         }
     }
 
-    // if we can't find mc from right neighbourhoods, go remaining vertices in ordering
+    // if we can't find mc from right neighbourhoods, take remaining vertices in ordering
     // construct ¬G[Vf], where Vf = {vf , . . . , vn} and f := n − d + 1
     G.set_restore();
     auto Vf = get_remaining_set();

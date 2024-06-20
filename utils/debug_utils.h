@@ -2,6 +2,8 @@
 
 #include <string>
 #include <stdexcept>
+#include <cassert>
+#include <iostream>
 
 /**
  * @brief Custom exception.
@@ -12,8 +14,12 @@ public:
     NotImplemented() : std::logic_error("Function not yet implemented") { };
 };
 
-#define assertTrue(exp, msg) assert(((void)msg, exp))
-#define assertFalse(exp, msg) assert(((void)msg, !exp))
+// void assert_print(bool exp, std::string msg)
+// {
+//     if(!exp)
+//         std::cerr << msg << std::endl;
+//     assert(exp);
+// };
 
 void print_error(std::string errorMessage,
                 std::string functionName = __builtin_FUNCTION(),

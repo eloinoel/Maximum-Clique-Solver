@@ -33,6 +33,7 @@ add_executable(mc_solver
     main.cpp
 
     utils/debug_utils.cpp
+    utils/tests.cpp
 
     vc-solver/graph.cpp
     vc-solver/load.cpp
