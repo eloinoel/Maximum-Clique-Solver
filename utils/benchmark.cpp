@@ -2,12 +2,13 @@
 #include <iostream>
 #include <unordered_map> 
 #include <thread>
+#include <fstream>
+
 #include "benchmark.h"
 #include "graph.h"
-#include <fstream>
-#include "../clique-solver/reductions/k_core.h"
+#include "k_core.h"
 #include "load.h"
-#include "../clique-solver/branch_and_bound.h"
+#include "branch_and_bound.h"
 
 using my_time_point = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
@@ -53,7 +54,7 @@ void add_line_to_output(vector<double>& times, vector<unsigned long> properties)
     return;
 }
 
-void run_benchmark(){
+void run_benchmark(SOLVER solver_to_execute){
     Graph G;
     load_graph(G);
 
@@ -62,11 +63,26 @@ void run_benchmark(){
     bnb_timeout = chrono::system_clock::now();
     bnb_timeout += offset;
     
-    //run BnB
-    vector<Vertex*> maximum_clique = branch_and_bound_mc(G);
+    vector<Vertex*> maximum_clique;
+    unsigned long maximum_clique_size;
+    //run solver
+    switch(solver_to_execute)
+    {
+        case SOLVER::BRANCH_AND_BOUND:
+            maximum_clique = branch_and_bound_mc(G);
+            maximum_clique_size = maximum_clique.size();
+            break;
+        case SOLVER::CLISAT:
+            //TODO:
+            break;
+        case SOLVER::VIA_VC:
+            break;
+        default:
+            break;
+    }
     
     //fill output.csv
     std::vector<double> times = {get_time(TECHNIQUE::BRANCH_AND_BOUND), get_time(TECHNIQUE::BOUNDING), get_time(TECHNIQUE::COLORING), get_time(TECHNIQUE::K_CORE)};
-    std::vector<unsigned long> properties = {G.N, G.M, G.max_degree, G.min_degree, max_k_core(G), maximum_clique.size()};
+    std::vector<unsigned long> properties = {G.N, G.M, G.max_degree, G.min_degree, max_k_core(G), maximum_clique_size};
     add_line_to_output(times, properties);
 }

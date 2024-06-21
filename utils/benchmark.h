@@ -12,6 +12,14 @@ enum class TECHNIQUE{
     K_CORE
 };
 
+enum class SOLVER
+{
+    NONE,
+    BRANCH_AND_BOUND,
+    CLISAT,
+    VIA_VC
+};
+
 /**
  * @brief adds the time measured between start and end to the total measured time of the technique
  * 
@@ -33,4 +41,4 @@ double get_time(TECHNIQUE key);
  * @brief Loads the graph, runs bnb and writes to Output.csv in build/benchmark/output.csv
  * 
  */
-void run_benchmark();
+void run_benchmark(SOLVER solver_to_execute);

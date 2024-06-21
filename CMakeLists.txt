@@ -34,6 +34,7 @@ add_executable(mc_solver
 
     utils/debug_utils.cpp
     utils/tests.cpp
+    utils/benchmark.cpp
 
     vc-solver/graph.cpp
     vc-solver/load.cpp
@@ -45,7 +46,6 @@ add_executable(mc_solver
     vc-solver/reductions/unconfined.cpp
     vc-solver/reductions/kernel.cpp
     vc-solver/lowerbounds/clique_cover.cpp
-    vc-solver/benchmark.cpp
 
     clique-solver/branch_and_bound.cpp
     clique-solver/upperbounds/upper_bounds.cpp

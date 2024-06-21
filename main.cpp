@@ -7,19 +7,12 @@
 #include "graph.h"
 #include "load.h"
 #include "branch_and_bound.h"
-#include "../vc-solver/benchmark.h"
+#include "benchmark.h"
 #include "solve.h" // only for testing
 #include "solve_via_vc.h"
 #include "debug_utils.h"
 #include "tests.h"
 
-enum class execute_dOmega { YES, NO };
-enum class execute_bnb { YES, NO };
-
-void start_solver_threads(execute_bnb bnb_flag, execute_dOmega dOmega_flag)
-{
-    //TODO: copy graph and start multiple solvers in multiple threads
-}
 
 int main(int argc, char**argv){
 

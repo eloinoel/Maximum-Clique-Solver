@@ -1,8 +1,8 @@
 #include "branch_and_bound.h"
-#include "upperbounds/upper_bounds.h"
-#include "reductions/k_core.h"
-#include "reductions/color_branching.h"
-#include "../vc-solver/benchmark.h"
+#include "upper_bounds.h"
+#include "k_core.h"
+#include "color_branching.h"
+#include "benchmark.h"
 #include "graph.h"
 #include <atomic>
 /**
