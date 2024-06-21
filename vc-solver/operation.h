@@ -82,6 +82,7 @@ private:
     mutable vector<Edge*> old_E;
     mutable vector<vector<Vertex*>> old_list; // deg list before changing to induced subgraph
     mutable vector<Edge*> deleted_edges; // requires that edges have v in induced set as endpoint[0]!!!!
+    mutable pair<int, int> degs;
 public: 
     explicit OP_InducedSubgraph(vector<Vertex*> induced_set, Graph& G);
     void undo(Graph* G) const override;

@@ -21,6 +21,8 @@ def read_solution_size(solution_file):
             if line.startswith("#"):
                 continue
             words = line.split()
+            if words[0].lower() == "missing":
+                return 0
             sol_size = int(words[0])
             return sol_size
         raise ValueError

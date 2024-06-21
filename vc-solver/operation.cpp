@@ -65,6 +65,8 @@ OP_InducedSubgraph::OP_InducedSubgraph(vector<Vertex*> induced_set, Graph& G)
 {
     G.new_timestamp();
 
+    degs = {G.max_degree, G.min_degree};
+
     for(Vertex* v : induced_set)
         v->marked = G.timestamp;
  
@@ -105,6 +107,9 @@ OP_InducedSubgraph::OP_InducedSubgraph(vector<Vertex*> induced_set, Graph& G)
    
     swap(G.deg_lists, old_list);
 
+    G.max_degree = 0;
+    G.min_degree = numeric_limits<int>::max();
+
     for(Vertex* s : induced_set){
         G.update_deglists(s);
     }
@@ -119,7 +124,7 @@ OP_InducedSubgraph::OP_InducedSubgraph(vector<Vertex*> induced_set, Graph& G)
     G.N = G.V.size();
     G.M = G.E.size();
 
- }
+}
 
 void OP_InducedSubgraph::undo(Graph* G) const {
     //at the point where this is called, only the induced edges should remain
@@ -152,6 +157,9 @@ void OP_InducedSubgraph::undo(Graph* G) const {
 
     G->M = G->E.size();
     G->N = G->V.size();
+
+    G->max_degree = degs.first;
+    G->min_degree = degs.second;
 }
 
 

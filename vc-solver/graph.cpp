@@ -164,6 +164,10 @@ Graph Graph::complementary_graph(Graph& G){
     }
 
     H.N = H.total_N;
+    if(H.N > 0 && H.M == 0){
+        H.min_degree = 0;
+        H.max_degree = 0;
+    }
     //G.delete_all();
     return H;
 }

@@ -1,12 +1,11 @@
 #include "colors.h"
 #include "debug_utils.h"
 
-#include <iostream>
 #include <filesystem>
 #include <float.h>
 #include <random>
 
-void printError(std::string errorMessage, std::string functionName, unsigned int lineNumber)
+void print_error(std::string errorMessage, std::string functionName, unsigned int lineNumber)
 {
     std::cout
     << RED
@@ -18,7 +17,7 @@ void printError(std::string errorMessage, std::string functionName, unsigned int
     << std::endl;
 }
 
-void printWarning(std::string warningMessage, std::string functionName, unsigned int lineNumber)
+void print_warning(std::string warningMessage, std::string functionName, unsigned int lineNumber)
 {
     std::cout
     << YELLOW
@@ -30,7 +29,7 @@ void printWarning(std::string warningMessage, std::string functionName, unsigned
     << std::endl;
 }
 
-void printSuccess(std::string successMessage)
+void print_success(std::string successMessage)
 {
     std::cout
     << GREEN
@@ -39,13 +38,13 @@ void printSuccess(std::string successMessage)
     << std::endl;
 }
 
-void printCurrentDirectory()
+void print_current_directory()
 {
     std::filesystem::path cwd = std::filesystem::current_path() / "filename.txt";
     std::cout << "Current Directory: " << cwd.string() << std::endl;
 }
 
-int randomInteger(int minimum, int maximum) {
+int random_integer(int minimum, int maximum) {
     std::random_device device;
     std::mt19937 rng(device());
     std::uniform_int_distribution<std::mt19937::result_type> distr(minimum, maximum);
@@ -53,6 +52,6 @@ int randomInteger(int minimum, int maximum) {
     return distr(rng);
 }
 
-float randomFloat(float minimum, float maximum){
+float random_float(float minimum, float maximum){
     return minimum + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(maximum-minimum)));
 }

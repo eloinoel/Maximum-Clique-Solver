@@ -86,5 +86,9 @@ void load_graph(Graph& G){
     G.name_table = name_table;
     G.N = G.total_N;
     //G.M = G.total_M;
+    if(G.N > 0 && G.M == 0) // special case where min degree is not set otherwise
+    {
+        G.min_degree = 0;
+    }
 
 }

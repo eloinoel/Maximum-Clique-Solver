@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 import time
+import sys
 
 import subprocess
 
@@ -28,6 +29,7 @@ def run_command_with_limit(cmd, input_file, timeout):
         with open(input_file, 'r') as f:
             completed_process = subprocess.run(cmd, stdin=f, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                                timeout=timeout)
+
 
         stdout = completed_process.stdout.decode('utf-8')
         stderr = completed_process.stderr.decode('utf-8')
@@ -76,6 +78,15 @@ def get_instances(in_dir):
 
     return sorted_files
 
+class CollectDataAction(argparse.Action):
+    def __init__(self, option_strings, dest, nargs='?', const='data.csv', **kwargs):
+        super(CollectDataAction, self).__init__(option_strings, dest, nargs=nargs, const=const, **kwargs)
+        self.default = {'value': const, 'flag': False}
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values is None:
+            values = self.const
+        setattr(namespace, self.dest, {'value': values, 'flag': True})
 
 def create_parser():
     parser = argparse.ArgumentParser(description='Process some executables.')
@@ -84,7 +95,26 @@ def create_parser():
     parser.add_argument('--time_limit', type=int, default=60, help='Time limit [sec] (default: 60)')
     parser.add_argument('--max_time_limit_exceeded', type=int, default=10,
                                    help='Max time limit exceeded (default: 10)')
+    parser.add_argument('--collect_data', action=CollectDataAction, default='data.csv', help='Store output of solver in csv format (default: \'data.csv\')')
     return parser
+
+dir = "logs"
+def write_data_to_file(filename, data):
+    os.makedirs(dir, exist_ok=True)
+    filepath = os.path.join(dir, filename)
+    if not os.path.exists(filepath):
+        with open(filepath, 'w') as result:
+            result.write(data)
+    else:
+        with open(filepath, 'a') as result:
+            result.write(data)
+
+def clear_file(filename):
+    os.makedirs(dir, exist_ok=True)
+    filepath = os.path.join(dir, filename)
+    if os.path.exists(filepath):
+        with open(filepath, 'w') as result:
+            result.write(' ')
 
 def main():
     parser = create_parser()
@@ -94,54 +124,75 @@ def main():
     time_limit = args.time_limit
     max_time_limit_exceeded = args.max_time_limit_exceeded
 
-    in_dir = "data"
-    out_dir = "reference"
+    collect_data_flag = args.collect_data['flag']
+    collect_data_file_name = args.collect_data['value']
+    if collect_data_flag:
+        clear_file(collect_data_file_name)
+
     checker_file = "verify.py"
 
-    print("file,status,time,return,stderr")
+    if not collect_data_flag:
+        print("file,status,time,return,stderr")
 
     found_error = False
 
-    tles = 0
-    for f in get_instances(in_dir):
-        in_file = os.path.join(in_dir, f)
-        points = 0
+    score = 0
 
-        # run executable on instance
-        return_code, time, stdout, stderr, was_timeout = run_command_with_limit(args.executable, in_file, time_limit)
-        time = "{:.3f}".format(time)
-
-        if not was_timeout and return_code == 0:
-            out_file = os.path.join(out_dir, f.replace(".dimacs", ".reference"))
-
-            assert(os.path.exists(checker_file))
-            if os.path.exists(checker_file):
-                with open("user_out.txt", 'w') as result:
-                    result.write(stdout)
-                result = subprocess.run(["python3", checker_file, in_file, "user_out.txt", out_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                stdout = result.stdout.decode('utf-8')
-                if "OK" in stdout:
-                    status = "OK"
-                else:
-                    status = "Wrong"
-                    stderr += "\n" + stdout + "\n" + stderr
-        elif was_timeout:
-            status = "timelimit"
-            time = ''
-        else:
-            stderr += "\nNon zero exit code"
-            status = "Wrong"
-
-        stderr = re.sub(r"\n", r"[\\n]", stderr)
-        print(f"{f},{status},{time},{return_code},{stderr}", flush=True)
-
-        if status == "Wrong":
-            found_error = True
+    for dataset in ["random", "datacenter", "bio", "dimacs", "pace"]:
+        dataset_score = 0
+        if found_error:
             break
-        if status == "timelimit":
-            tles += 1
-            if tles >= max_time_limit_exceeded:
+        print("Crunching dataset", dataset, file=sys.stderr)
+
+        in_dir = os.path.join("data", dataset)
+
+        tles = 0
+        for f in get_instances(in_dir):
+            in_file = os.path.join(in_dir, f)
+            points = 0
+
+            # run executable on instance
+            return_code, time, stdout, stderr, was_timeout = run_command_with_limit(args.executable, in_file, time_limit)
+            time = "{:.3f}".format(time)
+
+            if not was_timeout and return_code == 0:
+                out_file = in_file.replace(".dimacs", ".reference")
+
+                assert(os.path.exists(checker_file))
+                if os.path.exists(checker_file):
+                    if collect_data_flag:
+                        write_data_to_file(collect_data_file_name, stdout)
+                    result = subprocess.run(["python3", checker_file, in_file, "user_out.txt", out_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    stdout = result.stdout.decode('utf-8')
+                    if "OK" in stdout:
+                        status = "OK"
+                    else:
+                        status = "Wrong"
+                        stderr += "\n" + stdout + "\n" + stderr
+            elif was_timeout:
+                status = "timelimit"
+                time = ''
+            else:
+                stderr += "\nNon zero exit code"
+                status = "Wrong"
+
+            stderr = re.sub(r"\n", r"[\\n]", stderr)
+            print(f"{f},{status},{time},{return_code},{stderr}", flush=True)
+
+            #if status == "Wrong" and not args.collect_data:
+            if status == "Wrong" and not collect_data_flag:
+                found_error = True
                 break
+            elif status == "timelimit":
+                tles += 1
+                if tles >= max_time_limit_exceeded:
+                    break
+            else:
+                score += 1
+                dataset_score += 1
+        print("Dataset score =", dataset_score, file=sys.stderr)
+    print("Final score =", score, file=sys.stderr)
+
 
 if __name__ == '__main__':
     main()

@@ -39,3 +39,5 @@
 **/build
 **/logs
 *user_out.txt
+**/benchmark/data/*
+
