@@ -23,6 +23,7 @@ Where:
 - `time_limit`: (Optional) The time limit for each execution. Default is 60 seconds.
 - `max_limit`: (Optional) The maximum number of times the time limit can be exceeded before the script stops.
   Default is 10.
+- add `--collect_data`(Optional) if you want the output of the solver to be written into a .csv file. Defaul is 'data.csv'
 
 ## Examples:
 
@@ -61,5 +62,3 @@ Where:
 - `time`: Execution time in seconds.
 - `return`: Return code of the program.
 - `stderr`: The output of the program on stderr.
-
-
