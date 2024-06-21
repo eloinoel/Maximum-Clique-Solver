@@ -100,7 +100,6 @@ void test_deg_lists(Graph& G)
         for(Vertex* v : G.deg_lists[i]){
             assert(v->status == UNKNOWN);
             assert(deg(v) == i);
-            //TODO: check deg_idx, list_idx
         }
     }
 
@@ -108,17 +107,23 @@ void test_deg_lists(Graph& G)
     for(Vertex* v : G.V) {
         if (v->status != UNKNOWN)
             continue;
+        assert(deg(v) == v->list_idx);
+        assert(G.deg_lists.size() > deg(v));
         assert(!G.deg_lists[deg(v)].empty());
-        bool found_v = false;
-        for(Vertex* u : G.deg_lists[deg(v)])
+        
+
+        int found_v = -1;
+        for(int i = 0; i < (int) G.deg_lists[v->list_idx].size(); ++i)
         {
+            Vertex* u = G.deg_lists[v->list_idx][i];
             if(u == v)
             {
-                found_v = true;
+                found_v = i;
                 break;
             }
         }
-        assert(found_v);
+        assert(found_v >= 0);
+        assert(found_v == ((int) v->deg_idx));
     }
 
     // check that min_degree and max_degree always point to a valid vertex in deg_lists

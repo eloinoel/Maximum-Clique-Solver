@@ -46,6 +46,8 @@ int SolverViaVC::solve_via_vc(Graph& G)
     //data reduction
     apply_k_core(G, cliqueLB);
 
+    test_graph_consistency(G); //TODO: remove debug
+
     //TODO: Possibly need to exclude vertices from ordering which were excluded by k-core
 
     #if !NDEBUG

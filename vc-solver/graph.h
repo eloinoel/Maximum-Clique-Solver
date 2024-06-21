@@ -218,8 +218,10 @@ public:
     unsigned long long marked = 0;
 
     size_t v_idx = -1; // because id won't match for components/induced subgraph and copying the vertex >could< lead to memory issues
-    size_t deg_idx = -1; // index in degree list, needed to remove without search
-    size_t list_idx = 0;
+    //deg_list[list_idx][deg_idx] = v
+    size_t deg_idx = -1; // index in bucket vector of deg_lists, needed to remove without search
+    size_t list_idx = 0; // index in deg_lists, list_idx = deg(v)
+
 
 
     std::vector<Vertex*> neighbors;
