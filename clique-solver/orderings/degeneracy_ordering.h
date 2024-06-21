@@ -28,3 +28,9 @@ std::pair<std::vector<Vertex*>, std::vector<std::vector<Vertex*>>> degeneracy_or
  */
 int degeneracy(std::vector<Vertex*>& degeneracy_ordering, std::vector<int>& right_degrees);
 int degeneracy(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vector<Vertex*>>& right_neighbourhoods);
+
+/**
+ * @returns degeneracy of the current graph
+ * @note iteratively applies k-core
+ */
+int degeneracy(Graph& G);

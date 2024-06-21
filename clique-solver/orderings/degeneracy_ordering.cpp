@@ -1,5 +1,6 @@
 #include "degeneracy_ordering.h"
 #include "graph.h"
+#include "k_core.h"
 
 using namespace std;
 
@@ -90,6 +91,13 @@ int degeneracy(vector<Vertex*>& degeneracy_ordering, vector<vector<Vertex*>>& ri
     }
     return degeneracy;
 }
+
+int degeneracy(Graph& G)
+{
+    return max_k_core(G);
+}
+
+
 
 //-------------------------- GARBAGE COLLECTION ---------------------------------------
 

@@ -199,10 +199,8 @@ void run_benchmark(SOLVER solver_to_execute){
         default:
             break;
     }
-    auto ordering = degeneracy_ordering(G);
-    int d = degeneracy(ordering.first, ordering.second);
-    int nk_core = max_k_core(G);
-    assert(d == nk_core);
+
+    int d = degeneracy(G);
 
     //TODO: remove this once benchmark is fixed
     std::cout << G.N << ";" << G.M << ";" << G.max_degree << ";" << G.min_degree << ";" << d << std::endl;
