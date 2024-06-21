@@ -13,11 +13,12 @@
 #include "debug_utils.h"
 #include "tests.h"
 
+#define BENCHMARK 1; //TODO: remove once benchmark.sh works
 
 int main(int argc, char**argv){
 
     #ifdef BENCHMARK
-        run_benchmark();
+        run_benchmark(SOLVER::NONE);
         return 0;
     #endif
 

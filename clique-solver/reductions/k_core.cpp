@@ -26,7 +26,7 @@ void apply_k_core(Graph &G, int lowerCliqueBound)
  * @return false if G is not empty
  */
 bool empty_graph(Graph& G){
-    for(vector<Vertex*> candidates_of_same_degree: G.deg_lists){
+    for(vector<Vertex*> candidates_of_same_degree : G.deg_lists){
         for(Vertex* u: candidates_of_same_degree){
             return false;
         }

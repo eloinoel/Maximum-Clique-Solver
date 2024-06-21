@@ -12,6 +12,7 @@
 #include "branch_and_bound.h"
 #include "upper_bounds.h"
 #include "color_branching.h"
+#include "degeneracy_ordering.h"
 
 #define V 1
 #define E 1
@@ -198,6 +199,13 @@ void run_benchmark(SOLVER solver_to_execute){
         default:
             break;
     }
+    auto ordering = degeneracy_ordering(G);
+    int d = degeneracy(ordering.first, ordering.second);
+    int nk_core = max_k_core(G);
+    assert(d == nk_core);
+
+    //TODO: remove this once benchmark is fixed
+    std::cout << G.N << "," << G.M << "," << G.max_degree << "," << G.min_degree << "," << d << std::endl;
     
     //fill output.csv
     // std::vector<unsigned long> times = {get_time(TECHNIQUE::BRANCH_AND_BOUND), get_time(TECHNIQUE::BOUNDING), get_time(TECHNIQUE::COLORING), get_time(TECHNIQUE::K_CORE)};
