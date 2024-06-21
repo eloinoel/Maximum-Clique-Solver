@@ -1,10 +1,10 @@
-#include "branch_and_bound.h"
 #include "upperbounds/upper_bounds.h"
 #include "reductions/k_core.h"
 #include "reductions/color_branching.h"
 #include "../vc-solver/benchmark.h"
 #include "graph.h"
 #include <atomic>
+#include <set>
 /**
  * @brief Get candidate set P
  *
@@ -32,12 +32,6 @@ vector<Vertex*> get_candidates(Graph& G){
  * @param maximum_clique so far (C^*)
  */
 void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^*)
-    #ifdef BENCHMARK
-        if(bnb_timeout < chrono::steady_clock::now()){
-            maximum_clique.clear();
-            return;
-        }
-    #endif
     G.num_branches++;
     G.set_restore();
 
@@ -48,39 +42,18 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
     }
 
     //bounding
-    #ifdef BENCHMARK
-        auto start = chrono::steady_clock::now();
-    #endif
     BOUNDING bounding = upper_bound(G, maximum_clique);
-    #ifdef BENCHMARK
-        auto end = chrono::steady_clock::now();
-        add_time(TECHNIQUE::BOUNDING, start, end);
-    #endif 
     if(bounding == CUTOFF){
         G.restore();
         return;
     }
 
     //reduction of candidate set P
-    #ifdef BENCHMARK
-        start = chrono::steady_clock::now();
-    #endif
     apply_k_core(G, maximum_clique);
-    #ifdef BENCHMARK
-        end = chrono::steady_clock::now();
-        add_time(TECHNIQUE::K_CORE, start, end);
-    #endif 
 
     //reduction of branching set B
     vector<Vertex*> branching_verticies = get_candidates(G);
-    #ifdef BENCHMARK
-        start = chrono::steady_clock::now();
-    #endif
     branching_verticies = reduce_B_by_coloring(G.partial, branching_verticies, maximum_clique);
-    #ifdef BENCHMARK
-        end = chrono::steady_clock::now();
-        add_time(TECHNIQUE::COLORING, start, end);
-    #endif 
 
     //for all v ∈ B
     while(!branching_verticies.empty()){
@@ -115,14 +88,6 @@ void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^
  */
 vector<Vertex*> branch_and_bound_mc(Graph& G){
     std::vector<Vertex*> maximum_clique;
-    #ifdef BENCHMARK
-        auto start = chrono::steady_clock::now();
-    #endif
     branch_and_bound(G,maximum_clique);
-    #ifdef BENCHMARK
-        auto end = chrono::steady_clock::now();
-        add_time(TECHNIQUE::BRANCH_AND_BOUND, start, end);
-    #endif    
-    
     return maximum_clique;
 }
