@@ -19,6 +19,12 @@ void start_solver_threads(execute_bnb bnb_flag, execute_dOmega dOmega_flag)
 }
 
 int main(int argc, char**argv){
+
+    #ifdef BENCHMARK
+        run_benchmark();
+        return 0;
+    #endif
+
     Graph G;
     load_graph(G);
 
@@ -28,10 +34,6 @@ int main(int argc, char**argv){
 
     //size_t vc_size = solve_k(G);
     vector<Vertex*> maximum_clique = branch_and_bound_mc(G);
-
-    #ifdef BENCHMARK
-        save_benchmark_data(G, maximum_clique.size());
-    #endif
 
     #ifdef RELEASE
         //G.output_vc();

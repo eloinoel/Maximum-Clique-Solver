@@ -18,8 +18,7 @@ echo "$line_to_write" > "$output_file"
 
 # iterate over all graphs in data directory
 for file in "$folder_path"/*; do
-    if [ -f "$file" ]; then
-        ./mc_solver < $file
-        echo -n .
-    fi
+    ./mc_solver < $file
+    echo -n .
 done
+echo .

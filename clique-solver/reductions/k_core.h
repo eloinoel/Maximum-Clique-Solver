@@ -19,3 +19,4 @@ class Graph;
 void apply_k_core(Graph &G, std::vector<Vertex*>& maximum_clique);
 void apply_k_core(Graph &G, int lowerCliqueBound);
 
+unsigned long max_k_core(Graph& G);

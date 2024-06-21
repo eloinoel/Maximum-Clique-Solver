@@ -4,7 +4,7 @@
 #include "reductions/color_branching.h"
 #include "../vc-solver/benchmark.h"
 #include "graph.h"
-
+#include <atomic>
 /**
  * @brief Get candidate set P
  *
@@ -32,6 +32,12 @@ vector<Vertex*> get_candidates(Graph& G){
  * @param maximum_clique so far (C^*)
  */
 void branch_and_bound(Graph& G, vector<Vertex*>& maximum_clique){ //BnB(P, C, C^*)
+    #ifdef BENCHMARK
+        if(bnb_timeout < chrono::steady_clock::now()){
+            maximum_clique.clear();
+            return;
+        }
+    #endif
     G.num_branches++;
     G.set_restore();
 

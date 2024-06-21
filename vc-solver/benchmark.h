@@ -3,6 +3,8 @@
 class Graph;
 
 using my_time_point = std::chrono::time_point<std::chrono::high_resolution_clock>;
+extern my_time_point bnb_timeout;
+
 enum class TECHNIQUE{
     BRANCH_AND_BOUND,
     COLORING,
@@ -28,9 +30,7 @@ void add_time(TECHNIQUE key, my_time_point start, my_time_point end);
 double get_time(TECHNIQUE key);
 
 /**
- * @brief writes the calculated data of the benchmark into the output.csv
+ * @brief Loads the graph, runs bnb and writes to Output.csv in build/benchmark/output.csv
  * 
- * @param G 
- * @param maximum_clique_size 
  */
-void save_benchmark_data(Graph& G, unsigned long maximum_clique);
+void run_benchmark();
