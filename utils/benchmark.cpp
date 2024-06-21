@@ -205,7 +205,7 @@ void run_benchmark(SOLVER solver_to_execute){
     assert(d == nk_core);
 
     //TODO: remove this once benchmark is fixed
-    std::cout << G.N << "," << G.M << "," << G.max_degree << "," << G.min_degree << "," << d << std::endl;
+    std::cout << G.N << ";" << G.M << ";" << G.max_degree << ";" << G.min_degree << ";" << d << std::endl;
     
     //fill output.csv
     // std::vector<unsigned long> times = {get_time(TECHNIQUE::BRANCH_AND_BOUND), get_time(TECHNIQUE::BOUNDING), get_time(TECHNIQUE::COLORING), get_time(TECHNIQUE::K_CORE)};

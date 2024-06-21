@@ -78,6 +78,7 @@ def get_instances(in_dir):
 
     return sorted_files
 
+# for custom argument --collect_data
 class CollectDataAction(argparse.Action):
     def __init__(self, option_strings, dest, nargs='?', const='data.csv', **kwargs):
         super(CollectDataAction, self).__init__(option_strings, dest, nargs=nargs, const=const, **kwargs)
@@ -114,7 +115,7 @@ def clear_file(filename):
     filepath = os.path.join(dir, filename)
     if os.path.exists(filepath):
         with open(filepath, 'w') as result:
-            result.write(' ')
+            result.write('')
 
 def main():
     parser = create_parser()
@@ -161,7 +162,8 @@ def main():
                 assert(os.path.exists(checker_file))
                 if os.path.exists(checker_file):
                     if collect_data_flag:
-                        write_data_to_file(collect_data_file_name, stdout)
+                        write_content = in_file.replace("data/", "") + ";" + stdout
+                        write_data_to_file(collect_data_file_name, write_content)
                     result = subprocess.run(["python3", checker_file, in_file, "user_out.txt", out_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     stdout = result.stdout.decode('utf-8')
                     if "OK" in stdout:
