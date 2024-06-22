@@ -117,7 +117,6 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
             complement = get_complement_subgraph(G, right_neighbourhoods[vi->id]);
             complement.UB = vc_UB; //bound search tree
             vc_size = solve(complement);
-            complement.delete_all();
         }
 
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
@@ -131,7 +130,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
             {
                 extract_maximum_clique_solution(complement, vi);
             }
-
+            complement.delete_all();
             return true;
         }
     }
@@ -147,7 +146,6 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         complement = get_complement_subgraph(G, Vf);
         complement.UB = vc_UB; //bound vc search tree
         vc_size = solve(complement);
-        complement.delete_all();
     }
 
     //if G[Vf] has a vertex cover of size qf := p − 1, return true
@@ -157,9 +155,10 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         {
             extract_maximum_clique_solution(complement);
         }
+        complement.delete_all();
         return true;
     }
-
+    complement.delete_all();
     return false;
 }
 
