@@ -11,7 +11,6 @@ bool kernelize(Graph& G){
                 deg0_rule(G);
                 #endif
                 if(deg1_rule(G)) continue;
-                //reduced |= unconfined_rule(G);
                 if(unconfined_rule(G)) continue;
 
                 if(USE_PACK){
@@ -26,11 +25,7 @@ bool kernelize(Graph& G){
                 //if(deg3_rule(G)) continue;
                 if(desk_rule(G)) continue;
                 //if(deg3_rule(G)) continue;
-                //reduced |= domination_rule(G);
-                //reduced |=s unconfined_rule(G);
-                
-                //reduced |= rr_desk(G);
-                //reduced |= unconfined_rule(G);
+               
                 reduced = false;
         }
         //reduced |= deg3_rule(G);
