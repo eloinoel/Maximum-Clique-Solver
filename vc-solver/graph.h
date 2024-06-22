@@ -28,8 +28,8 @@ enum state {UNKNOWN = -1, EXCLUDED, VC, CLIQUE, FOLDED};
 #define FIXED_RNG_SEED 0
 #define USE_MIN_DEG 1
 #define AUTO_DEG0 0
-#define USE_PACK 1
-#define USE_MIRROR 1
+#define USE_PACK 0 //TODO: enable this if confirmed working
+#define USE_MIRROR 0 //TODO: enable this if confirmed working
 #define CLIQUE_SOLVER 1
 
 constexpr bool UPDATE_G_EDGELIST = false;

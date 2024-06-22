@@ -23,7 +23,7 @@ bool kernelize(Graph& G){
 
                 if(deg2_rule(G)) continue;
                 //if(deg3_rule(G)) continue;
-                if(desk_rule(G)) continue;
+                //if(desk_rule(G)) continue;
                 //if(deg3_rule(G)) continue;
                
                 reduced = false;

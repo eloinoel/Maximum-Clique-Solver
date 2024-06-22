@@ -41,12 +41,16 @@ int main(int argc, char**argv){
             max_clique_size = solver.solve_via_vc(G);
             //TODO: remove this debug code
             for(std::string v : solver.maximum_clique){
-                    cout << v << "\n";
+                cout << v << "\n";
             }
             break;
         case SOLVER::BRANCH_AND_BOUND:
             maximum_clique = branch_and_bound_mc(G);
             max_clique_size = maximum_clique.size();
+            //TODO: remove this debug code
+            for(Vertex* v : maximum_clique){
+                cout << G.name_table[v->id] << endl;
+            }
             break;
         case SOLVER::CLISAT:
             print_error("CLISAT not implemented");
@@ -74,7 +78,7 @@ int main(int argc, char**argv){
                 break;
             case SOLVER::BRANCH_AND_BOUND
                 for(Vertex* v : maximum_clique){
-                    cout << G.name_table[v->id] << "\n";
+                    cout << G.name_table[v->id] << endl;
                 }
                 break;
             default:
