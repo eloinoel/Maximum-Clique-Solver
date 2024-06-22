@@ -58,7 +58,6 @@ int main(int argc, char**argv){
     #if !NDEBUG
         print_success("Found maximum clique of size " + std::to_string(max_clique_size));
     #endif
-    print_success("Found maximum clique of size " + std::to_string(max_clique_size));
 
     #ifdef RELEASE
         //G.output_vc();

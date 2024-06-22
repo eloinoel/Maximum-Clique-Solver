@@ -302,6 +302,7 @@ bool unconfined_rule(Graph& G){
                 }
             }
         }
+        deg0_rule(G);
         //prevent having to clear the vector, reuse memory
         if(reduced){
             count = G.N;

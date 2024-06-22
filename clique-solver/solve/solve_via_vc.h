@@ -16,14 +16,19 @@ class SolverViaVC
 //-----------------------Variables-----------------------
 public:
 
-    Graph* G;
-
     std::vector<Vertex*> degeneracy_ordering;
     std::vector<std::vector<Vertex*>> right_neighbourhoods;
     int d;
 
-    int cliqueUB;
-    int cliqueLB;
+    int clique_UB;
+    int clique_LB;
+
+    /** this will be filled after solve_via_vc() is called */
+    std::vector<Vertex*> maximum_clique;
+
+private: 
+    //Graph solution_complement_graph;
+    
 
 //-----------------------Functions-----------------------
 public:

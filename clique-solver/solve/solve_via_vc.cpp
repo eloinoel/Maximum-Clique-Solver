@@ -12,12 +12,14 @@ using namespace std;
 
 //TODO: store the MC solution for output
 //TODO: store complement graphs for each right neighbourhood
+//TODO: sort first n-d vertices in ordering by right degree
 //TODO: maybe optimise subgraph/complement graph construction
 //TODO: use better data reductions
 //TODO: make better use of lower and upper Bounds, eg. heuristical lower bound
 int SolverViaVC::solve_via_vc(Graph& G)
 {
-    #if !NDEBUG
+    //solution_complement_graph = Graph();
+    #if DEBUG
         print_success("Starting MC solver using VC solver");
         size_t initial_N = G.N;
         size_t initial_M = G.M;
@@ -31,37 +33,44 @@ int SolverViaVC::solve_via_vc(Graph& G)
     right_neighbourhoods = move(result.second);
     d = degeneracy(degeneracy_ordering, right_neighbourhoods);
 
-    #if !NDEBUG
+    #if DEBUG
         cout << "Graph with N=" << initial_N << " and M=" << initial_M << " has degeneracy d=" << d << std::endl;
     #endif
 
     //check lower and upper bounds
-    cliqueUB = degeneracy_UB(d);
-    cliqueLB = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoods);
+    clique_UB = degeneracy_UB(d);
+    clique_LB = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoods);
 
-    #if !NDEBUG
-        cout << "Computed LB=" << cliqueLB << ", UB=" << cliqueUB << std::endl;
+    #if DEBUG
+        cout << "Computed LB=" << clique_LB << ", UB=" << clique_UB << std::endl;
     #endif
 
     //data reduction
-    //apply_k_core(G, cliqueLB);
+    //apply_k_core(G, clique_LB);
 
     //test_graph_consistency(G); //TODO: remove debug
 
-    //TODO: Possibly need to exclude vertices from ordering which were excluded by k-core
+    //TODO: Possibly need to exclude vertices from ordering which were excluded by k-core or compute max k-core before ordering
 
-    #if !NDEBUG
+    #if DEBUG
         cout << "Applied Data Reductions. new_N=" << G.N << ", new_M=" << G.M << std::endl;
     #endif
 
-    for(int p = cliqueUB; p >= cliqueLB; p--)
+    // for(int p = clique_UB; p >= clique_LB; p--)
+    // {
+    //     if(solve_via_vc_for_p(G, p))
+    //     {
+    //         return clique_UB - p;
+    //     }
+    // }
+    for(int p = 0; p < clique_UB - clique_LB; p++)
     {
         if(solve_via_vc_for_p(G, p))
         {
-            return cliqueUB - p;
+            return clique_UB - p;
         }
     }
-    return cliqueLB;
+    return clique_LB;
 }
 
 Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set)
@@ -69,7 +78,7 @@ Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set)
     G.set_restore();
     G.MM_induced_subgraph(induced_set);
     Graph complement = G.complementary_graph(G);
-    test_graph_consistency(complement); //TODO: remove debug
+    //test_graph_consistency(complement); //TODO: remove debug
     G.restore();
     return complement;
 }
