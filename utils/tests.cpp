@@ -47,18 +47,21 @@ void test_N_M(Graph& G)
 
 void test_min_max_degree(Graph& G)
 {
-    int max_deg = -1;
-    size_t min_deg = numeric_limits<int>::max();
-    for(Vertex* v : G.V){
-        if(v->status != UNKNOWN)
-            continue;
-        if((int) deg(v) > max_deg)
-            max_deg = (int) deg(v);
-        if(deg(v) < min_deg)
-            min_deg = deg(v);
+    if(G.N > 0)
+    {
+        int max_deg = -1;
+        size_t min_deg = numeric_limits<int>::max();
+        for(Vertex* v : G.V){
+            if(v->status != UNKNOWN)
+                continue;
+            if((int) deg(v) > max_deg)
+                max_deg = (int) deg(v);
+            if(deg(v) < min_deg)
+                min_deg = deg(v);
+        }
+        assert(max_deg == (int) G.max_degree);
+        assert(min_deg == G.min_degree);
     }
-    assert(max_deg == (int) G.max_degree);
-    assert(min_deg == G.min_degree);
     print_success("Passed max/min degree test");
 }
 

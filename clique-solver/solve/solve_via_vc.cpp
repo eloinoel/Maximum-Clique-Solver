@@ -64,6 +64,16 @@ int SolverViaVC::solve_via_vc(Graph& G)
     return cliqueLB;
 }
 
+Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set)
+{
+    G.set_restore();
+    G.MM_induced_subgraph(induced_set);
+    Graph complement = G.complementary_graph(G);
+    test_graph_consistency(complement); //TODO: remove debug
+    G.restore();
+    return complement;
+}
+
 bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
 {
     //get candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}
@@ -71,15 +81,16 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
 
     for(size_t i = 0; i < D.size(); ++i)
     {
+        int vc_size = 0;
         // a) construct ¬G[Vi], where Vi is the right-neighborhood of vi
-        G.set_restore();
-        G.MM_induced_subgraph(right_neighbourhoods[i]);
-        Graph complement = G.complementary_graph(G);
-        test_graph_consistency(complement); //TODO: remove debug
-        G.restore();
+        if(right_neighbourhoods[i].size() > 0)
+        {
+            Graph complement = get_complement_subgraph(G, right_neighbourhoods[i]);
+            vc_size = solve(complement);
+        }
+
 
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
-        int vc_size = solve(complement);
         if(vc_size == (int) (right_neighbourhoods[i].size() + p - d))
         {
             return true;
@@ -88,15 +99,15 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
 
     // if we can't find mc from right neighbourhoods, take remaining vertices in ordering
     // construct ¬G[Vf], where Vf = {vf , . . . , vn} and f := n − d + 1
-    G.set_restore();
     auto Vf = get_remaining_set();
-    G.MM_induced_subgraph(Vf);
-    Graph complement = G.complementary_graph(G);
-    test_graph_consistency(complement); //TODO: remove debug
-    G.restore();
+    int vc_size = 0;
+    if(Vf.size() > 0)
+    {
+        Graph complement = get_complement_subgraph(G, Vf);
+        vc_size = solve(complement);
+    }
 
     //if G[Vf] has a vertex cover of size qf := p − 1, return true
-    int vc_size = solve(complement);
     if(vc_size == (int) p - 1)
     {
         return true;
