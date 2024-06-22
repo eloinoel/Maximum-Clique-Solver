@@ -17,18 +17,29 @@ int degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, cons
     return lower_bound;
 }
 
-int degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<vector<Vertex*>>& right_neighbourhoods)
+std::vector<Vertex*> degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<vector<Vertex*>>& right_neighbourhoods)
 {
-    int lower_bound = 0;
+    // find lower bound
     int n = degeneracy_ordering.size();
-    for(int i = 0; i < n; ++i)
+    int i;
+    for(i = 0; i < n; ++i)
     {
         int num_right_vertices = n - i - 1;
         int v_right_degree = right_neighbourhoods[degeneracy_ordering[i]->id].size();
-        if(v_right_degree == num_right_vertices) //found a clique
+        if(v_right_degree == num_right_vertices) //{vertex} ∪ rN(vertex) => clique
         {
-            return n - i; //{vertex} ∪ rN(vertex) => clique
+            break;
         }
     }
-    return lower_bound;
+
+    // extract LB clique
+    int lower_bound = n - i; //{vertex} ∪ rN(vertex) => clique
+    std::vector<Vertex*> LBclique = std::vector<Vertex*>();
+    LBclique.push_back(degeneracy_ordering[i]);
+    for(Vertex* v : right_neighbourhoods[degeneracy_ordering[i]->id])
+    {
+        LBclique.push_back(v);
+    }
+
+    return LBclique;
 }

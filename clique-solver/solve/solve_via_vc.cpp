@@ -40,7 +40,9 @@ int SolverViaVC::solve_via_vc(Graph& G)
 
     //check lower and upper bounds
     clique_UB = degeneracy_UB(d);
-    clique_LB = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoods);
+    auto LB_maximum_clique = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoods);
+    clique_LB = (int) LB_maximum_clique.size();
+    
 
     #if DEBUG
         cout << "Computed LB=" << clique_LB << ", UB=" << clique_UB << std::endl;
@@ -66,7 +68,14 @@ int SolverViaVC::solve_via_vc(Graph& G)
     // }
     if(clique_LB == clique_UB)
     {
-        // TODO: extract solution
+        //copy Vertex* vector to solution string vector
+        maximum_clique = std::vector<std::string>();
+        for(size_t i = 0; i < LB_maximum_clique.size(); ++i)
+        {
+            Vertex* v = LB_maximum_clique[i];
+            size_t v_id = LB_maximum_clique[i]->id;
+            maximum_clique.push_back(G.name_table[v_id]);
+        }
         return clique_LB;
     }
 

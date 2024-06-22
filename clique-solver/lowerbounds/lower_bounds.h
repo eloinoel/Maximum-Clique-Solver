@@ -11,4 +11,4 @@ class Vertex;
  * @returns degeneracy of the current graph
  */
 int degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<int>& right_degrees);
-int degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<std::vector<Vertex*>>& right_neighbourhoods);
+std::vector<Vertex*> degeneracy_ordering_LB(const std::vector<Vertex*>& degeneracy_ordering, const std::vector<std::vector<Vertex*>>& right_neighbourhoods);
