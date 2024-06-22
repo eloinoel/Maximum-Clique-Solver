@@ -77,6 +77,8 @@ void branch(Graph& G){
 int solve(Graph& G){
     G.set_restore();
     kernelize(G);
+    if(G.max_degree == 0)
+        return G.sol_size;
     G.UB = G.N + G.sol_size;
     branch(G);
     if(G.max_degree == 0){
