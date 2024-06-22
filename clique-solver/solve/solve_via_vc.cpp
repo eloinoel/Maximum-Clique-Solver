@@ -189,6 +189,6 @@ void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, string
         }
     }
 
-    if(ordering_vertex_name == "")
+    if(ordering_vertex_name != "")
         maximum_clique.push_back(ordering_vertex_name);
 }
