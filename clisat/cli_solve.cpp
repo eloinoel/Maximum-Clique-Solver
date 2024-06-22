@@ -1,4 +1,5 @@
-#include "solve.h"
+#include "cli_solve.h"
+#include "graph.h"
 
 
 void solve_clique(Graph& G){

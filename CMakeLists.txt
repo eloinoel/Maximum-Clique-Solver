@@ -66,7 +66,7 @@ add_executable(mc_solver
     clique-solver/solve/solve_via_vc.cpp
     
     clisat/partial_max_sat/partial_max_sat.cpp
-    clisat/solve.cpp
+    clisat/cli_solve.cpp
     clisat/find_max_clique.cpp
     clisat/pruning/ISEQ.cpp
     clisat/ordering/degeneracy_ordering.cpp

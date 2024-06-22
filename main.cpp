@@ -12,9 +12,10 @@
 #include "solve_via_vc.h"
 #include "debug_utils.h"
 #include "tests.h"
+#include "cli_solve.h"
 
 #define BENCHMARK 0; //TODO: remove once benchmark.sh works
-#define ACTIVE_SOLVER SOLVER::VIA_VC
+#define ACTIVE_SOLVER SOLVER::CLISAT
 
 int main(int argc, char**argv){
 
@@ -57,7 +58,7 @@ int main(int argc, char**argv){
             }
             break;
         case SOLVER::CLISAT:
-            print_error("CLISAT not implemented");
+            solve_clique(G);
             break;
         default:
             print_warning("No solver selected");
@@ -84,6 +85,9 @@ int main(int argc, char**argv){
                 for(Vertex* v : maximum_clique){
                     cout << G.name_table[v->id] << endl;
                 }
+                break;
+            case SOLVER::CLISAT:
+                // NOTE: CLISAT solver prints the maximum clique in the function itself
                 break;
             default:
                 print_warning("No solver selected");
