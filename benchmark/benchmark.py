@@ -6,6 +6,10 @@ import sys
 
 import subprocess
 
+# verify_path = os.path.realpath(
+#     os.path.join(os.getcwd(), os.path.dirname(__file__)))
+# from verify import read_solution_size
+
 
 def run_command_with_limit(cmd, input_file, timeout):
     """
@@ -116,6 +120,7 @@ def clear_file(filename):
     if os.path.exists(filepath):
         with open(filepath, 'w') as result:
             result.write('')
+            
 
 def main():
     parser = create_parser()
@@ -161,9 +166,9 @@ def main():
 
                 assert(os.path.exists(checker_file))
                 if os.path.exists(checker_file):
-                    if collect_data_flag:
-                        write_content = in_file.replace("data/", "") + ";" + stdout
-                        write_data_to_file(collect_data_file_name, write_content)
+                    with open("user_out.txt", "w") as result:
+                        result.write(stdout)
+                    collected_data = stdout
                     result = subprocess.run(["python3", checker_file, in_file, "user_out.txt", out_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     stdout = result.stdout.decode('utf-8')
                     if "OK" in stdout:
@@ -171,6 +176,14 @@ def main():
                     else:
                         status = "Wrong"
                         stderr += "\n" + stdout + "\n" + stderr
+                    # this writes the output from the solver to the file in /logs folder
+                    if collect_data_flag:
+                        tmp = stdout.split(',')
+                        solution_size = "-1"
+                        if len(tmp) > 0:
+                            solution_size = tmp[0]
+                        write_content = in_file.replace("data/", "") + ";" + str(solution_size) + ";" + collected_data
+                        write_data_to_file(collect_data_file_name, write_content)
             elif was_timeout:
                 status = "timelimit"
                 time = ''

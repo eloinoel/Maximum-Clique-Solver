@@ -98,6 +98,7 @@ for v in C:
 
 errors = list(sorted(errors))
 
+print(reference_sol, end=',')
 if len(errors) > 0:
     print("WRONG\n"+",".join(errors))
     sys.exit(1)
