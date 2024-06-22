@@ -80,7 +80,7 @@ int main(int argc, char**argv){
                     cout << v << "\n";
                 }
                 break;
-            case SOLVER::BRANCH_AND_BOUND
+            case SOLVER::BRANCH_AND_BOUND:
                 for(Vertex* v : maximum_clique){
                     cout << G.name_table[v->id] << endl;
                 }

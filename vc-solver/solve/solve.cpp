@@ -48,12 +48,17 @@ bool vc_branch(Graph& G){
 
 void branch(Graph& G){
     if(G.old_LB >= G.UB){
-        cout << "cut by old\n";
         return;
     }
     G.num_branches++;
-    if(kernelize(G))
+    if(kernelize(G)){
+        if(G.sol_size < G.UB){
+            G.set_current_vc();
+            G.best_found = G.num_branches;
+        }
+        G.UB = min(G.sol_size, G.UB);
         return;
+    }
     //auto lb = basic_clique_cover(G);
     auto lb2 = block_clique_cover(G);
     //auto lb3 = (lb2 >= G.UB)? lb2 : iterated_greedy_clique(G);
@@ -118,16 +123,12 @@ int solve(Graph& G){
     
     if(G.max_degree == 0){
         G.set_current_vc();
-        return G.sol_size;
+        return G.partial.size();
     }
 
     G.UB = G.N + G.sol_size;
     branch(G);
-    if(G.max_degree == 0){
-        return true;
-    }
-
-
+    
     return G.UB;
 
 }
