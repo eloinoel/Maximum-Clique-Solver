@@ -130,9 +130,9 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
             {
                 extract_maximum_clique_solution(complement, vi);
             }
-            complement.delete_all();
             return true;
         }
+        complement.delete_all();
     }
 
     // if we can't find mc from right neighbourhoods, take remaining vertices in ordering
@@ -155,7 +155,6 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         {
             extract_maximum_clique_solution(complement);
         }
-        complement.delete_all();
         return true;
     }
     complement.delete_all();
