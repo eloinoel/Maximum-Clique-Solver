@@ -12,6 +12,7 @@ Vertex* Graph::add_vertex(size_t id){
     v->v_idx = V.size();
     V.push_back(v);
     total_N++;
+    update_deglists(v);
     return v;
 }
 

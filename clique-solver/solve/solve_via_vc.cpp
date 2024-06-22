@@ -15,7 +15,7 @@ using namespace std;
 //TODO: maybe optimise subgraph/complement graph construction
 //TODO: use better data reductions
 //TODO: make better use of lower and upper Bounds, eg. heuristical lower bound
-int SolverViaVC::solve(Graph& G)
+int SolverViaVC::solve_via_vc(Graph& G)
 {
     #if !NDEBUG
         print_success("Starting MC solver using VC solver");
@@ -44,9 +44,9 @@ int SolverViaVC::solve(Graph& G)
     #endif
 
     //data reduction
-    apply_k_core(G, cliqueLB);
+    //apply_k_core(G, cliqueLB);
 
-    test_graph_consistency(G); //TODO: remove debug
+    //test_graph_consistency(G); //TODO: remove debug
 
     //TODO: Possibly need to exclude vertices from ordering which were excluded by k-core
 
@@ -92,6 +92,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
     auto Vf = get_remaining_set();
     G.MM_induced_subgraph(Vf);
     Graph complement = G.complementary_graph(G);
+    test_graph_consistency(complement); //TODO: remove debug
     G.restore();
 
     //if G[Vf] has a vertex cover of size qf := p − 1, return true

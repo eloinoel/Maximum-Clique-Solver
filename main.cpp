@@ -13,14 +13,15 @@
 #include "debug_utils.h"
 #include "tests.h"
 
-#define BENCHMARK 1; //TODO: remove once benchmark.sh works
+#define BENCHMARK 0; //TODO: remove once benchmark.sh works
+#define ACTIVE_SOLVER SOLVER::VIA_VC
 
 int main(int argc, char**argv){
 
-    #ifdef BENCHMARK
-        run_benchmark(SOLVER::NONE);
-        return 0;
-    #endif
+    // #ifdef BENCHMARK
+    //     run_benchmark(ACTIVE_SOLVER);
+    //     return 0;
+    // #endif
 
     Graph G;
     load_graph(G);
@@ -31,14 +32,33 @@ int main(int argc, char**argv){
         G.timer.start("solve");
     #endif
 
+    SolverViaVC solver;
+    vector<Vertex*> maximum_clique;
+    int max_clique_size = -1;
+    switch(ACTIVE_SOLVER){
+        case SOLVER::VIA_VC:
+            solver = SolverViaVC();
+            max_clique_size = solver.solve_via_vc(G);
+            break;
+        case SOLVER::BRANCH_AND_BOUND:
+            maximum_clique = branch_and_bound_mc(G);
+            max_clique_size = maximum_clique.size();
+            break;
+        case SOLVER::CLISAT:
+            print_error("CLISAT not implemented");
+            break;
+        default:
+            print_warning("No solver selected");
+            break;
+    }
     //size_t vc_size = solve_k(G);
-    vector<Vertex*> maximum_clique = branch_and_bound_mc(G);
-    //SolverViaVC solver = SolverViaVC();
-    //int max_clique_size = solver.solve_via_vc(G);
+    //vector<Vertex*> maximum_clique = branch_and_bound_mc(G);
 
-    // #if !NDEBUG
-    //     print_success("Found maximum clique of size " + std::to_string(max_clique_size));
-    // #endif
+
+    #if !NDEBUG
+        print_success("Found maximum clique of size " + std::to_string(max_clique_size));
+    #endif
+    print_success("Found maximum clique of size " + std::to_string(max_clique_size));
 
     #ifdef RELEASE
         //G.output_vc();

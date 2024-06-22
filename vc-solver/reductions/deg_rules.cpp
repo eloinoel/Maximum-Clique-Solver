@@ -25,7 +25,7 @@ void deg1_rule_single(Graph& G){
 
 bool deg1_rule(Graph& G){
     bool reduced = false;
-    while(!G.deg_lists[1].empty()){
+    while(G.max_degree >= 1 && !G.deg_lists[1].empty()){
         deg1_rule_single(G);
         reduced = true;
     }
