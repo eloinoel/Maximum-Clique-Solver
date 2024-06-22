@@ -39,6 +39,10 @@ int main(int argc, char**argv){
         case SOLVER::VIA_VC:
             solver = SolverViaVC();
             max_clique_size = solver.solve_via_vc(G);
+            //TODO: remove this debug code
+            for(std::string v : solver.maximum_clique){
+                    cout << v << "\n";
+            }
             break;
         case SOLVER::BRANCH_AND_BOUND:
             maximum_clique = branch_and_bound_mc(G);
@@ -56,7 +60,7 @@ int main(int argc, char**argv){
 
 
     #if !NDEBUG
-        print_success("Found maximum clique of size " + std::to_string(max_clique_size));
+        //print_success("Found maximum clique of size " + std::to_string(max_clique_size));
     #endif
 
     #ifdef RELEASE

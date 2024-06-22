@@ -11,7 +11,7 @@ bool kernelize(Graph& G){
                 deg0_rule(G);
                 #endif
                 if(deg1_rule(G)) continue;
-                if(unconfined_rule(G)) continue;
+                //if(unconfined_rule(G)) continue;
 
                 if(USE_PACK){
                     int p = packing_rule(G);

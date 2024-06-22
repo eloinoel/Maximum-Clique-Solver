@@ -165,7 +165,7 @@ vector<Vertex*> SolverViaVC::get_remaining_set()
 void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, string ordering_vertex_name)
 {
     assert(complementGraph.sol_size == (int) complementGraph.partial.size());
-    maximum_clique = vector<string>(complementGraph.N - complementGraph.sol_size);
+    maximum_clique = std::vector<std::string>();
 
     //fill maximum_clique
     size_t i = 0;
@@ -183,8 +183,9 @@ void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, string
         if(!v_in_vc)
         {
             assert(v->id < complementGraph.name_table.size());
-            assert(i < maximum_clique.size());
-            maximum_clique[i] = complementGraph.name_table[v->id];
+            //assert(i < maximum_clique.size());
+            //maximum_clique[i] = complementGraph.name_table[v->id];
+            maximum_clique.push_back(complementGraph.name_table[v->id]);
             ++i;
         }
     }
