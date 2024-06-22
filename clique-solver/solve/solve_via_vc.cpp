@@ -110,22 +110,23 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         int vc_size = 0;
         Graph complement;
         // a) construct ¬G[Vi], where Vi is the right-neighborhood of vi
-        if(right_neighbourhoods[i].size() > 0)
+        Vertex* vi = D[i];
+        if(right_neighbourhoods[vi->id].size() > 0)
         {
-            complement = get_complement_subgraph(G, right_neighbourhoods[i]);
+            complement = get_complement_subgraph(G, right_neighbourhoods[vi->id]);
             vc_size = solve(complement);
         }
 
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
-        if(vc_size == (int) (right_neighbourhoods[i].size() + p - d))
+        if(vc_size == (int) (right_neighbourhoods[vi->id].size() + p - d))
         {
-            if(right_neighbourhoods[i].empty())
+            if(right_neighbourhoods[vi->id].empty())
             {
-                maximum_clique.push_back(G.name_table[D[i]->id]);
+                maximum_clique.push_back(G.name_table[vi->id]);
             }
             else
             {
-                extract_maximum_clique_solution(complement, D[i]);
+                extract_maximum_clique_solution(complement, vi);
             }
 
             return true;
