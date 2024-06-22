@@ -228,7 +228,7 @@ bool unconfined_rule(Graph& G){
             full:
             continue;
         }
-    }while(reduced && G.k > 0);
+    }while(reduced);
 
     #if !AUTO_DEG0
     deg0_rule(G);

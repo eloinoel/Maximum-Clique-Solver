@@ -3,6 +3,8 @@
 void kernelize(Graph& G){
     bool reduced = true;
     while(reduced){
+        if(G.max_degree == 0)
+            return;
         reduced = false;
         #if !AUTO_DEG0
         deg0_rule(G);

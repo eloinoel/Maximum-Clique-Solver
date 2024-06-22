@@ -75,7 +75,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         G.set_restore();
         G.MM_induced_subgraph(right_neighbourhoods[i]);
         Graph complement = G.complementary_graph(G);
-        test_graph_consistency(complement); //TODO: remove debug
+        //test_graph_consistency(complement); //TODO: remove debug
         G.restore();
 
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
