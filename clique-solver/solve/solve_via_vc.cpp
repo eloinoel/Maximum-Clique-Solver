@@ -125,7 +125,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
             }
             else
             {
-                extract_maximum_clique_solution(complement, G.name_table[D[i]->id]);
+                extract_maximum_clique_solution(complement, D[i]);
             }
 
             return true;
@@ -180,21 +180,29 @@ vector<Vertex*> SolverViaVC::get_remaining_set()
 }
 
 //MARK: EXTRACT SOLUTION
-void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, string ordering_vertex_name)
+void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, Vertex* o)
 {
     assert(complementGraph.sol_size == (int) complementGraph.partial.size());
 
     //TODO: remove debug
-    std::cout << RED << "---------- complement graph VC ----------" << RESET << std::endl;
+    /*std::cout << RED << "---------- complement graph VC ----------" << RESET << std::endl;
     for(size_t i = 0; i < complementGraph.partial.size(); ++i)
     {
         std::cout << RED << complementGraph.name_table[complementGraph.partial[i]->id] << RESET << std::endl;
-    }
-    maximum_clique = std::vector<std::string>();
-
+    }*/
+    //maximum_clique = std::vector<std::string>();
+    vector<Vertex*> max_clique;
     //fill maximum_clique
     size_t i = 0;
-    for(Vertex* v : complementGraph.V)
+    auto mark_sol = complementGraph.new_timestamp();
+    for(Vertex* v : complementGraph.partial)
+        v->marked = mark_sol;
+    
+    for(Vertex* v : complementGraph.V){
+        if(v->marked != mark_sol)
+            max_clique.push_back(v);
+    }
+    /*for(Vertex* v : complementGraph.V)
     {
         bool v_in_vc = false;
         for(Vertex* u : complementGraph.partial)
@@ -213,10 +221,15 @@ void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, string
             maximum_clique.push_back(complementGraph.name_table[v->id]);
             ++i;
         }
+    }*/
+
+    if(o)
+        max_clique.push_back(o);
+
+    for(Vertex* v : max_clique){
+        maximum_clique.push_back(complementGraph.name_table[v->id]);
     }
 
-    if(ordering_vertex_name != "")
-        maximum_clique.push_back(ordering_vertex_name);
 }
 
 

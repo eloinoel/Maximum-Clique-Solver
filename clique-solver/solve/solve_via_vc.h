@@ -73,7 +73,7 @@ private:
      * @param ordering_vertex vertex which induced the complementGraph with its right-neighbourhood
      * @note stores solution in this.maximum_clique, O(complement.V * vc_size)
      */
-    void extract_maximum_clique_solution(Graph& complementGraph, std::string ordering_vertex_name = "");
+    void extract_maximum_clique_solution(Graph& complementGraph, Vertex* o = nullptr);
 
     Vertex* get_vertex_by_name(Graph& G, std::string name);
 };
