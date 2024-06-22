@@ -42,9 +42,9 @@ int main(int argc, char**argv){
             solver = SolverViaVC();
             max_clique_size = solver.solve_via_vc(G);
             //TODO: remove this debug code
-            for(std::string v : solver.maximum_clique){
-                cout << v << endl;
-            }
+            // for(std::string v : solver.maximum_clique){
+            //     cout << v << endl;
+            // }
             //print_success("Found maximum clique of size " + std::to_string(max_clique_size));
             //tmp_mc = solver.convert_vertex_list(G, solver.maximum_clique);
             //assert(solver.is_clique(tmp_mc));
@@ -53,10 +53,10 @@ int main(int argc, char**argv){
             maximum_clique = branch_and_bound_mc(G);
             max_clique_size = maximum_clique.size();
             //TODO: remove this debug code
-            for(Vertex* v : maximum_clique){
-                cout << G.name_table[v->id] << endl;
-            }
-            break;
+            // for(Vertex* v : maximum_clique){
+            //     cout << G.name_table[v->id] << endl;
+            // }
+            // break;
         case SOLVER::CLISAT:
             solve_clique(G);
             break;

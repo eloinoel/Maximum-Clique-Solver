@@ -79,7 +79,7 @@ int SolverViaVC::solve_via_vc(Graph& G)
         return clique_LB;
     }
 
-    for(int p = 0; p < clique_UB; p++)
+    for(int p = 0; p < clique_UB; p++) //TODO: check if this can be reduced
     {
         if(solve_via_vc_for_p(G, p))
         {
@@ -111,10 +111,13 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         Graph complement;
         // a) construct ¬G[Vi], where Vi is the right-neighborhood of vi
         Vertex* vi = D[i];
+        size_t vc_UB = (right_neighbourhoods[vi->id].size() + p - d) + 1;
         if(right_neighbourhoods[vi->id].size() > 0)
         {
             complement = get_complement_subgraph(G, right_neighbourhoods[vi->id]);
+            complement.UB = vc_UB; //bound search tree
             vc_size = solve(complement);
+            complement.delete_all();
         }
 
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
@@ -138,10 +141,13 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
     auto Vf = get_remaining_set();
     int vc_size = 0;
     Graph complement;
+    size_t vc_UB = p;
     if(Vf.size() > 0)
     {
         complement = get_complement_subgraph(G, Vf);
+        complement.UB = vc_UB; //bound vc search tree
         vc_size = solve(complement);
+        complement.delete_all();
     }
 
     //if G[Vf] has a vertex cover of size qf := p − 1, return true
@@ -183,7 +189,6 @@ vector<Vertex*> SolverViaVC::get_remaining_set()
 //MARK: EXTRACT SOLUTION
 void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, Vertex* o)
 {
-    assert(complementGraph.sol_size == (int) complementGraph.partial.size());
 
     //TODO: remove debug
     /*std::cout << RED << "---------- complement graph VC ----------" << RESET << std::endl;
