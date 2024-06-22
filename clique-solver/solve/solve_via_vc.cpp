@@ -79,7 +79,7 @@ int SolverViaVC::solve_via_vc(Graph& G)
         return clique_LB;
     }
 
-    for(int p = 0; p < clique_UB - clique_LB; p++)
+    for(int p = 0; p < clique_UB; p++)
     {
         if(solve_via_vc_for_p(G, p))
         {
