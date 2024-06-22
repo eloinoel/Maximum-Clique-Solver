@@ -62,8 +62,20 @@ int main(int argc, char**argv){
     #ifdef RELEASE
         //G.output_vc();
         //print maximum clique
-        for(Vertex* v : maximum_clique){
-            cout << G.name_table[v->id] << "\n";
+        switch(ACTIVE_SOLVER){
+            case SOLVER::VIA_VC:
+                for(std::string v : solver.maximum_clique){
+                    cout << v << "\n";
+                }
+                break;
+            case SOLVER::BRANCH_AND_BOUND
+                for(Vertex* v : maximum_clique){
+                    cout << G.name_table[v->id] << "\n";
+                }
+                break;
+            default:
+                print_warning("No solver selected");
+                break;
         }
     #endif
 

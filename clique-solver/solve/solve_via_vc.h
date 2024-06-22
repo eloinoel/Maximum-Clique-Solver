@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <cstddef>
+#include <string>
 
 class Graph;
 class Vertex;
@@ -23,8 +24,10 @@ public:
     int clique_UB;
     int clique_LB;
 
-    /** this will be filled after solve_via_vc() is called */
-    std::vector<Vertex*> maximum_clique;
+    /** 
+     * this will be filled after solve_via_vc() is called 
+     * */
+    std::vector<std::string> maximum_clique;
 
 private: 
     //Graph solution_complement_graph;
@@ -61,4 +64,11 @@ private:
      * @returns Returns a remaining set R = {vi ∈ V | i > n − d}
      */
     std::vector<Vertex*> get_remaining_set();
+
+    /**
+     * @param complementGraph graph where vertex cover was solved for
+     * @param ordering_vertex vertex which induced the complementGraph with its right-neighbourhood
+     * @note stores solution in this.maximum_clique, O(complement.V * vc_size)
+     */
+    void extract_maximum_clique_solution(Graph& complementGraph, std::string ordering_vertex_name = "");
 };

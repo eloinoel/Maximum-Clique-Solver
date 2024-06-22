@@ -91,10 +91,11 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
     for(size_t i = 0; i < D.size(); ++i)
     {
         int vc_size = 0;
+        Graph complement;
         // a) construct ¬G[Vi], where Vi is the right-neighborhood of vi
         if(right_neighbourhoods[i].size() > 0)
         {
-            Graph complement = get_complement_subgraph(G, right_neighbourhoods[i]);
+            complement = get_complement_subgraph(G, right_neighbourhoods[i]);
             vc_size = solve(complement);
         }
 
@@ -102,6 +103,14 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
         if(vc_size == (int) (right_neighbourhoods[i].size() + p - d))
         {
+            if(right_neighbourhoods[i].empty())
+            {
+                maximum_clique.push_back(G.name_table[D[i]->id]);
+            }
+            else
+            {
+                extract_maximum_clique_solution(complement, G.name_table[D[i]->id]);
+            }
             return true;
         }
     }
@@ -110,15 +119,20 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
     // construct ¬G[Vf], where Vf = {vf , . . . , vn} and f := n − d + 1
     auto Vf = get_remaining_set();
     int vc_size = 0;
+    Graph complement;
     if(Vf.size() > 0)
     {
-        Graph complement = get_complement_subgraph(G, Vf);
+        complement = get_complement_subgraph(G, Vf);
         vc_size = solve(complement);
     }
 
     //if G[Vf] has a vertex cover of size qf := p − 1, return true
     if(vc_size == (int) p - 1)
     {
+        if(Vf.size() > 0)
+        {
+            extract_maximum_clique_solution(complement);
+        }
         return true;
     }
 
@@ -146,4 +160,35 @@ vector<Vertex*> SolverViaVC::get_remaining_set()
         R.push_back(degeneracy_ordering[i]);
     }
     return R;
+}
+
+void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, string ordering_vertex_name)
+{
+    assert(complementGraph.sol_size == (int) complementGraph.partial.size());
+    maximum_clique = vector<string>(complementGraph.N - complementGraph.sol_size);
+
+    //fill maximum_clique
+    size_t i = 0;
+    for(Vertex* v : complementGraph.V)
+    {
+        bool v_in_vc = false;
+        for(Vertex* u : complementGraph.partial)
+        {
+            if(v == u)
+            {
+                v_in_vc = true;
+                break;
+            }
+        }
+        if(!v_in_vc)
+        {
+            assert(v->id < complementGraph.name_table.size());
+            assert(i < maximum_clique.size());
+            maximum_clique[i] = complementGraph.name_table[v->id];
+            ++i;
+        }
+    }
+
+    if(ordering_vertex_name == "")
+        maximum_clique.push_back(ordering_vertex_name);
 }
