@@ -296,13 +296,17 @@ bool unconfined_rule(Graph& G){
             Vertex* v = V[i];
             if(deg(v) > 0 && v->status == UNKNOWN){
                 if(is_unconfined(G, v)){
+                    if(USE_PACK)
+                        add_selected_constraint(G, v);
                     G.MM_vc_add_vertex(v);
+                    deg0_rule(G);
                     reduced = true;
                     reduced_once = true;
                 }
             }
         }
         deg0_rule(G);
+        //deg1_rule(G);
         //prevent having to clear the vector, reuse memory
         if(reduced){
             count = G.N;

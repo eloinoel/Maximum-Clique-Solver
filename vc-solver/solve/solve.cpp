@@ -47,27 +47,65 @@ bool vc_branch(Graph& G){
 }
 
 void branch(Graph& G){
+    if(G.old_LB >= G.UB){
+        cout << "cut by old\n";
+        return;
+    }
     G.num_branches++;
-    kernelize(G);
+    if(kernelize(G))
+        return;
+    //auto lb = basic_clique_cover(G);
+    auto lb2 = block_clique_cover(G);
+    //auto lb3 = (lb2 >= G.UB)? lb2 : iterated_greedy_clique(G);
+    auto lb4 = (lb2 >= G.UB)? lb2 : iterated_greedy_clique_full_permutes(G);
 
-    if(basic_clique_cover(G) >= (G.UB - G.sol_size))
+    
+    const bool cut2  = (static_cast<int>(lb2) >= G.UB);
+    const bool cut4 = (static_cast<int>(lb4) >= G.UB);
+  
+    if((cut2 || cut4) && G.max_degree > 0)
         return;
 
     if(G.max_degree == 0){
+        if(G.sol_size < G.UB){
+            G.set_current_vc();
+            G.best_found = G.num_branches;
+        }
         G.UB = min(G.sol_size, G.UB);
         return;
     }
 
-    Vertex* branch_vertex = max_deg_branching(G);
+    Vertex* branch_vertex = min_amongN_branching(G);
+    
+    vector<Vertex*> mirrors; 
+    if(USE_MIRROR)
+        mirrors = find_mirrors(branch_vertex, G); 
+    
+   
+    G.old_LB = max(G.old_LB, lb4);
+    int old_lb = G.old_LB;
 
-    G.set_restore();
-    G.MM_vc_add_vertex(branch_vertex);
-    branch(G);
-    G.restore();
-
-
-    if(G.sol_size + deg(branch_vertex) <= G.UB){
+    if(G.sol_size + (mirrors.size() + 1) < G.UB){
         G.set_restore();
+        if(USE_PACK)
+            add_selected_constraint(G, branch_vertex, 1);
+        G.MM_vc_add_vertex(branch_vertex);
+        for(Vertex* m : mirrors){
+            G.MM_vc_add_vertex(m);   
+        }
+        branch(G);
+        G.restore();
+    }
+
+    G.old_LB = old_lb; // max of bounds, currently only lb3 necessary
+
+    if(G.old_LB < G.UB && ((G.sol_size + deg(branch_vertex)) < G.UB)){
+        G.set_restore();
+        /*if(USE_PACK && USE_MIRROR && mirrors.size() == 0)
+            add_nomirror_constraint(G, branch_vertex); */
+        if(USE_PACK)
+            add_not_selected_constraint(G, branch_vertex);
+            
         G.MM_vc_add_neighbors(branch_vertex);
         branch(G);
         G.restore();
@@ -77,8 +115,12 @@ void branch(Graph& G){
 int solve(Graph& G){
     G.set_restore();
     kernelize(G);
-    if(G.max_degree == 0)
+    
+    if(G.max_degree == 0){
+        G.set_current_vc();
         return G.sol_size;
+    }
+
     G.UB = G.N + G.sol_size;
     branch(G);
     if(G.max_degree == 0){

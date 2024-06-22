@@ -2,7 +2,6 @@
 #include <string>
 #include <iostream>
 #include <chrono>
-#include <optional>
 
 using namespace std;
 
@@ -42,7 +41,7 @@ public:
 
     map<string, pair<ts, optional<ts>>> time_table;
 
-    void start(string name, bool overwrite = false){        
+    void start(string name, bool overwrite = true){        
         ts time = chrono::high_resolution_clock::now();
 
         if(time_table.find(name) != time_table.end() && !overwrite)
@@ -66,7 +65,7 @@ public:
     }
     
     template<typename T = chrono::microseconds>
-    void report(string name, bool end_by_default = false){
+    void report(string name, bool end_by_default = true){
         ts time = chrono::high_resolution_clock::now();
         auto entry = time_table.find(name);
         if(entry == time_table.end() && !end_by_default)
@@ -101,3 +100,9 @@ public:
         }
     }
 };
+
+template <typename T>
+void swap_delete(vector<T>& v, int idx){
+    swap(v[idx], v.back());
+    v.pop_back();
+}

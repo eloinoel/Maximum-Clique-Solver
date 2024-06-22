@@ -58,7 +58,7 @@ void load_graph(Graph& G){
             u = G.add_vertex();
             label_map[u_label] = u;
             name_table.push_back(u_label);
-            #if DEBUG
+            #if !NDEBUG || DEBUG 
                 u->name = move(u_label);
             #endif
         }
@@ -70,7 +70,7 @@ void load_graph(Graph& G){
             v = G.add_vertex();
             label_map[v_label] = v;
             name_table.push_back(v_label);
-            #if DEBUG
+            #if !NDEBUG || DEBUG
                 v->name = move(v_label);
             #endif
         }
@@ -86,9 +86,37 @@ void load_graph(Graph& G){
     G.name_table = name_table;
     G.N = G.total_N;
     //G.M = G.total_M;
-    if(G.N > 0 && G.M == 0) // special case where min degree is not set otherwise
-    {
-        G.min_degree = 0;
+
+}
+
+Graph complementary_graph(Graph& G){
+    Graph H;
+    H.name_table = G.name_table;
+
+    vector<Vertex*> G_to_H(G.N); // from v in G to v in H
+
+    for(Vertex* v : G.V){
+        Vertex* vh = H.add_vertex();
+        vh->id = v->id;
+        G_to_H[v->id] = vh;
     }
 
+    for(Vertex* v : G.V){
+        G.new_timestamp();
+        auto v_iter = G.timestamp;
+        v->marked = v_iter;         // prevent self loops
+        for(Vertex* n : v->neighbors){
+            n->marked = G.timestamp;
+        }
+
+        for(Vertex* w : G.V){
+            if(w->marked != v_iter && w < v){
+                H.add_edge(G_to_H[v->id], G_to_H[w->id]);
+            }
+        }
+    }
+
+    H.N = H.total_N;
+    G.delete_all();
+    return H;
 }

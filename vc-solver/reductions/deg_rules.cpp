@@ -7,6 +7,7 @@ void deg0_rule(Graph& G){
         Vertex* v = G.deg_lists[0].back();
         deleted.push_back(v);
         G.deg_lists[0].pop_back();
+        assert(v->status == UNKNOWN);
         v->status = EXCLUDED;
         G.N--;
         v->deg_idx = -1;
@@ -25,7 +26,7 @@ void deg1_rule_single(Graph& G){
 
 bool deg1_rule(Graph& G){
     bool reduced = false;
-    while(G.max_degree >= 1 && !G.deg_lists[1].empty()){
+    while(G.max_degree >= 1 &&!G.deg_lists[1].empty()){
         deg1_rule_single(G);
         reduced = true;
     }
@@ -36,17 +37,18 @@ bool deg1_rule(Graph& G){
 }
 
 
-class VC_deg2_fold : public VC_transformation{
+class VC_deg2_fold : public VC_Transformation{
 public:
-    Vertex* folded; // folded 
-    Vertex* discard; // discarded
-    Vertex* merged; // merged 
+    Vertex* folded;     // folded, the deg2 vertex - 'v'
+    Vertex* discard;    // discarded, the vertex that will not stay after merge 
+    Vertex* merged;     // merged, the vertex that gets merged with discard and stays in the grap
 
     vector<Edge*> moved_edges;
     
     // this pattern by aleksander of executing the rule while creating the operation is pretty neat I think
     VC_deg2_fold(Vertex* folded, Graph& G)
      : folded(folded) {
+        G.transform_access.push_back(this);
         G.delete_vertex(folded); //note: state stays UNKNOWN
 
         discard = folded->neighbors[0];
@@ -76,6 +78,7 @@ public:
     }
 
     void undo (Graph* G) const{
+        G->transform_access.pop_back();
         G->sol_size--;
         G->k++;
         G->restore_vertex(discard);
@@ -85,19 +88,39 @@ public:
         G->restore_vertex(folded);
     }
 
-    void resolve(Graph* G) {
-        if(merged->status == VC){
-            discard->status = VC;
-            folded->status = EXCLUDED;
+    void resolve(Graph* G, bool partial) {
+        assert(folded->data.resolved_status == UNKNOWN);
+        assert(discard->data.resolved_status == UNKNOWN);
+        
+        if(merged->data.resolved_status == VC){
+            discard->data.resolved_status = VC;
+            folded->data.resolved_status = EXCLUDED;
             return;
         }
-        if(merged->status == EXCLUDED){
-            discard->status = EXCLUDED;
-            folded->status = VC;
+        if(merged->data.resolved_status == EXCLUDED){
+            discard->data.resolved_status = EXCLUDED;
+            folded->data.resolved_status = VC;
             return;
         }
+        if(partial)
+            return;
+        assert(false && "error deg2");
+    }
 
-        assert(false && "partial solution not yet implemented"); //this shouldn't happen yet
+    void debug_print(Graph* G, bool partial){
+        cout << "#### DEG 2 FOLD\n";
+        state fs = folded->data.resolved_status;
+        state ds = discard->data.resolved_status;
+        state ms = merged->data.resolved_status;
+        resolve(G, partial);
+        state after_fs = folded->data.resolved_status;
+        state after_ds = discard->data.resolved_status;
+        state after_ms = merged->data.resolved_status;
+
+        G->print_op_line(folded , "folded" , fs, after_fs);
+        G->print_op_line(discard, "discard", ds, after_ds);
+        G->print_op_line(merged , "merged" , ms, after_ms);
+        cout <<"#### DONE\n";
     }
 };
 
@@ -136,7 +159,7 @@ bool deg2_rule(Graph& G){
     return reduced;
 }
 
-class VC_deg3_IS : public VC_transformation{
+class VC_deg3_IS : public VC_Transformation{
 public: 
     Vertex *v;
     Vertex* IS[3]; // independset set = N(v)
@@ -145,7 +168,7 @@ public:
 
     VC_deg3_IS(Vertex* v, Graph& G)
      : v(v) {
-        
+        G.transform_access.push_back(this);
         for(size_t i = 0; i < 3; i++)
             IS[i] = v->neighbors[i];
 
@@ -179,46 +202,84 @@ public:
      }
 
      void undo(Graph* G) const{
+        G->transform_access.pop_back();
         G->delete_edge(connect_IS[1]);
         G->delete_edge(connect_IS[0]);
 
-        for(auto it = edges_added.rbegin(); it != edges_added.rend(); it++){
+        for(auto it = edges_added.rbegin(); it != edges_added.rend(); ++it){
             G->delete_edge(*it);
         }
 
         G->restore_vertex(v);
      }
 
-     void resolve(Graph* G){
+     void resolve(Graph* G, bool partial){
+        assert(v->data.resolved_status == UNKNOWN);
         size_t count = 0;
+        size_t unknown = 0;
         for(size_t i = 0; i < 3; i++){
-            count += IS[i]->status == VC;
+            count += IS[i]->data.resolved_status == VC;
+            unknown += IS[i]->data.resolved_status == UNKNOWN;
+        }
+
+        if(unknown > 0 && partial){
+            return;
         }
 
         if(count == 3){
-            assert(v->status == UNKNOWN);
-            v->status = EXCLUDED;
+            assert(v->data.resolved_status == UNKNOWN);
+            v->data.resolved_status = EXCLUDED;
         }
         else if(count == 2){
-            v->status = VC;
-            for(size_t i = 0; i < 3; i++){
-                if(IS[i]->status == VC)
-                    continue;
-
-                IS[(i+1)%3]->status = EXCLUDED;
+            size_t i;   // find the S[i] not in solution
+            for(i = 0; i < 3; i++){
+                if(IS[i]->data.resolved_status != VC)
+                    break;
             }
-        }else if(count == 0){
-            assert(IS[1]->status == VC);
-            IS[1]->status = EXCLUDED;
-            v->status = VC;
+            IS[(i+1)%3]->data.resolved_status = EXCLUDED;
+            if(unknown != 0){
+                assert(unknown == 1);
+                v->data.resolved_status = UNKNOWN;
+            }else{
+                v->data.resolved_status = VC;
+            }
+        }else if(count == 1 && unknown == 0){
+            // only S[1] should be possible as it is the one connecting the IS
+            assert(IS[1]->data.resolved_status == VC);
+            IS[1]->data.resolved_status = EXCLUDED;
+            v->data.resolved_status = VC;
         }else{
-        assert(false); // not yet implemented partial solution
+            assert(partial); 
+            v->data.resolved_status = UNKNOWN;
+            for(Vertex* s : IS)
+                s->data.resolved_status = UNKNOWN;
         }
+     }
+
+     void debug_print(Graph* G, bool partial){
+        cout << "#### DEG 3 IS\n";
+        state vs = v->data.resolved_status;
+        state befores[3];
+        for(size_t i = 0; i < 3; i++){
+            befores[i] = IS[i]->data.resolved_status;
+        }
+        resolve(G, partial);
+        state after_vs = v->data.resolved_status;
+        state afters[3];
+        for(size_t i = 0; i < 3; i++){
+            afters[i] = IS[i]->data.resolved_status;
+        }
+
+        G->print_op_line(v , "v" , vs, after_vs);
+        for(size_t i = 0; i < 3; i++){
+            G->print_op_line(IS[i], "IS - " + to_string(i), befores[i], afters[i]);
+        }
+        cout <<"#### DONE\n";
      }
 };
 
 
-class VC_deg3_CN : public VC_transformation{
+class VC_deg3_CN : public VC_Transformation{
 public:
     Vertex* v;
     pair<Vertex*, Vertex*> C1; // clique with 2 members
@@ -228,6 +289,7 @@ public:
     VC_deg3_CN(Vertex* v_, pair<Vertex*, Vertex*> C1_,  Vertex* C2_, Graph& G)
      : v(v_), C1(C1_), C2(C2_){
         G.delete_vertex(v);
+        G.transform_access.push_back(this);
         assert(C1.first->adjacent_to(C1.second));
         Vertex* C1_iter[2] = {C1.first, C1.second};
 
@@ -255,6 +317,7 @@ public:
      }
 
      void undo(Graph* G) const{
+        G->transform_access.pop_back();
         G->k++;
         G->sol_size--;
 
@@ -267,15 +330,44 @@ public:
         G->restore_vertex(v);
      }
 
-     void resolve(Graph* G){
-        if(C1.first->status == VC && C1.second->status == VC){
-            C2->status = VC;
+     void resolve(Graph* G, bool partial){
+        if(C1.first->data.resolved_status == UNKNOWN || C1.second->data.resolved_status == UNKNOWN){
+            assert(v->data.resolved_status == UNKNOWN && C2->data.resolved_status == UNKNOWN);
+            if(partial)
+                return;
+            assert(false);
+        }
+
+        if(C1.first->data.resolved_status == VC && C1.second->data.resolved_status == VC){
+            C2->data.resolved_status = VC;
+            v->data.resolved_status = EXCLUDED;
         }
         else{
-            v->status = VC;
+            v->data.resolved_status = VC;
+            C2->data.resolved_status = EXCLUDED;
+            
+            
         }
-        //partial not yet implemented
 
+     }
+
+     void debug_print(Graph* G, bool partial){
+        cout << "#### DEG 3 CN\n";
+        state vs = v->data.resolved_status;
+        state c2s = C2->data.resolved_status;
+        state C11s = C1.first->data.resolved_status;
+        state C12s = C1.second->data.resolved_status;
+        resolve(G, partial);
+        state after_vs = v->data.resolved_status;
+        state after_c2s = C2->data.resolved_status;
+        state after_C11s = C1.first->data.resolved_status;
+        state after_C12s = C1.second->data.resolved_status;
+
+        G->print_op_line(v , "v" , vs, after_vs);
+        G->print_op_line(C2, "C2", c2s, after_c2s);
+        G->print_op_line(C1.first , "C1 - first" , C11s, after_C11s);
+        G->print_op_line(C1.second , "C1 - second" , C12s, after_C12s);
+        cout <<"#### DONE\n";
      }
 };
 
@@ -315,9 +407,9 @@ bool deg3_rule(Graph& G){
             }
             G.history.emplace_back(new VC_deg3_CN(v, C1, C2, G));
         }else{
-            //bool dom = domination_rule_known(G, v);
-            //assert(dom);
-            domination_rule_known(G,v);
+            bool dom = domination_rule_known(G, v);
+            assert(dom);
+            //domination_rule_known(G,v);
         }
 
         reduced = true;

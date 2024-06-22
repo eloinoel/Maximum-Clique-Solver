@@ -8,6 +8,8 @@ class Graph;
 class Vertex;
 class Edge;
 
+#define DEBUG_OPS 0
+
 using namespace std;
 
 /* basic operations, including simply removing/adding vertices/edges
@@ -22,15 +24,27 @@ public:
 /* operations that require resolving the current graph state
  * to find the proper vertex cover of the original graph
  */
-class VC_transformation : public Operation{
+class VC_Transformation : public Operation{
 public: 
-    virtual void resolve(Graph* G) = 0;
+    virtual void resolve(Graph* G, bool partial) = 0;
+    #if DEBUG_OPS
+    virtual void debug_print(Graph* G, bool partial) = 0;
+    #endif
 };
 
 class OP_RestorePoint : public Operation {
     //maybe add debug info?
 public:
     explicit OP_RestorePoint();
+    void undo(Graph* G) const override;
+};
+
+
+class OP_AddVertex : public Operation {
+private:
+    Vertex* added;
+public:
+    explicit OP_AddVertex(Vertex* added);
     void undo(Graph* G) const override;
 };
 
@@ -85,6 +99,33 @@ private:
     mutable pair<int, int> degs;
 public: 
     explicit OP_InducedSubgraph(vector<Vertex*> induced_set, Graph& G);
+    void undo(Graph* G) const override;
+};
+
+class OP_SetPackingPoint : public Operation {
+private:
+    size_t packing_count;
+public:
+    explicit OP_SetPackingPoint(size_t point)
+     : packing_count(point){}
+    void undo(Graph* G) const override;
+};
+
+class OP_AddCli : public Operation {
+private:
+    Vertex* selected;
+public: 
+    explicit OP_AddCli(Vertex* selected_)
+     : selected(selected_){}
+    void undo(Graph* G) const override;
+};
+
+class OP_UpdatedMu : public Operation{
+private:
+    vector<pair<Vertex*, int>> old_mu_values;
+public:
+    explicit OP_UpdatedMu(vector<pair<Vertex*, int>>& old_)
+     : old_mu_values(old_){}
     void undo(Graph* G) const override;
 };
 

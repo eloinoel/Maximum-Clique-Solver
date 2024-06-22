@@ -1,18 +1,34 @@
 #include "kernel.h"
 
-void kernelize(Graph& G){
+bool kernelize(Graph& G){
     bool reduced = true;
     while(reduced){
-        if(G.max_degree == 0)
-            return;
-        reduced = false;
-        #if !AUTO_DEG0
-        deg0_rule(G);
-        #endif
-        reduced |= deg1_rule(G);
-        //reduced |= unconfined_rule(G); //TODO: include once fixed
-        reduced |= deg2_rule(G);
-        reduced |= deg3_rule(G);
-        //reduced |= domination_rule(G);
+        while(reduced){
+                if(G.sol_size >= G.UB)
+                    return true;
+                //reduced = false;
+                #if !AUTO_DEG0
+                deg0_rule(G);
+                #endif
+                if(deg1_rule(G)) continue;
+                if(unconfined_rule(G)) continue;
+
+                if(USE_PACK){
+                    int p = packing_rule(G);
+                    if(p == -1)
+                        return true;
+                    if(p)
+                        continue;
+                }
+
+                if(deg2_rule(G)) continue;
+                //if(deg3_rule(G)) continue;
+                if(desk_rule(G)) continue;
+                //if(deg3_rule(G)) continue;
+               
+                reduced = false;
+        }
+        //reduced |= deg3_rule(G);
     }
+    return false;
 }
