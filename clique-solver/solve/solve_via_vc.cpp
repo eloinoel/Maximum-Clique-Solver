@@ -7,6 +7,7 @@
 #include "graph.h"
 #include "debug_utils.h"
 #include "tests.h"
+#include "colors.h"
 
 using namespace std;
 
@@ -63,6 +64,12 @@ int SolverViaVC::solve_via_vc(Graph& G)
     //         return clique_UB - p;
     //     }
     // }
+    if(clique_LB == clique_UB)
+    {
+        // TODO: extract solution
+        return clique_LB;
+    }
+
     for(int p = 0; p < clique_UB - clique_LB; p++)
     {
         if(solve_via_vc_for_p(G, p))
@@ -83,6 +90,7 @@ Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set)
     return complement;
 }
 
+//MARK: SOLVER FOR P
 bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
 {
     //get candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}
@@ -162,9 +170,17 @@ vector<Vertex*> SolverViaVC::get_remaining_set()
     return R;
 }
 
+//MARK: EXTRACT SOLUTION
 void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, string ordering_vertex_name)
 {
     assert(complementGraph.sol_size == (int) complementGraph.partial.size());
+
+    //TODO: remove debug
+    std::cout << RED << "---------- complement graph VC ----------" << RESET << std::endl;
+    for(size_t i = 0; i < complementGraph.partial.size(); ++i)
+    {
+        std::cout << RED << complementGraph.name_table[complementGraph.partial[i]->id] << RESET << std::endl;
+    }
     maximum_clique = std::vector<std::string>();
 
     //fill maximum_clique
@@ -192,4 +208,44 @@ void SolverViaVC::extract_maximum_clique_solution(Graph& complementGraph, string
 
     if(ordering_vertex_name != "")
         maximum_clique.push_back(ordering_vertex_name);
+}
+
+
+//----------------------- TESTING FUNCTIONS -----------------------
+
+Vertex* SolverViaVC::get_vertex_by_name(Graph& G, std::string name)
+{
+    for(Vertex* v : G.V)
+    {
+        if(G.name_table[v->id] == name)
+        {
+            return v;
+        }
+    }
+    return nullptr;
+}
+
+std::vector<Vertex*> SolverViaVC::convert_vertex_list(Graph& G, std::vector<std::string> names)
+{
+    std::vector<Vertex*> vertices = std::vector<Vertex*>(names.size());
+    for(size_t i = 0; i < names.size(); ++i)
+    {
+        vertices[i] = get_vertex_by_name(G, names[i]);
+    }
+    return vertices;
+}
+
+bool SolverViaVC::is_clique(std::vector<Vertex*> vertices)
+{
+    for(size_t i = 0; i < vertices.size(); ++i)
+    {
+        for(size_t j = 0; j < vertices.size(); ++j)
+        {
+            if(i != j && !vertices[i]->adjacent_to(vertices[j]))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }

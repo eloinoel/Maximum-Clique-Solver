@@ -45,6 +45,9 @@ public:
      */
     int solve_via_vc(Graph& G);
 
+    bool is_clique(std::vector<Vertex*> vertices);
+    std::vector<Vertex*> convert_vertex_list(Graph& G, std::vector<std::string> names);
+
 private:
     /**
      * @brief Determines whether G has a clique of size (d + 1) - p. In other words,
@@ -71,4 +74,6 @@ private:
      * @note stores solution in this.maximum_clique, O(complement.V * vc_size)
      */
     void extract_maximum_clique_solution(Graph& complementGraph, std::string ordering_vertex_name = "");
+
+    Vertex* get_vertex_by_name(Graph& G, std::string name);
 };

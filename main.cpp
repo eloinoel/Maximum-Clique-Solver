@@ -35,14 +35,18 @@ int main(int argc, char**argv){
     SolverViaVC solver;
     vector<Vertex*> maximum_clique;
     int max_clique_size = -1;
+    vector<Vertex*> tmp_mc;
     switch(ACTIVE_SOLVER){
         case SOLVER::VIA_VC:
             solver = SolverViaVC();
             max_clique_size = solver.solve_via_vc(G);
             //TODO: remove this debug code
             for(std::string v : solver.maximum_clique){
-                cout << v << "\n";
+                cout << v << endl;
             }
+            print_success("Found maximum clique of size " + std::to_string(max_clique_size));
+            tmp_mc = solver.convert_vertex_list(G, solver.maximum_clique);
+            assert(solver.is_clique(tmp_mc));
             break;
         case SOLVER::BRANCH_AND_BOUND:
             maximum_clique = branch_and_bound_mc(G);
