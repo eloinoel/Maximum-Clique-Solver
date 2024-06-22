@@ -27,6 +27,13 @@ include_directories("${PROJECT_SOURCE_DIR}/clique-solver/lowerbounds")
 include_directories("${PROJECT_SOURCE_DIR}/clique-solver/upperbounds")
 include_directories("${PROJECT_SOURCE_DIR}/clique-solver/reductions")
 include_directories("${PROJECT_SOURCE_DIR}/clique-solver/solve")
+
+include_directories("${PROJECT_SOURCE_DIR}/clisat/filtering")
+include_directories("${PROJECT_SOURCE_DIR}/clisat/pruning")
+include_directories("${PROJECT_SOURCE_DIR}/clisat/partial_max_sat")
+include_directories("${PROJECT_SOURCE_DIR}/clisat/ordering")
+include_directories("${PROJECT_SOURCE_DIR}/clisat")
+
 include_directories("$(PROJECT_SOURCE_DIR)/utils")
 
 # All source files need to be listed explicitly here.
@@ -57,6 +64,14 @@ add_executable(mc_solver
     clique-solver/reductions/k_core.cpp
     clique-solver/orderings/degeneracy_ordering.cpp
     clique-solver/solve/solve_via_vc.cpp
+    
+    clisat/partial_max_sat/partial_max_sat.cpp
+    clisat/solve.cpp
+    clisat/find_max_clique.cpp
+    clisat/pruning/ISEQ.cpp
+    clisat/ordering/degeneracy_ordering.cpp
+    clisat/filtering/FILTCOL.cpp
+    clisat/filtering/FILTSAT.cpp
 )
 
 # Define the RELEASE symbol for release builds
