@@ -280,7 +280,7 @@ bool is_unconfined(Graph& G, Vertex* v){
 bool unconfined_rule(Graph& G){
     G.new_timestamp();
     vector<Vertex*> V;
-    for(size_t i = G.deg_lists.size() - 1; -- i != 0;){
+    for(size_t i = G.deg_lists.size();  i-- > 1;){
         for(Vertex* v : G.deg_lists[i]){
             V.push_back(v);
             assert(v->status == UNKNOWN);
@@ -289,7 +289,7 @@ bool unconfined_rule(Graph& G){
     size_t count = V.size();
     bool reduced = false;
     bool reduced_once = false;
-   
+    
     do{
         reduced = false;
         for(size_t i = 0; i < count; i++){
@@ -311,11 +311,11 @@ bool unconfined_rule(Graph& G){
         if(reduced){
             count = G.N;
             size_t i = 0;
-            for(size_t j = G.deg_lists.size() - 1; -- j != 0;){
+            for(size_t j = G.deg_lists.size(); j-- > 0;){
                 for(Vertex* v : G.deg_lists[j]){
                     V[i] = v;
                     i++;
-                    if(i + 1 == count)
+                    if(i + 1 >= count)
                         goto full;
                 }
             }

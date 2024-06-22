@@ -10,8 +10,10 @@ bool kernelize(Graph& G){
                 #if !AUTO_DEG0
                 deg0_rule(G);
                 #endif
+                if(G.max_degree == 0)
+                    return true;
                 if(deg1_rule(G)) continue;
-                //if(unconfined_rule(G)) continue;
+                if(unconfined_rule(G)) continue;
 
                 if(USE_PACK){
                     int p = packing_rule(G);
@@ -23,7 +25,7 @@ bool kernelize(Graph& G){
 
                 if(deg2_rule(G)) continue;
                 //if(deg3_rule(G)) continue;
-                //if(desk_rule(G)) continue;
+                if(desk_rule(G)) continue;
                 //if(deg3_rule(G)) continue;
                
                 reduced = false;

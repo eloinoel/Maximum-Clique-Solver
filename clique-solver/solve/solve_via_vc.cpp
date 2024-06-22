@@ -99,7 +99,6 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
             vc_size = solve(complement);
         }
 
-
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
         if(vc_size == (int) (right_neighbourhoods[i].size() + p - d))
         {
@@ -111,6 +110,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
             {
                 extract_maximum_clique_solution(complement, G.name_table[D[i]->id]);
             }
+
             return true;
         }
     }
