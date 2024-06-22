@@ -1,6 +1,5 @@
 #include "graph.h"
 
-
 Vertex* Graph::add_vertex(){
     return add_vertex(total_N);
 }
@@ -28,6 +27,16 @@ void Graph::delete_vertex(Vertex* v){
     delete_from_deglist(v);
 }
 
+Vertex* Graph::MM_add_vertex(){
+    Vertex* v = new Vertex;
+    v->id = -1;
+    v->list_idx = -1;
+    N++;
+    v->v_idx = V.size();
+    V.push_back(v);
+    return v;
+}
+
 void Graph::MM_discard_vertex(Vertex* v){
     delete_vertex(v);
     assert(v->status == UNKNOWN);
@@ -35,6 +44,19 @@ void Graph::MM_discard_vertex(Vertex* v){
     auto op = new OP_DiscardVertex(v);
     history.emplace_back(op);
 }
+
+void Graph::MM_clisat_add_vertex(Vertex* v){
+    v->status = CLIQUE;
+    partial.push_back(v);
+    history.emplace_back(new OP_AddCli(v));
+}
+
+void Graph::MM_updated_mu(vector<pair<Vertex*, int>>& old_mu_values){
+    history.emplace_back(new OP_UpdatedMu(old_mu_values));
+}
+
+
+
 
 void Graph::MM_vc_add_vertex(Vertex* v){
     delete_vertex(v);
@@ -56,14 +78,22 @@ void Graph::MM_vc_add_neighbors(Vertex* v){
     size_t i = 0;
     while(!v->neighbors.empty()){
         Vertex* n = v->neighbors.back();
+        //if(USE_PACK)
+        //    add_selected_constraint(*this, n);
         n->status = VC;
         delete_vertex(n);
         selected[d - 1 - i] = n;
         i++;
     }
+    assert(v->status == UNKNOWN);
+    //v->status = EXCLUDED;
 
     history.emplace_back(new OP_SelectVertex(selected));
+    MM_discard_vertex(v);
+
+    //discard_vertex(v);
 }
+
 
 void Graph::MM_clique_add_vertex(Vertex* v)
 {
@@ -115,6 +145,8 @@ void Graph::restore_vertex(Vertex* v){
 
         update_deglists(u);
 
+        M++;
+
         #if AUTO_DEG0
         // if u was deg 0, it is now restored
         if(deg(u) == 1){
@@ -124,50 +156,6 @@ void Graph::restore_vertex(Vertex* v){
         #endif
     }
     update_deglists(v);
-}
-
-void Graph::delete_all(){
-    for(Vertex* v : V){
-        while(!v->edges.empty()){
-            delete_edge(v->edges.back());
-        }
-    }
-    for(Vertex* v : V)
-        delete v;
-}
-
-Graph Graph::complementary_graph(Graph& G){
-    Graph H;
-    H.name_table = G.name_table;
-
-    //vector<Vertex*> G_to_H(G.N); // from v in G to v in H
-    unordered_map<Vertex*, Vertex*> G_to_H;
-    for(Vertex* v : G.V){
-        Vertex* vh = H.add_vertex();
-        vh->id = v->id;
-        //G_to_H[v->id] = vh;
-        G_to_H[v] = vh;
-    }
-
-    for(Vertex* v : G.V){
-        G.new_timestamp();
-        auto v_iter = G.timestamp;
-        v->marked = v_iter;         // prevent self loops
-        for(Vertex* n : v->neighbors){
-            n->marked = G.timestamp;
-        }
-
-        for(Vertex* w : G.V){
-            if(w->marked != v_iter && w < v){
-                H.add_edge(G_to_H[v], G_to_H[w]);
-            }
-        }
-    }
-
-    H.N = H.total_N;
-    
-    //G.delete_all();
-    return H;
 }
 
 void Graph::MM_induced_subgraph(vector<Vertex*>& induced_set){
@@ -223,10 +211,13 @@ void Graph::pop_vertex(Vertex* v){
     V.back()->v_idx = v->v_idx;
     swap(V[v->v_idx], V.back());
     V.pop_back();
-
 }
 
 void Graph::delete_edge(Edge* e){
+    delete remove_edge(e);
+}
+
+[[nodiscard]] Edge* Graph::remove_edge(Edge* e){
     for(auto& end : e->ends){
         Vertex* u = end.v;
 
@@ -239,6 +230,8 @@ void Graph::delete_edge(Edge* e){
 
         swap(u->edges[end.idx], u->edges.back());
         u->edges.pop_back();
+
+        M--;
 
         update_deglists(u);
 
@@ -253,9 +246,8 @@ void Graph::delete_edge(Edge* e){
     E.back()->idx = e->idx;
     swap(E[e->idx], E.back());
     E.pop_back();
-
-    delete e;
     
+    return e;
 }
 
 void Graph::delete_edge_lazy(Edge* e, Vertex* v){
@@ -265,7 +257,7 @@ void Graph::delete_edge_lazy(Edge* e, Vertex* v){
 
     Vertex* u = end.v;
  
-    //assert(deg(u) > 0);
+    assert(deg(u) > 0);
 
     swap(u->neighbors[end.idx], u->neighbors.back());
     u->neighbors.pop_back();
@@ -278,6 +270,8 @@ void Graph::delete_edge_lazy(Edge* e, Vertex* v){
     u->edges.pop_back();
 
     update_deglists(u);
+
+    M--;
 
     #if AUTO_DEG0
     if(deg(u) == 0 && u->status == UNKNOWN){
@@ -294,7 +288,7 @@ void Graph::delete_edge_lazy(Edge* e, Vertex* v){
 }
 // call AFTER adding/removing edges, neighbors etc.
 void Graph::update_deglists(Vertex* v){
-    if(v->deg_idx != (size_t) -1){
+    [[likely]]if(v->deg_idx != (size_t) -1){
         remove_from_deglist(v);
     }
 
@@ -304,13 +298,11 @@ void Graph::update_deglists(Vertex* v){
     min_degree = min(deg(v), min_degree);
     #endif
 
-    if(deg(v) >= deg_lists.size()){
+    [[unlikely]]if(deg(v) >= deg_lists.size()){
         deg_lists.resize(deg(v) + 1); //arbitrary constant >= 1
     }
 
     v->deg_idx = deg_lists[deg(v)].size();
-    auto degv = deg(v);
-    auto listS = deg_lists.size();
     deg_lists[deg(v)].push_back(v);
     v->list_idx = deg(v);
 }
@@ -372,7 +364,52 @@ Graph Graph::shallow_copy(){
 
     H.name_table = name_table;
     H.N = H.total_N;
+    
     return H;
+}
+
+Graph Graph::complementary_graph(Graph& G){
+    Graph H;
+    H.name_table = G.name_table;
+
+    //vector<Vertex*> G_to_H(G.N); // from v in G to v in H
+    unordered_map<Vertex*, Vertex*> G_to_H;
+    for(Vertex* v : G.V){
+        Vertex* vh = H.add_vertex();
+        vh->id = v->id;
+        //G_to_H[v->id] = vh;
+        G_to_H[v] = vh;
+    }
+
+    for(Vertex* v : G.V){
+        G.new_timestamp();
+        auto v_iter = G.timestamp;
+        v->marked = v_iter;         // prevent self loops
+        for(Vertex* n : v->neighbors){
+            n->marked = G.timestamp;
+        }
+
+        for(Vertex* w : G.V){
+            if(w->marked != v_iter && w < v){
+                H.add_edge(G_to_H[v], G_to_H[w]);
+            }
+        }
+    }
+
+    H.N = H.total_N;
+    
+    //G.delete_all();
+    return H;
+}
+
+void Graph::delete_all(){
+    for(Vertex* v : V){
+        while(!v->edges.empty()){
+            delete_edge(v->edges.back());
+        }
+    }
+    for(Vertex* v : V)
+        delete v;
 }
 
 void Graph::undo(){
@@ -390,25 +427,67 @@ void Graph::restore(){
 
 void Graph::set_restore(){
     history.emplace_back(new OP_RestorePoint());
+    if(USE_PACK)
+        history.emplace_back(new OP_SetPackingPoint(constraints.size()));
 }
 
-void Graph::new_timestamp(){
+unsigned long long Graph::new_timestamp(){
     timestamp++;
+    return timestamp;
 }
 
 void Graph::increase_timestamp(unsigned long long offset){
     timestamp += offset;
 }
-
+void Graph::print_op_line(Vertex* v, string name, state before, state after){
+    //stringstream ll;
+    cout << "# " << name << " = " << v->id << " [ " << enum_name(before) <<", " << enum_name(after) << "]\n";
+    //return ll.str();
+}
 
 // missing deg2-resolve, so currently not correct (but sol_size is correct)
 void Graph::output_vc(){
-    for(Vertex* v : V){
-        if(v->status == VC)
-            cout << name_table[v->id] << "\n";
+    for(Vertex* v : partial){
+        cout << name_table[v->id] << "\n";
     }
 }
 
+void Graph::resolve_vc(bool partial){
+    for(Vertex* v : V){
+        v->data.resolved_status = v->status;
+    }
+    int tcount = 0;
+    #if DEBUG_OPS
+        cout << "\n\n\n #### NEW RESOLVE VC\n\n\n";
+    #endif
+    for(auto iter = transform_access.rbegin(); iter != transform_access.rend(); iter++){
+        #if DEBUG_OPS
+        (*iter)->debug_print(this, partial);
+        #else
+        (*iter)->resolve(this, partial);
+        #endif
+        tcount++;
+    }
+}
+
+void Graph::set_current_vc(){
+
+    for(Vertex* v : V){
+        v->data.resolved_status = v->status;
+    }
+    
+    for(auto iter = transform_access.rbegin(); iter != transform_access.rend(); iter++){
+        (*iter)->resolve(this, false);
+    }
+   
+
+    partial.clear();
+    for(Vertex* v : V){
+        assert(v->data.resolved_status != UNKNOWN);
+        if(v->data.resolved_status == VC)
+            partial.push_back(v);
+    }
+}
 
 
 bool Vertex::adjacent_to(Vertex* u){

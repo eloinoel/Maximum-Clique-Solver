@@ -25,6 +25,17 @@ void OP_SelectVertex::undo(Graph* G) const {
     }
 }
 
+OP_AddVertex::OP_AddVertex(Vertex* added)
+ : added(added) {}
+
+ void OP_AddVertex::undo(Graph* G) const {
+    G->pop_vertex(added);
+    if(added->list_idx != (size_t) - 1)
+        G->delete_from_deglist(added);
+    G->N--;
+    delete added;
+ }
+
 OP_DeleteDeg0::OP_DeleteDeg0(vector<Vertex*> deg0)
  : deg0(deg0) {}
 
@@ -124,7 +135,7 @@ OP_InducedSubgraph::OP_InducedSubgraph(vector<Vertex*> induced_set, Graph& G)
     G.N = G.V.size();
     G.M = G.E.size();
 
-}
+ }
 
 void OP_InducedSubgraph::undo(Graph* G) const {
     //at the point where this is called, only the induced edges should remain
@@ -162,7 +173,24 @@ void OP_InducedSubgraph::undo(Graph* G) const {
     G->min_degree = degs.second;
 }
 
-
+void OP_SetPackingPoint::undo(Graph* G) const {
+    auto p = G->constraints.size();
+    assert(packing_count <= G->constraints.size());
+    while(G->constraints.size() > packing_count){
+        delete G->constraints.back();
+        G->constraints.pop_back();
+    }
+}
 
 OP_RestorePoint::OP_RestorePoint() {}
 void OP_RestorePoint::undo(Graph* G) const {}
+
+void OP_AddCli::undo(Graph* G) const{
+    selected->status = UNKNOWN;
+    G->partial.pop_back();
+}
+
+void OP_UpdatedMu::undo(Graph* G) const {
+    for(auto& [v, mu] : old_mu_values)
+        v->mu = mu;
+}

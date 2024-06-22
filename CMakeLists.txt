@@ -18,6 +18,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -DNDEBUG")
 include_directories("${PROJECT_SOURCE_DIR}/vc-solver/reductions")
 include_directories("${PROJECT_SOURCE_DIR}/vc-solver/solve")
 include_directories("${PROJECT_SOURCE_DIR}/vc-solver/lowerbounds")
+include_directories("${PROJECT_SOURCE_DIR}/vc-solver/packing")
 include_directories("${PROJECT_SOURCE_DIR}/vc-solver")
 
 include_directories("${PROJECT_SOURCE_DIR}/clique-solver")
@@ -45,7 +46,9 @@ add_executable(mc_solver
     vc-solver/reductions/deg_rules.cpp
     vc-solver/reductions/unconfined.cpp
     vc-solver/reductions/kernel.cpp
+    vc-solver/reductions/desk.cpp 
     vc-solver/lowerbounds/clique_cover.cpp
+    vc-solver/packing/packing.cpp
 
     clique-solver/branch_and_bound.cpp
     clique-solver/upperbounds/upper_bounds.cpp

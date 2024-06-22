@@ -17,10 +17,10 @@ void basic_consistency_check(Graph& G, bool reset){
             G.deg_list_state.clear();
             return;
         }
-        vector<size_t> state;
+        vector<pair<size_t, size_t>> state;
         for(int i = static_cast<int>(G.deg_lists.size())-1; i >= 0; i--){
             if(!G.deg_lists[i].empty()){
-                state.push_back(G.deg_lists[i].size());
+                state.push_back({i, G.deg_lists[i].size()});
             }
         }
 
@@ -28,6 +28,7 @@ void basic_consistency_check(Graph& G, bool reset){
             assert(state.size() == G.deg_list_state.size());
             for(size_t i = 0; i < state.size(); i++){
                 assert(state[i] == G.deg_list_state[i]);
+                cout << "true\n";
             }
         }
         else{

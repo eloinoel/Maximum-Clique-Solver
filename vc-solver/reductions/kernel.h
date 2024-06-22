@@ -2,5 +2,6 @@
 
 #include "deg_rules.h"
 #include "unconfined.h"
+#include "desk.h"
 
-void kernelize(Graph& G);
+bool kernelize(Graph& G);
