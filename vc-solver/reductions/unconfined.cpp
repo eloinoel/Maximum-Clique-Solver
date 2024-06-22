@@ -107,7 +107,7 @@ bool domination_rule(Graph& G){
             full:
             continue;
         }
-    }while(reduced && G.k > 0);
+    }while(reduced);
     #if !AUTO_DEG0
     deg0_rule(G);
     #endif
@@ -131,7 +131,7 @@ bool is_unconfined(Graph& G, Vertex* v){
     } // NS = N(S) = N(v)
 
     bool added_to_S = true;
-
+    int p = 1;
     while(added_to_S){
         added_to_S = false;
         for(size_t i = 0; i < NS.size(); i++){ // find u in N(S) [Note: can't use iterator since vector might realloc]
@@ -152,13 +152,13 @@ bool is_unconfined(Graph& G, Vertex* v){
 
             if(size == 0){ // emptyset
                 unconfined = true;
-                goto cleanup_uncof;
+                goto cleanup_unconf;
              }
              else if (size == 1){ // exactly one w
                 S.push_back(NU_dif_NS);
                 NU_dif_NS->marked = mark;
                 added_to_S = true;
-
+                p++;
                 for(auto& w : NU_dif_NS->neighbors){
                     if(w->marked < mark){
                         w->marked = mark;
@@ -172,11 +172,100 @@ bool is_unconfined(Graph& G, Vertex* v){
         }
     }
     // diamond reduction
-   // if (S.size() > 2){
-   //     
-   // }
+    if(p >= 2){
+        struct cand{
+            Vertex* u;
+            Vertex* v1;
+            Vertex* v2;
+            
+        };
+        vector<cand> NS_deg2;
+        for(Vertex* x : NS){
+            if(x->marked == mark + 1)
+                NS_deg2.push_back({x, nullptr, nullptr});
+        }
+        for(Vertex* s : S) 
+            s->marked = mark-1;
+    
+        for(Vertex* n : NS)
+            n->marked = mark;
+        
+        size_t i = 0;
+        restart:
+        while(i < NS_deg2.size()){
+            auto& c = NS_deg2[i];
+            for(Vertex* w : c.u->neighbors){
+                if(w->marked < mark){
+                    if(c.v1 == nullptr){
+                        c.v1 = w;
+                    }else if(c.v2 == nullptr){
+                        c.v2 = w;
+                    }else{
+                        swap(NS_deg2.back(), NS_deg2[i]);
+                        NS_deg2.pop_back();
+                        goto restart;
+                    }
+                }
+            }
+            if(c.v1 == nullptr || c.v2 == nullptr){
+                swap(NS_deg2.back(), NS_deg2[i]);
+                NS_deg2.pop_back();
+                goto restart;
+            }
+            i++;
+            if(c.v1 > c.v2)
+                swap(c.v1, c.v2);
 
-    cleanup_uncof:
+
+            bool found1 = false;
+            for(Vertex* s : S)
+                found1 |= (s == c.v1);
+            
+            bool found2 = false;
+            for(Vertex* s : S)
+                found2 |= (s == c.v2);
+
+            assert(found1 && found2);
+
+            int count_s = 0;
+            for(Vertex* x : c.u->neighbors){
+                for(Vertex* s : S)
+                    count_s += (s == x);
+            }
+            
+            assert(count_s == 2);
+            
+        }
+        
+        for(size_t ii = 0; ii < NS_deg2.size(); ii++){
+            auto& c = NS_deg2[ii];
+            for(size_t j = ii + 1; j < NS_deg2.size(); j++){
+                auto& c2 = NS_deg2[j];
+                if(c.v1 == c2.v1 && c.v2 == c2.v2){
+                    //success
+                    if(c2.u->adjacent_to(c.u))
+                        continue;
+
+                    for(Vertex* x : c.u->neighbors){
+                        if(x->marked != G.timestamp){
+                            assert(x == c.v1 || x == c.v2);
+                        }
+                    }
+
+                    for(Vertex* x : c2.u->neighbors){
+                        if(x->marked != G.timestamp){
+                            assert(x == c.v1 || x == c.v2);
+                        }
+                    }
+                   
+                    unconfined = true;
+                    goto cleanup_unconf;
+                }
+            }
+        }
+    }
+
+    cleanup_unconf:
     for(auto& s : S) 
         s->marked = mark-1;
     

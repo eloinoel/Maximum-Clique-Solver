@@ -50,7 +50,7 @@ void branch(Graph& G){
     G.num_branches++;
     kernelize(G);
 
-    if(basic_clique_cover(G) > (G.UB - G.sol_size))
+    if(basic_clique_cover(G) >= (G.UB - G.sol_size))
         return;
 
     if(G.max_degree == 0){
