@@ -182,11 +182,17 @@ def main():
                         solution_size = "-1"
                         if len(tmp) > 0:
                             solution_size = tmp[0]
-                        write_content = in_file.replace("data/", "") + ";" + str(solution_size) + ";" + collected_data
+                        if status == "OK":
+                            write_content = in_file.replace("data/", "") + ";" + str(solution_size) + ";" + str(time) + "\n"
+                        else:
+                            write_content = in_file.replace("data/", "") + ";" + str(solution_size) + str(time) + ";" + collected_data
                         write_data_to_file(collect_data_file_name, write_content)
             elif was_timeout:
                 status = "timelimit"
                 time = ''
+                # if collect_data_flag:
+                #     write_content = in_file.replace("data/", "") + ";" + "-1" + ";" + str(time) + "\n"
+                #     write_data_to_file(collect_data_file_name, write_content)
             else:
                 stderr += "\nNon zero exit code"
                 status = "Wrong"

@@ -14,15 +14,15 @@
 #include "tests.h"
 #include "cli_solve.h"
 
-#define BENCHMARK 0; //TODO: remove once benchmark.sh works
+#define BENCHMARK 0 //TODO: remove once benchmark.sh works
 #define ACTIVE_SOLVER SOLVER::VIA_VC
 
 int main(int argc, char**argv){
 
-    // #ifdef BENCHMARK
-    //     run_benchmark(ACTIVE_SOLVER);
-    //     return 0;
-    // #endif
+    #if BENCHMARK
+        run_benchmark(ACTIVE_SOLVER);
+        return 0;
+    #endif
 
     Graph G;
     load_graph(G);

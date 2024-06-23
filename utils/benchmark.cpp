@@ -4,6 +4,7 @@
 #include <thread>
 #include <fstream>
 #include <set>
+#include <future>
 
 #include "benchmark.h"
 #include "graph.h"
@@ -13,6 +14,7 @@
 #include "upper_bounds.h"
 #include "color_branching.h"
 #include "degeneracy_ordering.h"
+#include "solve_via_vc.h"
 
 #define V 1
 #define E 1
@@ -179,10 +181,11 @@ void run_benchmark(SOLVER solver_to_execute){
 
     //define time_point when BnB has to cancel
     std::chrono::seconds offset(TIMEOUT);
+
     bnb_timeout = chrono::system_clock::now()+offset;
-    
     vector<Vertex*> maximum_clique;
     unsigned long maximum_clique_size;
+    SolverViaVC solver;
     //run solver
     switch(solver_to_execute)
     {
@@ -194,6 +197,10 @@ void run_benchmark(SOLVER solver_to_execute){
             //TODO:
             break;
         case SOLVER::VIA_VC:
+            solver = SolverViaVC();
+            maximum_clique_size = solver.solve_via_vc(G);
+            std::cout << maximum_clique_size << std::endl;
+            return;
             //TODO:
             break;
         default:
@@ -203,7 +210,7 @@ void run_benchmark(SOLVER solver_to_execute){
     int d = degeneracy(G);
 
     //TODO: remove this once benchmark is fixed
-    std::cout << G.N << ";" << G.M << ";" << G.max_degree << ";" << G.min_degree << ";" << d << std::endl;
+    std::cout << G.N << ";" << G.M << ";" << G.max_degree << ";" << G.min_degree << ";" << d << ";" << maximum_clique_size << std::endl;
     
     //fill output.csv
     // std::vector<unsigned long> times = {get_time(TECHNIQUE::BRANCH_AND_BOUND), get_time(TECHNIQUE::BOUNDING), get_time(TECHNIQUE::COLORING), get_time(TECHNIQUE::K_CORE)};
