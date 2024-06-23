@@ -27,14 +27,6 @@ inline int degeneracy_UB(int degeneracy)
 //     return community_degeneracy + 2;
 // }
 
-/**
- * @returns gap between degeneracy based upper bound and maximum clique size
- * didn't know where to put this - Eloi
- */
-inline int clique_core_gap(int degeneracy, int mc_number)
-{
-    return degeneracy_UB(degeneracy) - mc_number;
-}
 
 enum BOUNDING{
     CUTOFF,

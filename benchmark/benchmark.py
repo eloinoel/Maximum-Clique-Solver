@@ -193,7 +193,7 @@ def main():
                         if status == "OK":
                             write_content = in_file.replace("data/", "") + ";" + str(solution_size) + ";" + str(time) + "\n"
                         else:
-                            write_content = in_file.replace("data/", "") + ";" + str(solution_size) + str(time) + ";" + collected_data
+                            write_content = in_file.replace("data/", "") + ";" + str(solution_size) + ";" + str(time) + ";" + collected_data
                         write_data_to_file(collect_data_file_name, write_content)
             elif was_timeout:
                 status = "timelimit"

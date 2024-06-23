@@ -184,7 +184,7 @@ void run_benchmark(SOLVER solver_to_execute){
 
     bnb_timeout = chrono::system_clock::now()+offset;
     vector<Vertex*> maximum_clique;
-    unsigned long maximum_clique_size;
+    unsigned long maximum_clique_size = -1;
     SolverViaVC solver;
     //run solver
     switch(solver_to_execute)
@@ -199,8 +199,7 @@ void run_benchmark(SOLVER solver_to_execute){
         case SOLVER::VIA_VC:
             solver = SolverViaVC();
             maximum_clique_size = solver.solve_via_vc(G);
-            std::cout << maximum_clique_size << std::endl;
-            return;
+            //std::cout << maximum_clique_size << std::endl;
             //TODO:
             break;
         default:
@@ -210,7 +209,7 @@ void run_benchmark(SOLVER solver_to_execute){
     int d = degeneracy(G);
 
     //TODO: remove this once benchmark is fixed
-    std::cout << G.N << ";" << G.M << ";" << G.max_degree << ";" << G.min_degree << ";" << d << ";" << maximum_clique_size << std::endl;
+    std::cout << G.N << ";" << G.M << ";" << G.max_degree << ";" << G.min_degree << ";" << d << ";" << maximum_clique_size << ";" << clique_core_gap(d, maximum_clique_size) << std::endl;
     
     //fill output.csv
     // std::vector<unsigned long> times = {get_time(TECHNIQUE::BRANCH_AND_BOUND), get_time(TECHNIQUE::BOUNDING), get_time(TECHNIQUE::COLORING), get_time(TECHNIQUE::K_CORE)};

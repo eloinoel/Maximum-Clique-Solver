@@ -35,4 +35,13 @@ int degeneracy(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vecto
  */
 int degeneracy(Graph& G);
 
+/**
+ * @returns gap between degeneracy based upper bound and maximum clique size
+ * didn't know where to put this - Eloi
+ */
+inline int clique_core_gap(int degeneracy, int mc_number)
+{
+    return degeneracy + 1 - mc_number;
+}
+
 void print_degeracy_ordering_and_rneighbourhoods(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vector<Vertex*>>& right_neighbourhoods, Graph& G);
