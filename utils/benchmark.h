@@ -16,7 +16,8 @@ enum class SOLVER
     NONE,
     BRANCH_AND_BOUND,
     CLISAT,
-    VIA_VC
+    VIA_VC,
+    PARALLEL
 };
 
 /**

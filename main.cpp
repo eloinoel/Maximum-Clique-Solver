@@ -91,7 +91,7 @@ int main(int argc, char**argv){
                 }
                 if(copy_cli){
                     Graph H = G.shallow_copy();
-                    results[1] = std::async(std::launch::async, launch_cli, std::ref(H));
+                    results[1] = std::async(std::launch::async, launch_cli, H);
                 }else{
                     results[1] = std::async(std::launch::async, launch_cli, std::ref(G));
                 }
