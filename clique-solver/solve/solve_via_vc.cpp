@@ -111,8 +111,9 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         Graph complement;
         // a) construct ¬G[Vi], where Vi is the right-neighborhood of vi
         Vertex* vi = D[i];
-        size_t vc_UB = (right_neighbourhoods[vi->id].size() + p - d) + 1;
-        if(right_neighbourhoods[vi->id].size() > 0)
+        size_t r_neighbourhood_size = right_neighbourhoods[vi->id].size();
+        size_t vc_UB = r_neighbourhood_size + p - d + 1;
+        if(r_neighbourhood_size > 0)
         {
             complement = get_complement_subgraph(G, right_neighbourhoods[vi->id]);
             complement.UB = vc_UB; //bound search tree
@@ -120,7 +121,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         }
 
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
-        if(vc_size == (int) (right_neighbourhoods[vi->id].size() + p - d))
+        if(vc_size == (int) (r_neighbourhood_size + p - d))
         {
             if(right_neighbourhoods[vi->id].empty())
             {
@@ -130,9 +131,9 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
             {
                 extract_maximum_clique_solution(complement, vi);
             }
+            complement.delete_all();
             return true;
         }
-        complement.delete_all();
     }
 
     // if we can't find mc from right neighbourhoods, take remaining vertices in ordering
@@ -155,6 +156,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         {
             extract_maximum_clique_solution(complement);
         }
+        complement.delete_all();
         return true;
     }
     complement.delete_all();

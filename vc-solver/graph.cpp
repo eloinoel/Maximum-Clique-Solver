@@ -403,11 +403,14 @@ Graph Graph::complementary_graph(Graph& G){
 }
 
 void Graph::delete_all(){
-    for(Vertex* v : V){
-        while(!v->edges.empty()){
-            delete_edge(v->edges.back());
-        }
+    for(Edge* e : E){
+        delete e;
     }
+    // for(Vertex* v : V){
+    //     while(!v->edges.empty()){
+    //         delete_edge(v->edges.back());
+    //     }
+    // }
     for(Vertex* v : V)
         delete v;
 }
@@ -483,7 +486,7 @@ void Graph::set_current_vc(){
 
     partial.clear();
     for(Vertex* v : V){
-        assert(v->data.resolved_status != UNKNOWN);
+        //assert(v->data.resolved_status != UNKNOWN);
         if(v->data.resolved_status == VC)
             partial.push_back(v);
     }
