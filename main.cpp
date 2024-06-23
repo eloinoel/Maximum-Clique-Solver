@@ -13,6 +13,7 @@
 #include "debug_utils.h"
 #include "tests.h"
 #include "cli_solve.h"
+#include "AMTS.h"
 
 #include <thread>
 #include <future>
@@ -42,6 +43,11 @@ int main(int argc, char**argv){
 
     Graph G;
     load_graph(G);
+
+    AMTS amts = AMTS(G);
+    amts.execute(G, 25, 1000000);
+    cout << amts.S_star.size() << "\n";
+    exit(EXIT_SUCCESS);
     //test_graph_consistency(G); //TODO: remove debug
     //std::cout << "Graph with N=" + std::to_string(G.N) + " and M=" + std::to_string(G.M) + " loaded." << std::endl;
 
@@ -85,13 +91,13 @@ int main(int argc, char**argv){
             
                 if(copy_domega){
                     Graph H = G.shallow_copy();
-                    results[0] = std::async(std::launch::async, launch_dOmega, H);
+                    results[0] = std::async(std::launch::async, launch_dOmega, std::ref(H));
                 }else{
                     results[0] = std::async(std::launch::async, launch_dOmega, std::ref(G));
                 }
                 if(copy_cli){
                     Graph H = G.shallow_copy();
-                    results[1] = std::async(std::launch::async, launch_cli, H);
+                    results[1] = std::async(std::launch::async, launch_cli, std::ref(H));
                 }else{
                     results[1] = std::async(std::launch::async, launch_cli, std::ref(G));
                 }
