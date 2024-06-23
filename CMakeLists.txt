@@ -9,9 +9,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_COMPILER_ID "GNU") # Use GCC for compilation.
 
 # Set compiler flags
-set(CMAKE_CXX_FLAGS "-Wall -Wextra ")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pthread")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O3 -march=native")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -pg -O3 -march=native")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -DNDEBUG")
 
 # Include local header files.

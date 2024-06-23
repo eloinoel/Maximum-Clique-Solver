@@ -2,7 +2,7 @@
 #include "graph.h"
 
 
-void solve_clique(Graph& G){
+void solve_clique(Graph& G, bool output){
     
     auto order = cli_degeneracy_ordering(G);
 
@@ -41,10 +41,19 @@ void solve_clique(Graph& G){
     }
 
    // #if !NDEBUG
-    for(Vertex* v : G.best_sol)
-        cout << G.name_table[v->id]<< "\n";
+    if(output){
+        for(Vertex* v : G.best_sol)
+            cout << G.name_table[v->id]<< "\n";
+    }
     //#endif
     //cout << "max clique size = " << G.LB << ", recursive steps = " << G.num_branches << "\n";
+}
+
+vector<string> get_cli_output(Graph& G){
+    vector<string> out;
+    for(Vertex* v : G.best_sol)
+        out.push_back(G.name_table[v->id]);
+    return out;
 }
 
 

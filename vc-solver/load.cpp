@@ -13,9 +13,9 @@ void checkLabelValidity(const string& label) {
 }
 
 void load_graph(Graph& G){
-    //ios::sync_with_stdio(false);
+    ios::sync_with_stdio(false);
     string line;
-    map<string, Vertex*> label_map;
+    unordered_map<string, Vertex*> label_map;
     vector<string> name_table;
     G.deg_lists.resize(20); //also arbitrary micro-optimization
     while (getline(cin, line)) {
