@@ -12,9 +12,10 @@ def main():
     out_file = open("agg_"+in_file_name, 'w')
 
     agg_time = np.double(0.0)
-    # line = file.readline()
-    # split = line.split(';')
-    # out_file.write(split[0]+";"+split[1]+"\n")
+    #header
+    line = file.readline()
+    split = line.split(';')
+    out_file.write(split[0]+";"+split[index])
 
     for file_line in file:
         split = file_line.split(';')

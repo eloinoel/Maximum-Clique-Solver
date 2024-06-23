@@ -120,6 +120,13 @@ def clear_file(filename):
     if os.path.exists(filepath):
         with open(filepath, 'w') as result:
             result.write('')
+
+def write_header_to_file(filename):
+    os.makedirs(dir, exist_ok=True)
+    filepath = os.path.join(dir, filename)
+    if os.path.exists(filepath):
+        with open(filepath, 'a') as result:
+            result.write('instance_name;solution_size;time\n')
             
 
 def main():
@@ -134,6 +141,7 @@ def main():
     collect_data_file_name = args.collect_data['value']
     if collect_data_flag:
         clear_file(collect_data_file_name)
+
 
     checker_file = "verify.py"
 
