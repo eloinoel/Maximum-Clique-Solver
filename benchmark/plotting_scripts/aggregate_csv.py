@@ -14,11 +14,15 @@ def main():
     agg_time = np.double(0.0)
     #header
     line = file.readline()
-    split = line.split(';')
-    out_file.write(split[0]+";"+split[index])
+    delimeter = ";" if ";" in line else ","
+    split = line.split(delimeter)
+    if "\n" in split[index]:
+        out_file.write(split[0]+delimeter+split[index])
+    else:
+        out_file.write(split[0]+delimeter+split[index] + "\n")
 
     for file_line in file:
-        split = file_line.split(';')
+        split = file_line.split(delimeter)
         exec_time = split[index]
         # timeout, not needed atm
         if(exec_time == "-1"):
@@ -28,7 +32,7 @@ def main():
         try:
             # valid time
             agg_time += np.double(exec_time)
-            out_file.write(split[0]+";")
+            out_file.write(split[0]+delimeter)
             out_file.write(str(agg_time) + "\n")
         except:
             pass
