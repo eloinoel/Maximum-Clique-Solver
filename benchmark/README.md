@@ -27,6 +27,16 @@ Where:
 
 ## Examples:
 
+### Get solver times
+If the solver prints the correct maximum clique vertices
+```bash
+python3 benchmark.py <path to solver> --time_limit 10 --collect_data
+```
+will generate a file containing: `<instance name>; <correct mc size>; <time>\n` for every instance
+
+Otherwise the benchmark script will paste the output of the solver into the file
+`<instance name>; <correct mc size>; <solver output>\n`
+
 A few examples for some common languages:
 
 ### Java
