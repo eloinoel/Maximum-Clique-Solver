@@ -116,7 +116,7 @@ int block_clique_cover(Graph& G){
 }
 
 #define MAX_ITER      50
-#define MAX_ITER_FULL 25
+#define MAX_ITER_FULL 10
 #define EARLY_STOP     1
 
 // so compiler can remove unused options

@@ -14,8 +14,23 @@
 #include "tests.h"
 #include "cli_solve.h"
 
-#define BENCHMARK 1 //TODO: remove once benchmark.sh works
-#define ACTIVE_SOLVER SOLVER::VIA_VC
+#include <thread>
+#include <future>
+
+#define BENCHMARK 0 //TODO: remove once benchmark.sh works
+#define ACTIVE_SOLVER SOLVER::PARALLEL
+
+
+vector<string> launch_dOmega(Graph G){
+    SolverViaVC solver;
+    solver.solve_via_vc(G);
+    return solver.maximum_clique;
+}
+
+vector<string> launch_cli(Graph& G){
+    solve_clique(G, false);
+    return get_cli_output(G);
+}
 
 int main(int argc, char**argv){
 
@@ -38,6 +53,8 @@ int main(int argc, char**argv){
     vector<Vertex*> maximum_clique;
     int max_clique_size = -1;
     vector<Vertex*> tmp_mc;
+
+    future<vector<string>> results[2];
     switch(ACTIVE_SOLVER){
         case SOLVER::VIA_VC:
             solver = SolverViaVC();
@@ -60,6 +77,25 @@ int main(int argc, char**argv){
             // break;
         case SOLVER::CLISAT:
             solve_clique(G);
+            break;
+        case SOLVER::PARALLEL:
+            {
+                bool copy_domega = true;
+                bool copy_cli = false; // ALL BUT LAST NEED TO BE COPIED
+            
+                if(copy_domega){
+                    Graph H = G.shallow_copy();
+                    results[0] = std::async(std::launch::async, launch_dOmega, H);
+                }else{
+                    results[0] = std::async(std::launch::async, launch_dOmega, std::ref(G));
+                }
+                if(copy_cli){
+                    Graph H = G.shallow_copy();
+                    results[1] = std::async(std::launch::async, launch_cli, std::ref(H));
+                }else{
+                    results[1] = std::async(std::launch::async, launch_cli, std::ref(G));
+                }
+            }
             break;
         default:
             print_warning("No solver selected");
@@ -89,6 +125,25 @@ int main(int argc, char**argv){
                 break;
             case SOLVER::CLISAT:
                 // NOTE: CLISAT solver prints the maximum clique in the function itself
+                break;
+            case SOLVER::PARALLEL:
+            {
+                int num = 0;
+                while(true){
+                    if(results[0].wait_for(chrono::milliseconds(3)) == future_status::ready){
+                        num = 0;
+                        break;
+                    }
+                     if(results[1].wait_for(chrono::milliseconds(3)) == future_status::ready){
+                        num = 1;
+                        break;
+                    }
+                }
+                auto clique_found = results[num].get();
+                for(string& s : clique_found)
+                    cout << s << "\n";
+            }   
+                exit(EXIT_SUCCESS);
                 break;
             default:
                 print_warning("No solver selected");

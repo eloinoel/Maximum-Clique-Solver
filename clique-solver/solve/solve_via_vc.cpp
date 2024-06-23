@@ -43,7 +43,6 @@ int SolverViaVC::solve_via_vc(Graph& G)
     clique_UB = degeneracy_UB(d);
     auto LB_maximum_clique = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoods);
     clique_LB = (int) LB_maximum_clique.size();
-    
 
     #if DEBUG
         cout << "Computed LB=" << clique_LB << ", UB=" << clique_UB << std::endl;
@@ -82,7 +81,7 @@ int SolverViaVC::solve_via_vc(Graph& G)
 
     for(int p = 0; p < clique_UB; p++) //TODO: check if this can be reduced
     {
-        if(solve_via_vc_for_p(G, p))
+        if(solve_via_vc_for_p(G, p, clique_LB))
         {
             return clique_UB - p;
         }
@@ -90,10 +89,11 @@ int SolverViaVC::solve_via_vc(Graph& G)
     return clique_LB;
 }
 
-Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set)
+Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set, int LB)
 {
     G.set_restore();
     G.MM_induced_subgraph(induced_set);
+    //apply_k_core(G, LB);
     Graph complement = G.complementary_graph(G);
     //test_graph_consistency(complement); //TODO: remove debug
     G.restore();
@@ -101,7 +101,7 @@ Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set)
 }
 
 //MARK: SOLVER FOR P
-bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
+bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p, int LB)
 {
     //get candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}
     vector<Vertex*> D = get_candidate_set(p);
@@ -114,6 +114,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
     for(size_t i = 0; i < D.size(); ++i)
     {
         int vc_size = 0;
+        bool found = false;
         Graph complement;
         // a) construct ¬G[Vi], where Vi is the right-neighborhood of vi
         Vertex* vi = D[i];
@@ -121,13 +122,17 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
         size_t vc_UB = r_neighbourhood_size + p - d + 1;
         if(r_neighbourhood_size > 0)
         {
-            complement = get_complement_subgraph(G, right_neighbourhoods[vi->id]);
+            complement = get_complement_subgraph(G, right_neighbourhoods[vi->id], LB);
+            //apply_k_core(complement, LB);
             complement.UB = vc_UB; //bound search tree
-            vc_size = solve(complement);
+            //vc_size = solve(complement);
+            auto res = solve_limitUB(complement, vc_UB);
+            found = res.first;
+            vc_size = res.second;
         }
 
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
-        if(vc_size == (int) (r_neighbourhood_size + p - d))
+        if( found && vc_size == (int) (r_neighbourhood_size + p - d))
         {
             if(right_neighbourhoods[vi->id].empty())
             {
@@ -140,6 +145,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
             complement.delete_all();
             return true;
         }
+        complement.delete_all();
     }
 
     // if we can't find mc from right neighbourhoods, take remaining vertices in ordering
@@ -150,7 +156,8 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
     size_t vc_UB = p;
     if(Vf.size() > 0)
     {
-        complement = get_complement_subgraph(G, Vf);
+        complement = get_complement_subgraph(G, Vf, LB);
+        //apply_k_core(complement, LB);
         complement.UB = vc_UB; //bound vc search tree
         vc_size = solve(complement);
     }

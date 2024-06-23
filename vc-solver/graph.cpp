@@ -354,12 +354,15 @@ void Graph::delete_from_deglist(Vertex* v){
 
 Graph Graph::shallow_copy(){
     Graph H;
+    unordered_map<Vertex*, Vertex*> G_to_H;
+    
     for(Vertex* v : V){
-        H.add_vertex(v->id);
+        Vertex* vh = H.add_vertex(v->id);
+        G_to_H[v] = vh;
     }
 
     for(Edge* e : E){
-        H.add_edge(e->ends[0].v, e->ends[1].v);
+        H.add_edge(G_to_H[e->ends[0].v], G_to_H[e->ends[1].v]);
     }
 
     H.name_table = name_table;
@@ -413,6 +416,12 @@ void Graph::delete_all(){
     // }
     for(Vertex* v : V)
         delete v;
+    
+    for(Operation* op: history)
+        delete op;
+        
+    for(Packing_Constraint* cstr : constraints)
+        delete cstr;
 }
 
 void Graph::undo(){

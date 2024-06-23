@@ -133,6 +133,22 @@ int solve(Graph& G){
 
 }
 
+pair<bool, int> solve_limitUB(Graph& G, int maxUB){
+    G.set_restore();
+    kernelize(G);
+    
+    if(G.max_degree == 0){
+        G.set_current_vc();
+        return {true, G.partial.size()};
+    }
+
+    G.UB = maxUB;
+
+    branch(G);
+
+    return {G.UB < maxUB, G.UB};
+}
+
 size_t solve_k(Graph& G){
     G.set_restore();
     kernelize(G);

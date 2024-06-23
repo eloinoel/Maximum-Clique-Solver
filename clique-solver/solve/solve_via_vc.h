@@ -54,7 +54,7 @@ private:
      * it determines whether the clique-core gap is at most p.
      * @note call `solve_via_vc()` instead of this function
      */
-    bool solve_via_vc_for_p(Graph& G, size_t p);
+    bool solve_via_vc_for_p(Graph& G, size_t p, int LB);
 
     /**
      * @param p max assumed possible clique-core gap in current iteration
