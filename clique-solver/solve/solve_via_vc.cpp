@@ -33,6 +33,7 @@ int SolverViaVC::solve_via_vc(Graph& G)
     degeneracy_ordering = move(result.first);
     right_neighbourhoods = move(result.second);
     d = degeneracy(degeneracy_ordering, right_neighbourhoods);
+    //print_degeracy_ordering_and_rneighbourhoods(degeneracy_ordering, right_neighbourhoods, G);
 
     #if DEBUG
         cout << "Graph with N=" << initial_N << " and M=" << initial_M << " has degeneracy d=" << d << std::endl;
@@ -104,6 +105,11 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
 {
     //get candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}
     vector<Vertex*> D = get_candidate_set(p);
+    // std::cout << "N= " << G.N << ", d=" <<  d << ", p=" << p << ", D.size()=" << D.size() << std::endl;
+    // for(Vertex* v : D)
+    // {
+    //     std::cout << G.name_table[v->id] << ", #rN(v)=" << right_neighbourhoods[v->id].size() << std::endl;
+    // }
 
     for(size_t i = 0; i < D.size(); ++i)
     {
@@ -168,7 +174,8 @@ vector<Vertex*> SolverViaVC::get_candidate_set(size_t p)
     vector<Vertex*> D = vector<Vertex*>();
     for(size_t i = 0; i < degeneracy_ordering.size() - d; ++i)
     {
-        if(right_neighbourhoods[i].size() >= d - p)
+        Vertex* vi = degeneracy_ordering[i];
+        if(right_neighbourhoods[vi->id].size() >= d - p)
         {
             D.push_back(degeneracy_ordering[i]);
         }

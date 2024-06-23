@@ -34,3 +34,5 @@ int degeneracy(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vecto
  * @note iteratively applies k-core
  */
 int degeneracy(Graph& G);
+
+void print_degeracy_ordering_and_rneighbourhoods(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vector<Vertex*>>& right_neighbourhoods, Graph& G);

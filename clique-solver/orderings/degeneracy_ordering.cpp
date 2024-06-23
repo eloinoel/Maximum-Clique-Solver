@@ -1,6 +1,7 @@
 #include "degeneracy_ordering.h"
 #include "graph.h"
 #include "k_core.h"
+#include "colors.h"
 
 using namespace std;
 
@@ -95,6 +96,23 @@ int degeneracy(vector<Vertex*>& degeneracy_ordering, vector<vector<Vertex*>>& ri
 int degeneracy(Graph& G)
 {
     return max_k_core(G);
+}
+
+void print_degeracy_ordering_and_rneighbourhoods(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vector<Vertex*>>& right_neighbourhoods, Graph& G)
+{
+    cout << RED << "------------ Degeneracy ordering ------------" << RESET << endl;
+    int i = 0;
+    for(Vertex* v : degeneracy_ordering)
+    {
+        cout << CYAN << i << GREEN << ", v " << G.name_table[v->id] << ": " << RESET;
+        for(Vertex* n : right_neighbourhoods[v->id])
+        {
+            cout << G.name_table[n->id] << ", ";
+        }
+        cout << endl;
+        i++;
+    }
+    cout << RED << "------------ END degeneracy ordering ------------" << RESET << endl;
 }
 
 

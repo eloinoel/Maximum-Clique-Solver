@@ -41,7 +41,6 @@ int main(int argc, char**argv){
         case SOLVER::VIA_VC:
             solver = SolverViaVC();
             max_clique_size = solver.solve_via_vc(G);
-            print_warning("Maximum clique size: " + std::to_string(max_clique_size));
             //TODO: remove this debug code
             // for(std::string v : solver.maximum_clique){
             //     cout << v << endl;

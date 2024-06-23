@@ -40,4 +40,5 @@
 **/logs
 *user_out.txt
 **/benchmark/data/*
+**/__pycache__/*
 
