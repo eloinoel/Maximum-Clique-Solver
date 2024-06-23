@@ -341,14 +341,24 @@ public:
 
         /* clique stuff */
         struct{
-        int iclass;
-        int reference_class;
-        int filter_status;
+            int iclass;
+            int reference_class;
+            int filter_status;
         } iset;
 
         state resolved_status;
 
         Vertex* found;
+
+        struct{
+            int frequency;
+            int s_idx;
+            int AB_idx;
+            int tabu_time;
+            int dS;
+        } tabu;
+
+        int count;
 
         data_union(){};
         ~data_union(){};

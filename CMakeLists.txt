@@ -32,6 +32,7 @@ include_directories("${PROJECT_SOURCE_DIR}/clisat/filtering")
 include_directories("${PROJECT_SOURCE_DIR}/clisat/pruning")
 include_directories("${PROJECT_SOURCE_DIR}/clisat/partial_max_sat")
 include_directories("${PROJECT_SOURCE_DIR}/clisat/ordering")
+include_directories("${PROJECT_SOURCE_DIR}/clisat/heuristic")
 include_directories("${PROJECT_SOURCE_DIR}/clisat")
 
 include_directories("$(PROJECT_SOURCE_DIR)/utils")
@@ -72,6 +73,7 @@ add_executable(mc_solver
     clisat/ordering/degeneracy_ordering.cpp
     clisat/filtering/FILTCOL.cpp
     clisat/filtering/FILTSAT.cpp
+    clisat/heuristic/AMTS.cpp
 )
 
 # Define the RELEASE symbol for release builds
