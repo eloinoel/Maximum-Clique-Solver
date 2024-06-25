@@ -3,6 +3,7 @@
 #include "ordering/degeneracy_ordering.h"
 #include "pruning/ISEQ.h"
 #include "find_max_clique.h"
+#include "heuristic/AMTS.h"
 
 class Graph;
 

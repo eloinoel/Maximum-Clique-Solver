@@ -350,12 +350,12 @@ public:
 
         Vertex* found;
 
-        struct{
-            int frequency;
-            int s_idx;
-            int AB_idx;
-            int tabu_time;
-            int dS;
+        struct {
+            int frequency =  0;
+            int s_idx     = -1;
+            int AB_idx    = -1;
+            int tabu_time =  0;
+            int dS        =  0;
         } tabu;
 
         int count;

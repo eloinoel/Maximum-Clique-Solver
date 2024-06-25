@@ -1,7 +1,8 @@
 #pragma once
 #include "graph.h"
+#include "chrono"
 
-
+using ts = chrono::high_resolution_clock::time_point;
 
 class AMTS{
 public:
@@ -16,6 +17,7 @@ public:
     int C = 6;
 
     vector<Vertex*> S;
+    int f_star = -1;
     vector<Vertex*> S_star;
 
     vector<Vertex*> A;
@@ -24,9 +26,11 @@ public:
     void initalize_AMTS(Graph& G, int k_);
     void frequency_init(Graph& G);
     bool execute(Graph& G, int k_, int iter_max);
+    bool execute_timed(Graph& G, int k_, ts start, int max_ms);
     void create_AB(Graph& G);
     void update_AB(Graph& G, pair<Vertex*, Vertex*> move);
     bool tabu_search(Graph& G, int L);
+    bool tabu_search_timed(Graph& G, int Lm, ts start, int max_ms);
     pair<bool, pair<Vertex*, Vertex*>> constrained_move(Graph& G);
     pair<Vertex*, Vertex*> probability_move(Graph& G);
 
@@ -62,7 +66,7 @@ public:
             density = 1.0;
         else{
             const int M = G.E.size();
-            density = (2*M)/(N * (N-1));
+            density =  (double) (2*M)/(N * (N-1));
         }
     }
 };

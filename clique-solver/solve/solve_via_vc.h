@@ -12,13 +12,19 @@
 class Graph;
 class Vertex;
 
+typedef struct rn_{
+    std::vector<Vertex*> neigh;
+    int vc_size = 0;
+    std::vector<std::string> sol;
+}rn;
+
 class SolverViaVC
 {
 //-----------------------Variables-----------------------
 public:
 
     std::vector<Vertex*> degeneracy_ordering;
-    std::vector<std::vector<Vertex*>> right_neighbourhoods;
+    std::vector<rn> right_neighbourhoods;
     int d;
 
     int clique_UB;
@@ -74,6 +80,7 @@ private:
      * @note stores solution in this.maximum_clique, O(complement.V * vc_size)
      */
     void extract_maximum_clique_solution(Graph& complementGraph, Vertex* o = nullptr);
+    std::vector<std::string> extract_maximum_clique_solution_from_rn(rn& right, Graph& complementGraph);
 
     Vertex* get_vertex_by_name(Graph& G, std::string name);
 };
