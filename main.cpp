@@ -19,7 +19,7 @@
 #include <future>
 
 #define BENCHMARK 0 //TODO: remove once benchmark.sh works
-#define ACTIVE_SOLVER SOLVER::PARALLEL
+#define ACTIVE_SOLVER SOLVER::CLISAT
 
 
 vector<string> launch_dOmega(Graph G){
@@ -44,10 +44,6 @@ int main(int argc, char**argv){
     Graph G;
     load_graph(G);
 
-    AMTS amts = AMTS(G);
-    amts.execute(G, 25, 1000000);
-    cout << amts.S_star.size() << "\n";
-    exit(EXIT_SUCCESS);
     //test_graph_consistency(G); //TODO: remove debug
     //std::cout << "Graph with N=" + std::to_string(G.N) + " and M=" + std::to_string(G.M) + " loaded." << std::endl;
 
@@ -91,7 +87,7 @@ int main(int argc, char**argv){
             
                 if(copy_domega){
                     Graph H = G.shallow_copy();
-                    results[0] = std::async(std::launch::async, launch_dOmega, std::ref(H));
+                    results[0] = std::async(std::launch::async, launch_dOmega, H);
                 }else{
                     results[0] = std::async(std::launch::async, launch_dOmega, std::ref(G));
                 }

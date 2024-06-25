@@ -13,7 +13,7 @@ void checkLabelValidity(const string& label) {
 }
 
 void load_graph(Graph& G){
-    ios::sync_with_stdio(false);
+    //ios::sync_with_stdio(false);
     string line;
     unordered_map<string, Vertex*> label_map;
     vector<string> name_table;

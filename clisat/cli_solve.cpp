@@ -1,10 +1,59 @@
 #include "cli_solve.h"
 #include "graph.h"
+#include "lower_bounds.h"
+#include "k_core.h"
+#include "degeneracy_ordering.h"
 
 
 void solve_clique(Graph& G, bool output){
+
+    /*std::vector<Vertex*> degeneracy_ordering;
+    std::vector<std::vector<Vertex*>> right_neighbourhoods;
+    int d;
+    auto result = degeneracy_ordering_rN(G);
+    degeneracy_ordering = move(result.first);
+    right_neighbourhoods = move(result.second);
+    d = degeneracy(degeneracy_ordering, right_neighbourhoods);
+
+    auto LB_maximum_clique = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoods);
+    int clique_LB = (int) LB_maximum_clique.size();*/
+
+    //cout << "init Lb" << clique_LB << "\n";
+
+    /*AMTS amts = AMTS(G);
+    vector<Vertex*> heuristic_clique;
+    auto start = chrono::high_resolution_clock::now();
+    
+    bool found_once = false;
+    int max_ms = 100;
+    for(int k_lb = clique_LB; k_lb < G.N; k_lb++){
+        bool found = amts.execute_timed(G, k_lb, start, max_ms);
+        if(found){
+            clique_LB = k_lb;
+            heuristic_clique = amts.S_star;
+            //cout << amts.S_star.size() << "\n";
+            found_once = true;
+        }
+        else{
+            break;
+        }
+
+        if(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count() > max_ms)
+            break;
+        
+
+    }
+   
+    apply_k_core(G, clique_LB);*/
+
+
     
     auto order = cli_degeneracy_ordering(G);
+  
+    /*G.V = order;
+    for(size_t i = 0; i < G.N; i++){
+        G.V[i]->v_idx = i;
+    }*/
 
     /* add heuristic clique */
 
@@ -22,6 +71,20 @@ void solve_clique(Graph& G, bool output){
         vi->mu = mu_vi;
     }
 
+    
+    //cout << "LB" <<  clique_LB << "\n";
+    /*if(found_once){
+        //G.partial = move(heuristic_clique);
+        G.best_sol = move(heuristic_clique);
+        G.LB = G.best_sol.size();
+    }
+    else{
+        G.LB = 1;
+        clique_LB = 1;
+    }*/
+
+    //cout << "G LB" << G.LB << "\n";
+    
 
     for(int i = 1; i < G.N; i++){
         //cout << "trying " << i << ", best = "  << G.best_sol.size() << "\n";
@@ -32,7 +95,6 @@ void solve_clique(Graph& G, bool output){
         G.set_restore();
 
         switch_to_subproblem(G, order, i); // create subproblem graph
-
         find_max_clique(G, pruned);
 
         G.restore();

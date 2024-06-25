@@ -5,6 +5,8 @@
 
 using namespace std;
 
+
+
 pair<vector<Vertex*>, vector<int>> degeneracy_ordering(Graph& G)
 {
     G.set_restore();
