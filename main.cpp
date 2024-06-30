@@ -15,11 +15,13 @@
 #include "cli_solve.h"
 #include "AMTS.h"
 
+#include "clique-solver/reductions/k_core.h"
+
 #include <thread>
 #include <future>
 
 #define BENCHMARK 0 //TODO: remove once benchmark.sh works
-#define ACTIVE_SOLVER SOLVER::CLISAT
+#define ACTIVE_SOLVER SOLVER::PARALLEL
 
 
 vector<string> launch_dOmega(Graph G){
@@ -33,6 +35,21 @@ vector<string> launch_cli(Graph& G){
     return get_cli_output(G);
 }
 
+vector<string> launch_vc_comp(Graph G){
+    int edges = G.E.size();
+    solve(G);
+    auto in_sol = G.new_timestamp();
+    for(Vertex* v : G.partial)
+        v->marked = in_sol;
+    
+    vector<string> comp_sol;
+    for(Vertex* v : G.V){
+        if(v->marked != in_sol)
+            comp_sol.push_back(G.name_table[v->id]);
+    }
+    return comp_sol;
+}
+
 int main(int argc, char**argv){
 
     if(BENCHMARK)
@@ -43,7 +60,11 @@ int main(int argc, char**argv){
 
     Graph G;
     load_graph(G);
-
+    const int N = G.V.size();
+    const int M = G.E.size();
+    double density =  (double) (2*M)/(N * (N-1));
+   
+   
     //test_graph_consistency(G); //TODO: remove debug
     //std::cout << "Graph with N=" + std::to_string(G.N) + " and M=" + std::to_string(G.M) + " loaded." << std::endl;
 
@@ -56,7 +77,8 @@ int main(int argc, char**argv){
     int max_clique_size = -1;
     vector<Vertex*> tmp_mc;
 
-    future<vector<string>> results[2];
+    bool using_comp_vc = false;
+    future<vector<string>> results[3];
     switch(ACTIVE_SOLVER){
         case SOLVER::VIA_VC:
             solver = SolverViaVC();
@@ -84,7 +106,13 @@ int main(int argc, char**argv){
             {
                 bool copy_domega = true;
                 bool copy_cli = false; // ALL BUT LAST NEED TO BE COPIED
-            
+                if(density > 0.4 && N < 8000){
+                    using_comp_vc = true;
+                    Graph H = G.complementary_graph(G);
+                    int count = H.E.size();
+                    results[2] = std::async(std::launch::async, launch_vc_comp, H);
+                }
+
                 if(copy_domega){
                     Graph H = G.shallow_copy();
                     results[0] = std::async(std::launch::async, launch_dOmega, H);
@@ -99,6 +127,13 @@ int main(int argc, char**argv){
                 }
             }
             break;
+        case SOLVER::VC_COMP:
+        {
+            Graph H = G.complementary_graph(G);
+            cout << solve(H) << "\n";
+            exit(0);
+        }
+            break;
         default:
             print_warning("No solver selected");
             break;
@@ -111,7 +146,7 @@ int main(int argc, char**argv){
         //print_success("Found maximum clique of size " + std::to_string(max_clique_size));
     #endif
 
-    #ifdef RELEASE
+    //#ifdef RELEASE
         //G.output_vc();
         //print maximum clique
         switch(ACTIVE_SOLVER){
@@ -132,16 +167,21 @@ int main(int argc, char**argv){
             {
                 int num = 0;
                 while(true){
-                    if(results[0].wait_for(chrono::milliseconds(3)) == future_status::ready){
+                    if(results[0].wait_for(chrono::milliseconds(5)) == future_status::ready){
                         num = 0;
                         break;
                     }
-                     if(results[1].wait_for(chrono::milliseconds(3)) == future_status::ready){
+                     if(results[1].wait_for(chrono::milliseconds(5)) == future_status::ready){
                         num = 1;
+                        break;
+                    }
+                    if(using_comp_vc && results[2].wait_for(chrono::milliseconds(5)) == future_status::ready){
+                        num = 2;
                         break;
                     }
                 }
                 auto clique_found = results[num].get();
+                //cout << "num" << num << " size " << clique_found.size() << "\n";
                 for(string& s : clique_found)
                     cout << s << "\n";
             }   
@@ -151,7 +191,7 @@ int main(int argc, char**argv){
                 print_warning("No solver selected");
                 break;
         }
-    #endif
+    //#endif
 
     #if DEBUG
         cout << "max clique has size " << max_clique_size << std::endl;

@@ -4,14 +4,14 @@ cmake_minimum_required(VERSION 3.10)
 set(PROJECT_NAME "mc_solver")
 project(${PROJECT_NAME})
 
-set(CMAKE_CXX_STANDARD 20) # Set the C++ standard.
+set(CMAKE_CXX_STANDARD 17) # Set the C++ standard.
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_COMPILER_ID "GNU") # Use GCC for compilation.
 
 # Set compiler flags
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -pthread")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -pg -O3 -march=native")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -pg -O3 -march=native -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -DNDEBUG")
 
 # Include local header files.

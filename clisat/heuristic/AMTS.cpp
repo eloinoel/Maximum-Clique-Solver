@@ -4,16 +4,21 @@
 #define not_in_S(x) (x->data.tabu.s_idx == -1)
 #define in_S(x) (x->data.tabu.s_idx != -1)
 #define TABU(x) (x->data.tabu.tabu_time > iter)
+#define degS(x) (x->data.tabu.dS)
 
 #define OUT_OF_TIME (chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count() > max_ms)
 
 #define LEGAL_CLIQUE ((k*(k-1))/2)
 
-void AMTS::initalize_AMTS(Graph& G, int k_){
+void AMTS::initalize(Graph& G, int k_){
 
-    k = k_;
-    max_d = -1;
-    min_s_d = numeric_limits<int>::max();
+    iter            =  0;
+    k               =  k_;
+    B_deg           = -1;
+    candidate_B_deg = -1;
+    A_deg           =  numeric_limits<int>::max();
+    candidate_A_deg =  numeric_limits<int>::max();
+
     C = max((int) k/40, 6);
 
     for(Vertex* v : G.V){
@@ -161,6 +166,8 @@ void AMTS::frequency_init(Graph& G){
         assert(in_S(s));
     clear_A();
     clear_B();
+    clear_Set(A_candidate);
+    clear_Set(B_candidate);
     create_AB(G);
 }
 
@@ -262,22 +269,22 @@ bool AMTS::tabu_search(Graph& G, int L){
         }
 
         if(!TABU(u)){
-            if(u->data.tabu.dS > max_d){
-                max_d = u->data.tabu.dS;
+            if(u->data.tabu.dS > B_deg){
+                B_deg = u->data.tabu.dS;
                 clear_B();
             }
-            if(u->data.tabu.dS == max_d){
+            if(u->data.tabu.dS == B_deg){
                 assert(u->data.tabu.AB_idx == -1);
                 add_B(u);
             }
         }
 
         if(!TABU(w)){
-            if(w->data.tabu.dS < min_s_d){
-                min_s_d = w->data.tabu.dS ;
+            if(w->data.tabu.dS < A_deg){
+                A_deg = w->data.tabu.dS ;
                 clear_A();
             }
-            if(w->data.tabu.dS  == min_s_d){
+            if(w->data.tabu.dS  == A_deg){
                 assert(w->data.tabu.AB_idx == -1);
                 add_A(w);
         }
@@ -369,21 +376,21 @@ bool AMTS::tabu_search_timed(Graph& G, int L, ts start, int max_ms){
         }
 
         if(!TABU(u)){
-            if(u->data.tabu.dS > max_d){
-                max_d = u->data.tabu.dS;
+            if(u->data.tabu.dS > B_deg){
+                B_deg = u->data.tabu.dS;
                 clear_B();
             }
-            if(u->data.tabu.dS == max_d){
+            if(u->data.tabu.dS == B_deg){
                 add_B(u);
             }
         }
 
         if(!TABU(w)){
-            if(w->data.tabu.dS < min_s_d){
-                min_s_d = w->data.tabu.dS ;
+            if(w->data.tabu.dS < A_deg){
+                A_deg = w->data.tabu.dS ;
                 clear_A();
             }
-            if(w->data.tabu.dS  == min_s_d){
+            if(w->data.tabu.dS  == A_deg){
                 add_A(w);
         }
 
@@ -395,7 +402,7 @@ bool AMTS::tabu_search_timed(Graph& G, int L, ts start, int max_ms){
 }
 
 bool AMTS::execute(Graph& G, int k_, int iter_max){
-    initalize_AMTS(G, k_);
+    initalize(G, k_);
     create_AB(G);
 
     for(Vertex* a : A)
@@ -419,7 +426,7 @@ bool AMTS::execute(Graph& G, int k_, int iter_max){
 }
 
 bool AMTS::execute_timed(Graph& G, int k_, ts start, int max_ms ){
-    initalize_AMTS(G, k_);
+    initalize(G, k_);
     create_AB(G);
 
     for(Vertex* a : A)
@@ -444,10 +451,64 @@ bool AMTS::execute_timed(Graph& G, int k_, ts start, int max_ms ){
     return false;
 }
 
+void AMTS::update_A(Vertex* a){
+    const int d_a = a->data.tabu.dS;
+    if(d_a < candidate_A_deg){
+        if(d_a < A_deg){
+            if(!A.empty()){
+                for(Vertex* ac : A)
+                    ac->data.tabu.AB_idx = -1;
+                swap(A, A_candidate);
+                candidate_A_deg = A_deg;
+            }
+            clear_A();
+            A_deg = d_a;
+        }else{
+            candidate_A_deg = d_a;
+            A_candidate.clear();
+            A_candidate.push_back(a);
+        }
+        if(d_a == A_deg){
+            add_A(a);
+        }
+        return;
+    }
+    if(d_a == candidate_A_deg)
+        A_candidate.push_back(a);
+}
+
+void AMTS::update_B(Vertex* b){
+    const int d_b = b->data.tabu.dS;
+    if(d_b > candidate_B_deg){
+        if(d_b > B_deg){
+            if(!B.empty()){
+                for(Vertex* bc : B)
+                    bc->data.tabu.AB_idx = -1;
+                swap(B, B_candidate);
+                candidate_B_deg = B_deg;
+            }
+            clear_B();
+            B_deg = d_b;
+        }else{
+            candidate_B_deg = d_b;
+            B_candidate.clear();
+            B_candidate.push_back(b);
+        }
+        if(d_b == B_deg){
+            add_B(b);
+        }
+        return;
+    }
+    if(d_b == candidate_B_deg)
+        B_candidate.push_back(b);
+}
+
 void AMTS::create_AB(Graph& G){
     auto s_time = G.new_timestamp();
-    max_d = -1;
-    min_s_d = numeric_limits<int>::max();
+    B_deg = -1;
+    candidate_B_deg = -1;
+    A_deg = numeric_limits<int>::max();
+    candidate_A_deg = numeric_limits<int>::max();
 
     // compute A and B
     for(Vertex* s : S){
@@ -457,19 +518,21 @@ void AMTS::create_AB(Graph& G){
             n->data.tabu.dS = d_n;
             if(!TABU(n)){
                 if(not_in_S(n)){
-                    if (d_n > max_d){
-                        max_d = d_n;
+                    if (d_n > B_deg){
+                        B_deg = d_n;
                         clear_B();
                     }
-                    if(d_n == max_d)
+                    if(d_n == B_deg)
                         add_B(n);
+                    //update_B(n);
                 }else{
-                    if(d_n < min_s_d){
-                        min_s_d = d_n;
+                    if(d_n < A_deg){
+                        A_deg = d_n;
                         clear_A();
                     }
-                    if(d_n == min_s_d)
+                    if(d_n == A_deg)
                         add_A(n);
+                    //update_A(n);
                 }
             }
         }
@@ -522,6 +585,135 @@ void AMTS::clear_B(){
     B.clear();
 }
 
+void AMTS::clear_Set(vector<Vertex*>& Set){
+    for(Vertex* x : Set){
+        x->data.tabu.AB_idx = -1;
+    }
+    Set.clear();
+}
+
+void AMTS::pop_Set(vector<Vertex*>& Set, Vertex* x){
+    Set.back()->data.tabu.AB_idx = x->data.tabu.AB_idx;
+    swap(Set[x->data.tabu.AB_idx], Set.back());
+    x->data.tabu.AB_idx = -1;
+    Set.pop_back();
+}
+
+void AMTS::add_Set(vector<Vertex*>& Set, Vertex* x){
+    assert(x->data.tabu.s_idx == -1);
+    assert(x->data.tabu.AB_idx == -1);
+    x->data.tabu.AB_idx = Set.size();
+    Set.push_back(x);
+}
+
+void AMTS::update_AB_new(Graph& G, pair<Vertex*, Vertex*> move){
+    auto& [u, v] = move;
+
+    int d_u = 0;
+    // u is moved out of S
+    /* update u neighborhood */
+    for(Vertex* n : u->neighbors){
+        d_u += in_S(n);
+        n->data.tabu.dS--; // has one less neighbor in S;
+        if(n->data.tabu.AB_idx != -1){
+            assert(!TABU(n));
+            if(in_S(n)){
+                if(!A.empty()){
+                    swap(A, A_candidate);
+                    candidate_A_deg = A_deg;
+                }
+                clear_Set(A); // new better A, n is only new member
+                A_deg = degS(n);
+                add_Set(A, n);
+            }
+            else{
+                // this will not work, because this could also be just B_candidate
+                if(degS(n)+ 1 == B_deg){
+                    pop_Set(B, n); // no longer max
+                }else{
+                    pop_Set(B_candidate, n);
+                    if(B_candidate.empty())
+                        candidate_B_deg = -1;
+                }
+                if(degS(n) == candidate_B_deg)
+                    add_Set(B_candidate, n);
+                else if(degS(n) > candidate_B_deg){
+                    clear_Set(B_candidate);
+                    add_Set(B_candidate, n);
+                    candidate_B_deg = degS(n);
+                }
+                
+                if(B.empty()){
+                    swap(B, B_candidate);
+                    B_deg = candidate_B_deg;
+                    candidate_B_deg = -1;
+                }
+            }
+        }else if(in_S(n)){
+            if(degS(n) < candidate_A_deg){
+                clear_Set(A_candidate);
+                candidate_A_deg = degS(n);
+            }
+            if(degS(n) == candidate_A_deg)
+                add_Set(A_candidate, n);
+        }
+    }
+    /* update for u */
+    u->data.tabu.dS = d_u; // neighbors of u in S
+
+    // v is moved into S
+    int d_v = 0;
+    /* update v neighborhood */
+    for(Vertex* w : v->neighbors){
+        d_v += in_S(w);
+        w->data.tabu.dS++; // has one less neighbor in S;
+        if(w->data.tabu.AB_idx != -1){
+            assert(!TABU(w));
+            if(in_S(w)){
+                if(degS(w) - 1 == A_deg){
+                    pop_Set(A, w); // no longer minimum
+                }else{
+                    pop_Set(A_candidate, w);
+                    if(A_candidate.empty())
+                        candidate_A_deg = numeric_limits<int>::max();
+                }
+                if(degS(w) == candidate_A_deg)
+                    add_Set(A_candidate, w);
+                else if(degS(w) < candidate_A_deg){
+                    clear_Set(A_candidate);
+                    add_Set(A_candidate, w);
+                    candidate_A_deg = degS(w);
+                }
+                
+                if(A.empty()){
+                    swap(A, A_candidate);
+                    A_deg = candidate_A_deg;
+                    candidate_A_deg = numeric_limits<int>::max();
+                }
+                
+            }
+            else{
+                if(!B.empty()){
+                    swap(B, B_candidate);
+                    candidate_B_deg = B_deg;
+                }
+                clear_Set(B); // new best B, w only member
+                B_deg = w->data.tabu.dS;
+                add_Set(B, w);
+            }
+        }else if(not_in_S(w)){
+            if(degS(w) < candidate_B_deg){
+                clear_Set(B_candidate);
+                candidate_B_deg = degS(w);
+            }
+            if(degS(w) == candidate_B_deg)
+                add_Set(B_candidate, w);
+        }
+    }
+
+    v->data.tabu.dS = d_v;
+}
+
 void AMTS::update_AB(Graph& G, pair<Vertex*, Vertex*> move){
     auto& [u, v] = move;
 
@@ -534,12 +726,12 @@ void AMTS::update_AB(Graph& G, pair<Vertex*, Vertex*> move){
         if(n->data.tabu.AB_idx != -1){
             assert(!TABU(n));
             if(in_S(n)){
-                clear_A(); // new better A, n is only new member
-                min_s_d = n->data.tabu.dS;
-                add_A(n);
+                clear_Set(A); // new better A, n is only new member
+                A_deg = n->data.tabu.dS;
+                add_Set(A, n);
             }
             else{
-                pop_B(n); // no longer max
+                pop_Set(B, n); // no longer max
             }
         }
     }
@@ -555,12 +747,12 @@ void AMTS::update_AB(Graph& G, pair<Vertex*, Vertex*> move){
         if(w->data.tabu.AB_idx != -1){
             assert(!TABU(w));
             if(in_S(w)){
-                pop_A(w); // no longer minimum
+                pop_Set(A, w); // no longer minimum
             }
             else{
-                clear_B(); // new best B, w only member
-                max_d = w->data.tabu.dS;
-                add_B(w);
+                clear_Set(B); // new best B, w only member
+                B_deg = w->data.tabu.dS;
+                add_Set(B, w);
             }
         }
     }
@@ -568,7 +760,7 @@ void AMTS::update_AB(Graph& G, pair<Vertex*, Vertex*> move){
     v->data.tabu.dS = d_v;
     
     // either A or B empty, adjust max/min deg accordingly and fill them again
-    bool fill_A = A.empty();
+    /*bool fill_A = A.empty();
     bool fill_B = B.empty();
 
     if(fill_A || fill_B){
@@ -616,9 +808,62 @@ void AMTS::update_AB(Graph& G, pair<Vertex*, Vertex*> move){
             }
         }
 
-    }
-
+    }*/
+    _profile_fill_AB(G);
     
+}
+
+void AMTS::_profile_fill_AB(Graph& G){
+     // either A or B empty, adjust max/min deg accordingly and fill them again
+    bool fill_A = A.empty();
+    bool fill_B = B.empty();
+
+    if(fill_A || fill_B){
+        vector<Vertex*> new_A;
+        vector<Vertex*> new_B;
+        int new_max_d = -1;
+        int new_min_d = numeric_limits<int>::max();
+
+        for(Vertex* v : G.V){
+            if(!TABU(v)){
+                if(in_S(v) && fill_A){
+                    if(v->data.tabu.dS < new_min_d){
+                        new_A.clear();
+                        new_min_d = v->data.tabu.dS;
+                    }
+                    if(new_min_d == v->data.tabu.dS){
+                        new_A.push_back(v);
+                    }
+                }
+                else{ if(not_in_S(v) && fill_B){
+                    if(v->data.tabu.dS > new_max_d){
+                        new_B.clear();
+                        new_max_d = v->data.tabu.dS;
+                    }
+                    if(new_max_d == v->data.tabu.dS){
+                        new_B.push_back(v);
+                    }
+                }}
+            }
+        }
+        if(fill_A){
+            A = new_A;
+            A_deg = new_min_d;
+            for(size_t i = 0; i < A.size(); i++){
+                assert(in_S(A[i]));
+                A[i]->data.tabu.AB_idx = i;
+            }
+        }
+        if(fill_B){
+            B = new_B;
+            B_deg = new_max_d;
+            for(size_t i = 0; i < B.size(); i++){
+                assert(not_in_S(B[i]));
+                B[i]->data.tabu.AB_idx = i;
+            }
+        }
+
+    }
 }
 
 pair<bool, pair<Vertex*, Vertex*>> AMTS::constrained_move(Graph& G){
@@ -628,30 +873,32 @@ pair<bool, pair<Vertex*, Vertex*>> AMTS::constrained_move(Graph& G){
 
     vector<pair<Vertex*, Vertex*>> T_moves;
 
-    for(Vertex* a : A){
-        assert(a->data.tabu.s_idx != -1);
-        auto adj_a = G.new_timestamp();
-        for(Vertex* n : a->neighbors){
-            n->marked = adj_a;
+    for(Vertex* b : B){
+        assert(b->data.tabu.s_idx != -1);
+        auto adj_b = G.new_timestamp();
+        for(Vertex* n : b->neighbors){
+            n->marked = adj_b;
         }
 
-        for(Vertex* b : B){
-            if(b->marked != adj_a){
+        for(Vertex* a : A){
+            if(a->marked != adj_b){
                 T_moves.push_back({a, b});
                 assert(b->data.tabu.s_idx == -1);
             }
         }
 
-        if(T_moves.size() > 10000)
+        if(T_moves.size() > 1000)
             break;
     }
 
+    //cout << "A: " << A.size() << ", B: " << B.size() << ", T: " << T_moves.size() << ", Searchspace: " << A.size() * B.size() << "\n";
+ 
     bool improving = true;
     
     if(T_moves.empty()){
-        improving = ((max_d - min_s_d - 1) > 0);
+        improving = ((B_deg - A_deg - 1) > 0);
     }else{
-        improving = (max_d - min_s_d) > 0;
+        improving = (B_deg - A_deg) > 0;
     }
 
     if(!T_moves.empty()){
