@@ -18,7 +18,8 @@ enum class SOLVER
     CLISAT,
     VIA_VC,
     PARALLEL,
-    VC_COMP
+    VC_COMP,
+    LMC
 };
 
 /**

@@ -48,16 +48,18 @@ inline vector<Vertex*> neighbors_of_color_k(unordered_map<Vertex*, int>& colorin
  */
 inline int renumber(unordered_map<Vertex*, int>& coloring, int k, Vertex* v, int max_color){
 
+    vector<Vertex*> neighbors;
+    Vertex* neighbor;
     for(int l = 1; l<=max_color; l++){
 
         //check for |N(v) ∩ C_l| == 1
-        vector<Vertex*> neighbors = neighbors_of_color_k(coloring,l, v);
+        neighbors = neighbors_of_color_k(coloring,l, v);
         if(neighbors.size()!=1){
             continue;
         }
 
         //check for |N(n) ∩ C_k| == 0 for the one n ∈ N(v) with color(n) == l
-        Vertex* neighbor = neighbors.back();
+        neighbor = neighbors.back();
         if(neighbors_of_color_k(coloring, k, neighbor).size()!=0){
             continue;
         }
@@ -98,4 +100,50 @@ vector<Vertex*> reduce_B_by_coloring(vector<Vertex*>& partial_clique, vector<Ver
     }
 
     return new_branching_verticies;
+}
+
+
+Color_container dsatur(Graph& G, int r, std::vector<Vertex*>& global_ordering){
+    //preferred max color
+
+    vector<Vertex*> B;
+    vector<vector<Vertex*>> A(r);
+    vector<Vertex*> new_ordering;
+    unordered_map<Vertex*, int> coloring;
+    unordered_map<int, int> index_coloring;//safer for transport because same ints are not only equal but the same
+    Vertex* candidate;
+
+    //for(Vertex* candidate: global_ordering){
+    for(int i = global_ordering.size()-1; i >= 0; i--){
+        candidate = global_ordering.at(i);
+
+        //basic coloring
+        int color = 1;
+        while(is_color_in_neighborhood(coloring,color,candidate)==true){
+            color++;
+        }
+        coloring[candidate]=color;
+
+        //try to switch color(v) with color(n) for any n ∈ N(v)
+        if(color >= r){
+            color = renumber(coloring,color,candidate, r-1);
+        }
+    }
+
+    //create A
+    for(int i =0; i<global_ordering.size();i++){
+        A[min(coloring[global_ordering[i]],r)-1].push_back(global_ordering[i]);
+    }
+
+    //change ordering based on coloring    
+    for(int i = A.size()-1; i>=0; i--){
+        vector<Vertex*> a = A[i];
+        new_ordering.insert(new_ordering.end(),a.begin(), a.end());
+    }
+
+    //get B
+    B=A.back();
+    A.pop_back();
+    
+    return Color_container(coloring, new_ordering, B, A);
 }

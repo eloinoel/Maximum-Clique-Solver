@@ -34,7 +34,7 @@
 using my_time_point = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 static constexpr unsigned int TIMEOUT = 10; //seconds
-my_time_point bnb_timeout = chrono::system_clock::now();
+my_time_point bnb_timeout = chrono::high_resolution_clock::now();
 std::unordered_map<TECHNIQUE, unsigned long> time_table;
 
 void reset_times(){
@@ -182,7 +182,7 @@ void run_benchmark(SOLVER solver_to_execute){
     //define time_point when BnB has to cancel
     std::chrono::seconds offset(TIMEOUT);
 
-    bnb_timeout = chrono::system_clock::now()+offset;
+    bnb_timeout = chrono::high_resolution_clock::now()+offset;
     vector<Vertex*> maximum_clique;
     unsigned long maximum_clique_size = -1;
     SolverViaVC solver;
