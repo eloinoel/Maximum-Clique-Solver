@@ -24,9 +24,9 @@ Solver is developed in C++. Benchmark script and instructions on how to run it c
 
 Execute one of the following commands:
 ```bash
-  echo bash compile.sh --release
-  echo bash compile.sh --debug
-  echo bash compile.sh --profile
+  bash compile.sh --release
+  bash compile.sh --debug
+  bash compile.sh --profile
 ```
 
 ### Manual Build
