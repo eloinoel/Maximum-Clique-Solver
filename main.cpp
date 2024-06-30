@@ -14,6 +14,8 @@
 #include "tests.h"
 #include "cli_solve.h"
 #include "AMTS.h"
+#include "lmc_solver.h"
+
 
 #include "clique-solver/reductions/k_core.h"
 
@@ -21,7 +23,7 @@
 #include <future>
 
 #define BENCHMARK 0 //TODO: remove once benchmark.sh works
-#define ACTIVE_SOLVER SOLVER::PARALLEL
+#define ACTIVE_SOLVER SOLVER::LMC
 
 
 vector<string> launch_dOmega(Graph G){
@@ -80,6 +82,8 @@ int main(int argc, char**argv){
     bool using_comp_vc = false;
     future<vector<string>> results[3];
     switch(ACTIVE_SOLVER){
+        case SOLVER::LMC:
+            maximum_clique = lmc(G);
         case SOLVER::VIA_VC:
             solver = SolverViaVC();
             max_clique_size = solver.solve_via_vc(G);
@@ -150,6 +154,11 @@ int main(int argc, char**argv){
         //G.output_vc();
         //print maximum clique
         switch(ACTIVE_SOLVER){
+            case SOLVER::LMC:
+                for(Vertex* v : maximum_clique){
+                    cout << G.name_table[v->id] << endl;
+                }
+                break;
             case SOLVER::VIA_VC:
                 for(std::string v : solver.maximum_clique){
                     cout << v << "\n";
