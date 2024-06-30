@@ -1,6 +1,8 @@
 #include "upper_bounds.h"
 #include "graph.h"
 
+using namespace std;
+
 BOUNDING upper_bound(Graph& G, vector<Vertex*>& maximum_clique)
 {
     int candidate_set_size = 0;

@@ -7,6 +7,9 @@
 
 #include <atomic>
 #include <set>
+
+using namespace std;
+
 /**
  * @brief Get candidate set P
  *

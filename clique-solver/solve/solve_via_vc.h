@@ -24,14 +24,13 @@ public:
     int clique_UB;
     int clique_LB;
 
-    /** 
-     * this will be filled after solve_via_vc() is called 
+    /**
+     * this will be filled after solve_via_vc() is called
      * */
     std::vector<std::string> maximum_clique;
 
-private: 
-    //Graph solution_complement_graph;
-    
+private:
+
 
 //-----------------------Functions-----------------------
 public:

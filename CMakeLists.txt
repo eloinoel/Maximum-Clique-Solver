@@ -53,7 +53,7 @@ add_executable(mc_solver
     vc-solver/reductions/deg_rules.cpp
     vc-solver/reductions/unconfined.cpp
     vc-solver/reductions/kernel.cpp
-    vc-solver/reductions/desk.cpp 
+    vc-solver/reductions/desk.cpp
     vc-solver/lowerbounds/clique_cover.cpp
     vc-solver/packing/packing.cpp
 
@@ -64,7 +64,7 @@ add_executable(mc_solver
     clique-solver/reductions/k_core.cpp
     clique-solver/orderings/degeneracy_ordering.cpp
     clique-solver/solve/solve_via_vc.cpp
-    
+
     clisat/partial_max_sat/partial_max_sat.cpp
     clisat/cli_solve.cpp
     clisat/find_max_clique.cpp

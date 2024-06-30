@@ -76,22 +76,6 @@ void test_vertices(Graph& G)
         }
     }
 
-    //consistent with edges
-    // for(Vertex* v : G.V)
-    // {
-    //     for(Edge* e : G.E) {
-    //         assert(e->ends[0].v == v || e->ends[1].v == v);
-    //         bool consistent = false;
-    //         Vertex* expected[2] = {e->ends[0].v, e->ends[1].v};
-    //         Vertex* found[2];
-    //         for (size_t i = 0; i < 2; i++){
-    //             found[i] = e->ends[i].v->neighbors[e->ends[i].idx];
-    //             consistent |= found[i] == this;
-    //         }
-    //         assert(consistent);
-    //     }
-    // }
-    
     print_success("Passed vertex test. All neighbours are valid.");
 
 }
@@ -113,7 +97,7 @@ void test_deg_lists(Graph& G)
         assert(deg(v) == v->list_idx);
         assert(G.deg_lists.size() > deg(v));
         assert(!G.deg_lists[deg(v)].empty());
-        
+
 
         int found_v = -1;
         for(int i = 0; i < (int) G.deg_lists[v->list_idx].size(); ++i)

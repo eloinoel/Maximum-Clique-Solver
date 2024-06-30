@@ -2,8 +2,10 @@
 
 #include <set>
 #include <vector>
+
 class Graph;
 class Vertex;
+
 /**
  * @brief recursive branch and bound algorithm
  */

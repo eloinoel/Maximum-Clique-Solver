@@ -45,7 +45,7 @@ pair<vector<Vertex*>, vector<vector<Vertex*>>> degeneracy_ordering_rN(Graph& G)
 
     vector<Vertex*> ordering = vector<Vertex*>(G.V.size());
     vector<vector<Vertex*>> right_neighbourhoods = vector<vector<Vertex*>>(G.V.size());
-    
+
     int N = G.N;
     for(int i = 0; i < N; ++i)
     {
@@ -98,7 +98,7 @@ int degeneracy(Graph& G)
     return max_k_core(G);
 }
 
-void print_degeracy_ordering_and_rneighbourhoods(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vector<Vertex*>>& right_neighbourhoods, Graph& G)
+void print_degeracy_ordering_and_rneighbourhoods(vector<Vertex*>& degeneracy_ordering, vector<vector<Vertex*>>& right_neighbourhoods, Graph& G)
 {
     cout << RED << "------------ Degeneracy ordering ------------" << RESET << endl;
     int i = 0;
@@ -114,21 +114,3 @@ void print_degeracy_ordering_and_rneighbourhoods(std::vector<Vertex*>& degenerac
     }
     cout << RED << "------------ END degeneracy ordering ------------" << RESET << endl;
 }
-
-
-
-//-------------------------- GARBAGE COLLECTION ---------------------------------------
-
-/**
- * assumes that G.max_degree > 0
- * delete this method, if min_degree is maintained in graph
- */ //TODO: PROBABLY OBSOLETE NOW
-// pair<Vertex*, int> get_lowest_degree_vertex(Graph& G, int search_start_index = 0)
-// {
-//     while(search_start_index <= G.max_degree)
-//     {
-//         if(!G.deg_lists[search_start_index].empty())
-//             return make_pair(G.deg_lists[search_start_index][0], search_start_index);
-//         search_start_index++;
-//     }
-// }

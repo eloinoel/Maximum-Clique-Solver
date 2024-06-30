@@ -2,13 +2,11 @@
  *                        Portfolio Solver Wrapper                        *
  *************************************************************************/
 
-#include <thread>
-
 #include "graph.h"
 #include "load.h"
 #include "branch_and_bound.h"
 #include "benchmark.h"
-#include "solve.h" // only for testing
+#include "solve.h"
 #include "solve_via_vc.h"
 #include "debug_utils.h"
 #include "tests.h"
@@ -88,7 +86,7 @@ int main(int argc, char**argv){
         switch(ACTIVE_SOLVER){
             case SOLVER::VIA_VC:
                 for(string v : solver.maximum_clique){
-                    cout << v << "\n";
+                    cout << v << endl;
                 }
                 break;
             case SOLVER::BRANCH_AND_BOUND:

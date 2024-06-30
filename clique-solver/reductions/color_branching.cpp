@@ -3,6 +3,8 @@
 
 #include <unordered_map>
 
+using namespace std;
+
 /**
  * @param coloring
  * @param k
