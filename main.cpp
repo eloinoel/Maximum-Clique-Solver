@@ -84,6 +84,7 @@ int main(int argc, char**argv){
     switch(ACTIVE_SOLVER){
         case SOLVER::LMC:
             maximum_clique = lmc(G);
+            break;
         case SOLVER::VIA_VC:
             solver = SolverViaVC();
             max_clique_size = solver.solve_via_vc(G);
@@ -102,7 +103,7 @@ int main(int argc, char**argv){
             // for(Vertex* v : maximum_clique){
             //     cout << G.name_table[v->id] << endl;
             // }
-            // break;
+            break;
         case SOLVER::CLISAT:
             solve_clique(G);
             break;
@@ -150,7 +151,7 @@ int main(int argc, char**argv){
         //print_success("Found maximum clique of size " + std::to_string(max_clique_size));
     #endif
 
-    //#ifdef RELEASE
+    #ifdef RELEASE
         //G.output_vc();
         //print maximum clique
         switch(ACTIVE_SOLVER){
@@ -200,7 +201,7 @@ int main(int argc, char**argv){
                 print_warning("No solver selected");
                 break;
         }
-    //#endif
+    #endif
 
     #if DEBUG
         cout << "max clique has size " << max_clique_size << std::endl;
