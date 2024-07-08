@@ -15,6 +15,7 @@
 #include "cli_solve.h"
 #include "AMTS.h"
 #include "lmc_solver.h"
+#include "classifier.h"
 
 
 #include "clique-solver/reductions/k_core.h"
@@ -23,8 +24,16 @@
 #include <future>
 
 #define BENCHMARK 0 //TODO: remove once benchmark.sh works
-#define ACTIVE_SOLVER SOLVER::LMC
+#define ACTIVE_SOLVER SOLVER::CLASSIFIER
 
+vector<string> launch_lmc(Graph& G){
+    vector<Vertex*> maximum_clique = lmc(G);
+    vector<string> output;
+    for(Vertex* v: maximum_clique){
+        output.push_back(G.name_table[v->id]);
+    }
+    return output;
+}
 
 vector<string> launch_dOmega(Graph G){
     SolverViaVC solver;
@@ -81,6 +90,11 @@ int main(int argc, char**argv){
 
     bool using_comp_vc = false;
     future<vector<string>> results[3];
+    Classifier classifier;
+
+    future<vector<string>> first_future;
+    future<vector<string>> second_future;
+    Graph H1;
     switch(ACTIVE_SOLVER){
         case SOLVER::LMC:
             maximum_clique = lmc(G);
@@ -142,11 +156,58 @@ int main(int argc, char**argv){
         default:
             print_warning("No solver selected");
             break;
+        case SOLVER::CLASSIFIER:
+
+            Expected_times prediction = classifier.predict_timeout(G);
+            
+            int first;
+            int sec;
+            
+            if(prediction.LMC==NO_TIMEOUT || prediction.vc_comp==TIMEOUT){
+                first = 0;
+            }else first = 3;
+
+            if(prediction.dOmega==NO_TIMEOUT)first = 2;
+  
+            sec = 1;
+
+            H1 = G.shallow_copy();
+            if(first == 0){
+                first_future = std::async(std::launch::async, launch_lmc, std::ref(H1));
+            }else if(first == 1){
+                first_future = std::async(std::launch::async, launch_dOmega, std::ref(H1));
+            }else if(first == 2){
+                first_future = std::async(std::launch::async, launch_cli, std::ref(H1));
+            }else{
+                Graph H2 = G.complementary_graph(G);
+                first_future = std::async(std::launch::async, launch_vc_comp, H2);
+            }
+            if(sec == 0){
+                second_future = std::async(std::launch::async, launch_lmc, std::ref(G));
+            }else if(sec == 1){
+                second_future = std::async(std::launch::async, launch_dOmega, std::ref(G));
+            }else{
+                second_future = std::async(std::launch::async, launch_cli, std::ref(G));
+            }
+        
+
+            while(true){
+                if(first_future.wait_for(chrono::milliseconds(5)) == future_status::ready){
+                    auto clique_found = first_future.get();
+                    for(string s : clique_found)cout << s << "\n";
+                    exit(EXIT_SUCCESS);
+                    break;
+                }
+                if(second_future.wait_for(chrono::milliseconds(5)) == future_status::ready){
+                    auto clique_found = second_future.get();
+                    for(string s : clique_found)cout << s << "\n";
+                    exit(EXIT_SUCCESS);
+                    break;
+                }
+            }
+            break;
+
     }
-    //size_t vc_size = solve_k(G);
-    //vector<Vertex*> maximum_clique = branch_and_bound_mc(G);
-
-
     #if !NDEBUG
         //print_success("Found maximum clique of size " + std::to_string(max_clique_size));
     #endif

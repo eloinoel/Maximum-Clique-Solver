@@ -19,7 +19,8 @@ enum class SOLVER
     VIA_VC,
     PARALLEL,
     VC_COMP,
-    LMC
+    LMC,
+    CLASSIFIER
 };
 
 /**

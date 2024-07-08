@@ -47,6 +47,7 @@ add_executable(mc_solver
     utils/debug_utils.cpp
     utils/tests.cpp
     utils/benchmark.cpp
+    utils/classifier.cpp
 
     vc-solver/graph.cpp
     vc-solver/load.cpp
