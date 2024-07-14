@@ -35,8 +35,12 @@ public:
     vector<Vertex*> maximum_clique;
     int max_clique_size = -1;
 
+    int N;
+    int M;
+    double density;
+
 private:
-    bool using_comp_vc = false;
+    bool using_comp_vc = false; // used in parallel solver
     SolverViaVC dOmega_solver;
     future<vector<string>> parallel_solver_results[3];
 
@@ -46,6 +50,8 @@ public:
 
     void print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER);
 private:
+    void run_parallel_solver(Graph& G);
+    void run_classifier_solver(Graph& G);
 
 };
 

@@ -14,8 +14,6 @@
 
 #include <thread>
 
-
-
 vector<string> launch_lmc(Graph& G){
     vector<Vertex*> maximum_clique = lmc(G);
     vector<string> output;
@@ -51,23 +49,16 @@ vector<string> launch_vc_comp(Graph G){
     return comp_sol;
 }
 
-
 void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
 {
-    const int N = G.V.size();
-    const int M = G.E.size();
-    double density =  (double) (2*M)/(N * (N-1));
+    N = G.V.size();
+    M = G.E.size();
+    density =  (double) (2*M)/(N * (N-1));
 
 
     #if DEBUG
         G.timer.start("solve");
     #endif
-
-
-    Classifier classifier;
-    future<vector<string>> first_future;
-    future<vector<string>> second_future;
-    Graph H1;
 
     switch(ACTIVE_SOLVER) {
         case SOLVER::LMC:
@@ -85,29 +76,7 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
             solve_clique(G);
             break;
         case SOLVER::PARALLEL:
-        {
-            bool copy_domega = true;
-            bool copy_cli = false; // ALL BUT LAST NEED TO BE COPIED
-            if(density > 0.4 && N < 8000){
-                using_comp_vc = true;
-                Graph H = G.complementary_graph(G);
-                int count = H.E.size();
-                parallel_solver_results[2] = std::async(std::launch::async, launch_vc_comp, H);
-            }
-
-            if(copy_domega){
-                Graph H = G.shallow_copy();
-                parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, H);
-            }else{
-                parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, std::ref(G));
-            }
-            if(copy_cli){
-                Graph H = G.shallow_copy();
-                parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(H));
-            }else{
-                parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(G));
-            }
-        }
+            run_parallel_solver(G);
             break;
         case SOLVER::VC_COMP:
         {
@@ -116,60 +85,12 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
             exit(0);
             break;
         }
+        case SOLVER::CLASSIFIER:
+            run_classifier_solver(G);
+            break;
         default:
             print_warning("No solver selected");
             break;
-        case SOLVER::CLASSIFIER:
-
-            Expected_times prediction = classifier.predict_timeout(G);
-
-            int first;
-            int sec;
-
-            if(prediction.LMC==NO_TIMEOUT || prediction.vc_comp==TIMEOUT){
-                first = 0;
-            }else first = 3;
-
-            if(prediction.dOmega==NO_TIMEOUT)first = 2;
-
-            sec = 1;
-
-            H1 = G.shallow_copy();
-            if(first == 0){
-                first_future = std::async(std::launch::async, launch_lmc, std::ref(H1));
-            }else if(first == 1){
-                first_future = std::async(std::launch::async, launch_dOmega, std::ref(H1));
-            }else if(first == 2){
-                first_future = std::async(std::launch::async, launch_cli, std::ref(H1));
-            }else{
-                Graph H2 = G.complementary_graph(G);
-                first_future = std::async(std::launch::async, launch_vc_comp, H2);
-            }
-            if(sec == 0){
-                second_future = std::async(std::launch::async, launch_lmc, std::ref(G));
-            }else if(sec == 1){
-                second_future = std::async(std::launch::async, launch_dOmega, std::ref(G));
-            }else{
-                second_future = std::async(std::launch::async, launch_cli, std::ref(G));
-            }
-
-
-            while(true){
-                if(first_future.wait_for(chrono::milliseconds(5)) == future_status::ready){
-                    auto clique_found = first_future.get();
-                    for(string s : clique_found)cout << s << "\n";
-                    exit(EXIT_SUCCESS);
-                    break;
-                }
-                if(second_future.wait_for(chrono::milliseconds(5)) == future_status::ready){
-                    auto clique_found = second_future.get();
-                    for(string s : clique_found)cout << s << "\n";
-                    exit(EXIT_SUCCESS);
-                    break;
-                }
-            }
-            break;
-
     }
 
     #if DEBUG
@@ -179,53 +100,138 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
 
 void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
 {
-    //G.output_vc();
-        //print maximum clique
-        switch(ACTIVE_SOLVER){
-            case SOLVER::LMC:
-                for(Vertex* v : maximum_clique){
-                    cout << G.name_table[v->id] << endl;
-                }
-                break;
-            case SOLVER::VIA_VC:
-                for(std::string v : dOmega_solver.maximum_clique){
-                    cout << v << "\n";
-                }
-                break;
-            case SOLVER::BRANCH_AND_BOUND:
-                for(Vertex* v : maximum_clique){
-                    cout << G.name_table[v->id] << endl;
-                }
-                break;
-            case SOLVER::CLISAT:
-                // NOTE: CLISAT solver prints the maximum clique in the function itself
-                break;
-            case SOLVER::PARALLEL:
-            {
-                int num = 0;
-                while(true){
-                    if(parallel_solver_results[0].wait_for(chrono::milliseconds(5)) == future_status::ready){
-                        num = 0;
-                        break;
-                    }
-                     if(parallel_solver_results[1].wait_for(chrono::milliseconds(5)) == future_status::ready){
-                        num = 1;
-                        break;
-                    }
-                    if(using_comp_vc && parallel_solver_results[2].wait_for(chrono::milliseconds(5)) == future_status::ready){
-                        num = 2;
-                        break;
-                    }
-                }
-                auto clique_found = parallel_solver_results[num].get();
-                //cout << "num" << num << " size " << clique_found.size() << "\n";
-                for(string& s : clique_found)
-                    cout << s << "\n";
+    //print maximum clique
+    switch(ACTIVE_SOLVER){
+        case SOLVER::LMC:
+            for(Vertex* v : maximum_clique){
+                cout << G.name_table[v->id] << endl;
             }
-                exit(EXIT_SUCCESS);
-                break;
-            default:
-                print_warning("No solver selected");
-                break;
+            break;
+        case SOLVER::VIA_VC:
+            for(std::string v : dOmega_solver.maximum_clique){
+                cout << v << "\n";
+            }
+            break;
+        case SOLVER::BRANCH_AND_BOUND:
+            for(Vertex* v : maximum_clique){
+                cout << G.name_table[v->id] << endl;
+            }
+            break;
+        case SOLVER::CLISAT:
+            // NOTE: CLISAT solver prints the maximum clique in the function itself
+            break;
+        case SOLVER::PARALLEL:
+        {
+            int num = 0;
+            while(true){
+                if(parallel_solver_results[0].wait_for(chrono::milliseconds(5)) == future_status::ready){
+                    num = 0;
+                    break;
+                }
+                    if(parallel_solver_results[1].wait_for(chrono::milliseconds(5)) == future_status::ready){
+                    num = 1;
+                    break;
+                }
+                if(using_comp_vc && parallel_solver_results[2].wait_for(chrono::milliseconds(5)) == future_status::ready){
+                    num = 2;
+                    break;
+                }
+            }
+            auto clique_found = parallel_solver_results[num].get();
+            //cout << "num" << num << " size " << clique_found.size() << "\n";
+            for(string& s : clique_found)
+                cout << s << "\n";
         }
+            exit(EXIT_SUCCESS);
+            break;
+        case SOLVER::VC_COMP:
+            break;
+        case SOLVER::CLASSIFIER:
+            break;
+        case SOLVER::NONE:
+            print_warning("No solver selected");
+            break;
+        default:
+            break;
+    }
+}
+
+void PortfolioSolver::run_parallel_solver(Graph& G)
+{
+    bool copy_domega = true;
+    bool copy_cli = false; // ALL BUT LAST NEED TO BE COPIED
+    if(density > 0.4 && N < 8000) {
+        using_comp_vc = true;
+        Graph H = G.complementary_graph(G);
+        int count = H.E.size();
+        parallel_solver_results[2] = std::async(std::launch::async, launch_vc_comp, H);
+    }
+
+    if(copy_domega){
+        Graph H = G.shallow_copy();
+        parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, H);
+    }else{
+        parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, std::ref(G));
+    }
+    if(copy_cli){
+        Graph H = G.shallow_copy();
+        parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(H));
+    }else{
+        parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(G));
+    }
+}
+
+void PortfolioSolver::run_classifier_solver(Graph &G)
+{
+    Classifier classifier;
+    future<vector<string>> first_future;
+    future<vector<string>> second_future;
+    Graph H1;
+    Expected_times prediction = classifier.predict_timeout(G);
+
+    int first;
+    int sec;
+
+    if(prediction.LMC==NO_TIMEOUT || prediction.vc_comp==TIMEOUT){
+        first = 0;
+    }else first = 3;
+
+    if(prediction.dOmega==NO_TIMEOUT)first = 2;
+
+    sec = 1;
+
+    H1 = G.shallow_copy();
+    if(first == 0){
+        first_future = std::async(std::launch::async, launch_lmc, std::ref(H1));
+    }else if(first == 1){
+        first_future = std::async(std::launch::async, launch_dOmega, std::ref(H1));
+    }else if(first == 2){
+        first_future = std::async(std::launch::async, launch_cli, std::ref(H1));
+    }else{
+        Graph H2 = G.complementary_graph(G);
+        first_future = std::async(std::launch::async, launch_vc_comp, H2);
+    }
+    if(sec == 0){
+        second_future = std::async(std::launch::async, launch_lmc, std::ref(G));
+    }else if(sec == 1){
+        second_future = std::async(std::launch::async, launch_dOmega, std::ref(G));
+    }else{
+        second_future = std::async(std::launch::async, launch_cli, std::ref(G));
+    }
+
+
+    while(true){
+        if(first_future.wait_for(chrono::milliseconds(5)) == future_status::ready){
+            auto clique_found = first_future.get();
+            for(string s : clique_found)cout << s << "\n";
+            exit(EXIT_SUCCESS);
+            break;
+        }
+        if(second_future.wait_for(chrono::milliseconds(5)) == future_status::ready){
+            auto clique_found = second_future.get();
+            for(string s : clique_found)cout << s << "\n";
+            exit(EXIT_SUCCESS);
+            break;
+        }
+    }
 }
