@@ -1,6 +1,6 @@
 #include "solve_via_vc.h"
 #include "solve.h" // vertex cover solver
-#include "degeneracy_ordering.h"
+#include "./../orderings/degeneracy_ordering.h"
 #include "upper_bounds.h"
 #include "lower_bounds.h"
 #include "k_core.h"

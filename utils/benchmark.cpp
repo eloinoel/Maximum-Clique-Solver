@@ -13,7 +13,7 @@
 #include "branch_and_bound.h"
 #include "upper_bounds.h"
 #include "color_branching.h"
-#include "degeneracy_ordering.h"
+#include "./../clique-solver/orderings/degeneracy_ordering.h"
 #include "solve_via_vc.h"
 #include "portfolio_solver.h"
 

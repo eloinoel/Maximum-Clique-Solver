@@ -15,31 +15,46 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -pg -O3 -march=native -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -DNDEBUG")
 
 # Include local header files.
-include_directories("${PROJECT_SOURCE_DIR}/vc-solver/reductions")
-include_directories("${PROJECT_SOURCE_DIR}/vc-solver/solve")
-include_directories("${PROJECT_SOURCE_DIR}/vc-solver/lowerbounds")
-include_directories("${PROJECT_SOURCE_DIR}/vc-solver/packing")
-include_directories("${PROJECT_SOURCE_DIR}/vc-solver")
+# include_directories("${PROJECT_SOURCE_DIR}/vc-solver/reductions")
+# include_directories("${PROJECT_SOURCE_DIR}/vc-solver/solve")
+# include_directories("${PROJECT_SOURCE_DIR}/vc-solver/lowerbounds")
+# include_directories("${PROJECT_SOURCE_DIR}/vc-solver/packing")
+# include_directories("${PROJECT_SOURCE_DIR}/vc-solver")
 
-include_directories("${PROJECT_SOURCE_DIR}/clique-solver")
-include_directories("${PROJECT_SOURCE_DIR}/clique-solver/orderings")
-include_directories("${PROJECT_SOURCE_DIR}/clique-solver/lowerbounds")
-include_directories("${PROJECT_SOURCE_DIR}/clique-solver/upperbounds")
-include_directories("${PROJECT_SOURCE_DIR}/clique-solver/reductions")
-include_directories("${PROJECT_SOURCE_DIR}/clique-solver/solve")
+# include_directories("${PROJECT_SOURCE_DIR}/clique-solver")
+# include_directories("${PROJECT_SOURCE_DIR}/clique-solver/orderings")
+# include_directories("${PROJECT_SOURCE_DIR}/clique-solver/lowerbounds")
+# include_directories("${PROJECT_SOURCE_DIR}/clique-solver/upperbounds")
+# include_directories("${PROJECT_SOURCE_DIR}/clique-solver/reductions")
+# include_directories("${PROJECT_SOURCE_DIR}/clique-solver/solve")
 
-include_directories("${PROJECT_SOURCE_DIR}/clisat/filtering")
-include_directories("${PROJECT_SOURCE_DIR}/clisat/pruning")
-include_directories("${PROJECT_SOURCE_DIR}/clisat/partial_max_sat")
-include_directories("${PROJECT_SOURCE_DIR}/clisat/ordering")
-include_directories("${PROJECT_SOURCE_DIR}/clisat/heuristic")
-include_directories("${PROJECT_SOURCE_DIR}/clisat")
+# include_directories("${PROJECT_SOURCE_DIR}/clisat/filtering")
+# include_directories("${PROJECT_SOURCE_DIR}/clisat/pruning")
+# include_directories("${PROJECT_SOURCE_DIR}/clisat/partial_max_sat")
+# include_directories("${PROJECT_SOURCE_DIR}/clisat/ordering")
+# include_directories("${PROJECT_SOURCE_DIR}/clisat/heuristic")
+# include_directories("${PROJECT_SOURCE_DIR}/clisat")
 
-include_directories("${PROJECT_SOURCE_DIR}/lmc/branch_reductions")
-include_directories("${PROJECT_SOURCE_DIR}/lmc")
+# include_directories("${PROJECT_SOURCE_DIR}/lmc/branch_reductions")
+# include_directories("${PROJECT_SOURCE_DIR}/lmc")
 
-include_directories("$(PROJECT_SOURCE_DIR)/utils")
-include_directories("$(PROJECT_SOURCE_DIR)/portfolio-solver")
+# include_directories("$(PROJECT_SOURCE_DIR)/utils")
+# include_directories("$(PROJECT_SOURCE_DIR)/portfolio-solver")
+
+# Automatically include all directories with header files
+file(GLOB_RECURSE HEADER_DIRS RELATIVE ${PROJECT_SOURCE_DIR} "${PROJECT_SOURCE_DIR}/*.h")
+
+foreach(HEADER_FILE ${HEADER_DIRS})
+    get_filename_component(DIR ${HEADER_FILE} PATH)
+    list(APPEND INCLUDE_DIRS ${DIR})
+endforeach()
+
+list(REMOVE_DUPLICATES INCLUDE_DIRS)
+
+foreach(DIR ${INCLUDE_DIRS})
+    include_directories("${PROJECT_SOURCE_DIR}/${DIR}")
+endforeach()
+
 
 # All source files need to be listed explicitly here.
 add_executable(mc_solver

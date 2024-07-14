@@ -42,6 +42,6 @@ int degeneracy(Graph& G);
 inline int clique_core_gap(int degeneracy, int mc_number)
 {
     return degeneracy + 1 - mc_number;
-}
+};
 
 void print_degeracy_ordering_and_rneighbourhoods(std::vector<Vertex*>& degeneracy_ordering, std::vector<std::vector<Vertex*>>& right_neighbourhoods, Graph& G);
