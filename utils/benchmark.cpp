@@ -15,6 +15,7 @@
 #include "color_branching.h"
 #include "degeneracy_ordering.h"
 #include "solve_via_vc.h"
+#include "portfolio_solver.h"
 
 #define V 1
 #define E 1

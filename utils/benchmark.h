@@ -1,5 +1,7 @@
 #include <chrono>
 #include <iostream>
+
+enum class SOLVER;
 class Graph;
 
 using my_time_point = std::chrono::time_point<std::chrono::high_resolution_clock>;
@@ -11,37 +13,25 @@ enum class TECHNIQUE{
     K_CORE
 };
 
-enum class SOLVER
-{
-    NONE,
-    BRANCH_AND_BOUND,
-    CLISAT,
-    VIA_VC,
-    PARALLEL,
-    VC_COMP,
-    LMC,
-    CLASSIFIER
-};
-
 /**
  * @brief adds the time measured between start and end to the total measured time of the technique
- * 
- * @param technique 
+ *
+ * @param technique
  * @param start time
  * @param end time
  */
 void add_time(TECHNIQUE key, my_time_point start, my_time_point end);
 
 /**
- * @brief Get total time used for this technique 
- * 
- * @param technique 
+ * @brief Get total time used for this technique
+ *
+ * @param technique
  * @return used time [seconds]
  */
 unsigned long get_time(TECHNIQUE key);
 
 /**
  * @brief Loads the graph, runs bnb and writes output in build/benchmark/output.csv or stdout
- * 
+ *
  */
 void run_benchmark(SOLVER solver_to_execute);

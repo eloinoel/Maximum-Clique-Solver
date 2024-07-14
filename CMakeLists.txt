@@ -39,10 +39,12 @@ include_directories("${PROJECT_SOURCE_DIR}/lmc/branch_reductions")
 include_directories("${PROJECT_SOURCE_DIR}/lmc")
 
 include_directories("$(PROJECT_SOURCE_DIR)/utils")
+include_directories("$(PROJECT_SOURCE_DIR)/portfolio-solver")
 
 # All source files need to be listed explicitly here.
 add_executable(mc_solver
     main.cpp
+    portfolio-solver/portfolio_solver.cpp
 
     utils/debug_utils.cpp
     utils/tests.cpp
@@ -58,21 +60,21 @@ add_executable(mc_solver
     vc-solver/reductions/deg_rules.cpp
     vc-solver/reductions/unconfined.cpp
     vc-solver/reductions/kernel.cpp
-    vc-solver/reductions/desk.cpp 
+    vc-solver/reductions/desk.cpp
     vc-solver/lowerbounds/clique_cover.cpp
     vc-solver/packing/packing.cpp
 
-    clique-solver/branch_and_bound.cpp
     clique-solver/upperbounds/upper_bounds.cpp
     clique-solver/lowerbounds/lower_bounds.cpp
     clique-solver/reductions/k_core.cpp
     clique-solver/orderings/degeneracy_ordering.cpp
     clique-solver/solve/solve_via_vc.cpp
+    clique-solver/solve/branch_and_bound.cpp
 
     lmc/lmc_solver.cpp
     lmc/branch_reductions/color_branching.cpp
     lmc/branch_reductions/inc_max_sat.cpp
-    
+
     clisat/partial_max_sat/partial_max_sat.cpp
     clisat/cli_solve.cpp
     clisat/find_max_clique.cpp
