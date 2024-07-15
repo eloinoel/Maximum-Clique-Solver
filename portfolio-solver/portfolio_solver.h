@@ -35,6 +35,7 @@ public:
     vector<Vertex*> maximum_clique;
     int max_clique_size = -1;
 
+    // used to decide which solver to execute
     int N;
     int M;
     double density;

@@ -29,6 +29,7 @@ public:
 
     int clique_UB;
     int clique_LB;
+    std::vector<Vertex*> LB_clique_vertices;
 
     /** 
      * this will be filled after solve_via_vc() is called 
@@ -62,6 +63,8 @@ private:
      */
     bool solve_via_vc_for_p(Graph& G, size_t p, int LB);
 
+    bool solve_via_vc_for_p_with_sorting(Graph& G, size_t p, int LB);
+
     /**
      * @param p max assumed possible clique-core gap in current iteration
      * @returns Returns a candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}
@@ -74,6 +77,8 @@ private:
      */
     std::vector<Vertex*> get_remaining_set();
 
+    Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set, int LB);
+
     /**
      * @param complementGraph graph where vertex cover was solved for
      * @param ordering_vertex vertex which induced the complementGraph with its right-neighbourhood
@@ -83,4 +88,49 @@ private:
     std::vector<std::string> extract_maximum_clique_solution_from_rn(rn& right, Graph& complementGraph);
 
     Vertex* get_vertex_by_name(Graph& G, std::string name);
+
+    /**
+     * @brief Sets @maximum_clique to the vertices in the input vector
+     * 
+     */
+    void set_maximum_clique(std::vector<Vertex*>& vertices, Graph& G);
+
+};
+
+
+/** 
+ * Bucketsort for right neighbourhoods, will only work for positive elements
+ * @note init: O(n-d), insert: O(1), get_next: O(1), at most O(n) cumulative space+time in main algorithm
+ */
+class Buckets
+{
+public:
+    /** store the neighbourhood indeces in buckets --> sorted */
+    std::vector<std::vector<int>> buckets;
+
+private:
+    int current_bucket = -1;
+    int current_index = -1;
+
+    int start_bucket = -1;
+    int start_index = -1;
+
+public:
+    static Buckets init(std::vector<Vertex*>& degeneracy_ordering, std::vector<rn>& right_neighbourhoods, int d);
+    void insert(int neighbourhood_index, int neighbourhood_size);
+
+    /** 
+     * @returns neighbourhood index <= the current index, -1 if no more elements
+     */
+    int get_next();
+
+    /**
+     * iterator end value to test against in loops
+     */
+    inline int end() { return -1; };
+
+    /** 
+     * reset iterator 
+     */
+    inline void reset() { current_bucket = start_bucket; current_index = start_index; };
 };
