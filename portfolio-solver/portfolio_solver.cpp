@@ -55,7 +55,6 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
     M = G.E.size();
     density =  (double) (2*M)/(N * (N-1));
 
-
     #if DEBUG
         G.timer.start("solve");
     #endif

@@ -21,7 +21,7 @@ Buckets::Buckets(std::vector<Vertex*>& degeneracy_ordering, std::vector<rn>& rig
         buckets[rdeg].push_back(vertex_id);
 
         // update iterator variables
-        if(rdeg > max_bucket)
+        if(rdeg >= max_bucket)
         {
             max_bucket = rdeg;
             max_index = buckets[rdeg].size() - 1;
@@ -49,7 +49,9 @@ void Buckets::insert(int vertex_index, int neighbourhood_size)
 int Buckets::get_next(int rdeg_beq)
 {
     if(current_bucket == -1 || current_index == -1 || current_bucket < rdeg_beq)
+    {
         return -1;
+    }
     
     assert(buckets.size() > current_bucket);
     assert(buckets[current_bucket].size() > current_index);
@@ -73,6 +75,7 @@ int Buckets::get_next(int rdeg_beq)
         return -1;
     }
     current_index = buckets[current_bucket].size() - 1;
+    
 
     assert(buckets.size() > current_bucket);
     assert(buckets[current_bucket].size() > current_index);
@@ -87,6 +90,21 @@ int Buckets::get(int rdeg_beq)
     assert(buckets.size() > current_bucket);
     assert(buckets[current_bucket].size() > current_index);
     return buckets[current_bucket][current_index];
+}
+
+std::pair<int, int> Buckets::get_iterator_of(int vertex_index) 
+{
+    for(size_t i = 0; i < buckets.size(); ++i)
+    {
+        for(size_t j = 0; j < buckets[i].size(); ++j)
+        {
+            if(buckets[i][j] == vertex_index)
+            {
+                return std::make_pair(i, j);
+            }
+        }
+    }
+    return std::make_pair(-1, -1);
 }
 
 void Buckets::print()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <utility>
 #include "rn.h"
 
 class Vertex;
@@ -15,7 +16,6 @@ public:
     /** store the neighbourhood indeces in buckets --> sorted */
     std::vector<std::vector<int>> buckets;
 
-private:
     // iterator variables
     int current_bucket = -1;
     int current_index = -1;
@@ -46,6 +46,11 @@ public:
      * @returns -1 if there is no right neighbourhood with rdeg >= d - p
      */
     int get(int rdeg_beq);
+
+    /**
+     * @returns (-1, -1) if not found
+     */
+    std::pair<int, int> get_iterator_of(int vertex_index);
 
     /**
      * iterator end value to test against in loops

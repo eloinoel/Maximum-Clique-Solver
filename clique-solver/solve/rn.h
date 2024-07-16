@@ -13,4 +13,6 @@ typedef struct rn_{
     std::vector<Vertex*> neigh;
     int vc_size = 0;
     std::vector<std::string> sol;
+
+    std::string to_string();
 }rn;

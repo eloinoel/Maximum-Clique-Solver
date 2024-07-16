@@ -24,6 +24,7 @@ public:
 
     std::vector<Vertex*> degeneracy_ordering;
     std::vector<rn> right_neighbourhoods;
+    std::pair<int, std::vector<std::string>> remaining_set_solution = std::make_pair(-1, std::vector<std::string>()); // avoid recomputation of vertex cover
     int d;
 
     int clique_UB;
@@ -64,6 +65,9 @@ private:
      */
     bool solve_via_vc_for_p(Graph& G, size_t p, int LB);
 
+    /**
+     * Sort the candidate set with descending rdeg
+     */
     bool solve_via_vc_for_p_with_sorting(Graph& G, size_t p, int LB);
 
     /**
@@ -87,7 +91,7 @@ private:
      * @param ordering_vertex vertex which induced the complementGraph with its right-neighbourhood
      * @note stores solution in this.maximum_clique, O(complement.V * vc_size)
      */
-    void extract_maximum_clique_solution(Graph& complementGraph, Vertex* o = nullptr);
+    std::vector<std::string> extract_maximum_clique_solution(Graph& complementGraph, Vertex* o = nullptr);
     std::vector<std::string> extract_maximum_clique_solution_from_rn(rn& right, Graph& complementGraph);
 
     Vertex* get_vertex_by_name(Graph& G, std::string name);

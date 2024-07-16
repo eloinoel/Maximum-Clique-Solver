@@ -1,7 +1,23 @@
+#!/bin/bash
+
+function build_failed {
+  echo -e "${RED}"BUILD FAILED - No executable was created."${NC}"
+  exit 1
+}
+
 cd ..
 
-cmake . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+mkdir -p build/release
+if ! cd build/release;
+then
+  build_failed
+fi
+cd ../..
+
+cmake . -B build/release -DCMAKE_BUILD_TYPE=Release 
+if ! cmake --build build/release; then
+  build_failed
+fi
 
 cd benchmark
 
