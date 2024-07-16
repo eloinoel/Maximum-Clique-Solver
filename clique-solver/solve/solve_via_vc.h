@@ -9,14 +9,13 @@
 #include <cstddef>
 #include <string>
 
+#include "bucket_sort.h" // sadly necessary, make sure that no cyclic dependencies are created
+#include "rn.h"
+
 class Graph;
 class Vertex;
 
-typedef struct rn_{
-    std::vector<Vertex*> neigh;
-    int vc_size = 0;
-    std::vector<std::string> sol;
-}rn;
+
 
 class SolverViaVC
 {
@@ -38,6 +37,8 @@ public:
 
 private: 
     //Graph solution_complement_graph;
+    Buckets sorted_candidate_set;
+    bool sorted_candidate_set_initialised = false;
     
 
 //-----------------------Functions-----------------------
@@ -71,6 +72,8 @@ private:
      */
     std::vector<Vertex*> get_candidate_set(size_t p);
 
+    Buckets& get_sorted_candidate_set();
+
     /**
      * @param p max assumed possible clique-core gap in current iteration
      * @returns Returns a remaining set R = {vi ∈ V | i > n − d}
@@ -94,43 +97,6 @@ private:
      * 
      */
     void set_maximum_clique(std::vector<Vertex*>& vertices, Graph& G);
-
 };
 
 
-/** 
- * Bucketsort for right neighbourhoods, will only work for positive elements
- * @note init: O(n-d), insert: O(1), get_next: O(1), at most O(n) cumulative space+time in main algorithm
- */
-class Buckets
-{
-public:
-    /** store the neighbourhood indeces in buckets --> sorted */
-    std::vector<std::vector<int>> buckets;
-
-private:
-    int current_bucket = -1;
-    int current_index = -1;
-
-    int start_bucket = -1;
-    int start_index = -1;
-
-public:
-    static Buckets init(std::vector<Vertex*>& degeneracy_ordering, std::vector<rn>& right_neighbourhoods, int d);
-    void insert(int neighbourhood_index, int neighbourhood_size);
-
-    /** 
-     * @returns neighbourhood index <= the current index, -1 if no more elements
-     */
-    int get_next();
-
-    /**
-     * iterator end value to test against in loops
-     */
-    inline int end() { return -1; };
-
-    /** 
-     * reset iterator 
-     */
-    inline void reset() { current_bucket = start_bucket; current_index = start_index; };
-};

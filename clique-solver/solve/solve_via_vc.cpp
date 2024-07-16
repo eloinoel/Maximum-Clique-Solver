@@ -62,7 +62,7 @@ int SolverViaVC::solve_via_vc(Graph& G)
     // solve for increasing values of p (clique core gap)
     for(int p = 0; p < clique_UB; p++) //TODO: check if this can be reduced
     {
-        if(solve_via_vc_for_p(G, p, clique_LB))
+        if(solve_via_vc_for_p_with_sorting(G, p, clique_LB))
         {
             return clique_UB - p;
         }
@@ -73,50 +73,9 @@ int SolverViaVC::solve_via_vc(Graph& G)
 //MARK: SOLVER FOR P
 bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p, int LB)
 {
-    //get candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}
-    vector<Vertex*> D = get_candidate_set(p);
-
-    for(size_t i = 0; i < D.size(); ++i)
-    {
-        // a) construct ¬G[Vi], where Vi is the right-neighborhood of vi
-        Vertex* vi = D[i];
-        size_t r_neighbourhood_size = right_neighbourhoods[vi->id].neigh.size();
-        size_t vc_UB = r_neighbourhood_size + p - d + 1;
-        if(r_neighbourhood_size > 0)
-        {
-            //if not already solved
-             if(right_neighbourhoods[vi->id].vc_size == -1)
-             {
-                Graph complement = get_complement_subgraph(G, right_neighbourhoods[vi->id].neigh, LB);
-                //complement.UB = vc_UB; //bound search tree
-                int vc_size = solve(complement);
-                right_neighbourhoods[vi->id].vc_size = vc_size;
-                right_neighbourhoods[vi->id].sol = extract_maximum_clique_solution_from_rn(right_neighbourhoods[vi->id], complement);
-                right_neighbourhoods[vi->id].sol.push_back(complement.name_table[vi->id]);
-                complement.delete_all();
-            }
-        }
-
-        //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
-        int target = r_neighbourhood_size + p - d;
-        int current_vc_size = right_neighbourhoods[vi->id].vc_size;
-        if(current_vc_size == target){
-            if(right_neighbourhoods[vi->id].neigh.empty())
-            {
-                maximum_clique.push_back(G.name_table[vi->id]);
-            }
-            else
-            {
-                maximum_clique = right_neighbourhoods[vi->id].sol;
-            }
-            //complement.delete_all();
-            return true;
-        }
-    }
-
-    // if we can't find mc from right neighbourhoods, take remaining vertices in ordering
+    // start with remaining set as detailed section "Algorithm Implementation" of the paper
     // construct ¬G[Vf], where Vf = {vf , . . . , vn} and f := n − d + 1
-    auto Vf = get_remaining_set();
+    auto Vf = get_remaining_set(); //TODO: optimise this shit
     int vc_size_r = 0;
     Graph complement;
     size_t vc_UB = p;
@@ -137,6 +96,51 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p, int LB)
         //complement.delete_all();
         return true;
     }
+
+    // get candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}, sorted descending by their right degree
+    Buckets D = get_sorted_candidate_set();
+    int cur_vertex_id = D.get(d - p);
+
+    // iterate through all right neighbourhoods where rdeg(vi) >= d - p
+    while(cur_vertex_id != -1)
+    {
+        size_t r_neighbourhood_size = right_neighbourhoods[cur_vertex_id].neigh.size();
+        size_t vc_UB = r_neighbourhood_size + p - d + 1;
+
+        if(r_neighbourhood_size > 0)
+        {
+            //if not already solved
+             if(right_neighbourhoods[cur_vertex_id].vc_size == -1)
+             {
+                Graph complement = get_complement_subgraph(G, right_neighbourhoods[cur_vertex_id].neigh, LB);
+                //complement.UB = vc_UB; //bound search tree
+                int vc_size = solve(complement);
+                right_neighbourhoods[cur_vertex_id].vc_size = vc_size;
+                right_neighbourhoods[cur_vertex_id].sol = extract_maximum_clique_solution_from_rn(right_neighbourhoods[cur_vertex_id], complement);
+                right_neighbourhoods[cur_vertex_id].sol.push_back(complement.name_table[cur_vertex_id]);
+                complement.delete_all();
+            }
+        }
+
+        //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
+        int target = r_neighbourhood_size + p - d;
+        int current_vc_size = right_neighbourhoods[cur_vertex_id].vc_size;
+        if(current_vc_size == target){
+            if(right_neighbourhoods[cur_vertex_id].neigh.empty())
+            {
+                maximum_clique.push_back(G.name_table[cur_vertex_id]);
+            }
+            else
+            {
+                maximum_clique = right_neighbourhoods[cur_vertex_id].sol;
+            }
+            //complement.delete_all();
+            return true;
+        }
+        
+        cur_vertex_id = D.get_next(d - p);
+    }
+
     complement.delete_all();
     return false;
 }
@@ -223,6 +227,18 @@ vector<Vertex*> SolverViaVC::get_candidate_set(size_t p)
         }
     }
     return D;
+}
+
+Buckets& SolverViaVC::get_sorted_candidate_set()
+{
+    if(sorted_candidate_set_initialised)
+    {
+        sorted_candidate_set.reset();
+        return sorted_candidate_set;
+    }
+    sorted_candidate_set = Buckets(degeneracy_ordering, right_neighbourhoods, d);
+    sorted_candidate_set_initialised = true;
+    return sorted_candidate_set;
 }
 
 vector<Vertex*> SolverViaVC::get_remaining_set()
@@ -361,13 +377,4 @@ bool SolverViaVC::is_clique(std::vector<Vertex*> vertices)
         }
     }
     return true;
-}
-
-int Buckets::get_next()
-{
-    if(current_bucket == -1 && current_index == -1)
-    {
-        return -1;
-    }
-
 }

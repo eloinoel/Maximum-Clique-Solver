@@ -84,6 +84,7 @@ add_executable(mc_solver
     clique-solver/reductions/k_core.cpp
     clique-solver/orderings/degeneracy_ordering.cpp
     clique-solver/solve/solve_via_vc.cpp
+    clique-solver/solve/bucket_sort.cpp
     clique-solver/solve/branch_and_bound.cpp
 
     lmc/lmc_solver.cpp
