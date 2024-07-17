@@ -45,8 +45,9 @@ int SolverViaVC::solve_via_vc(Graph& G)
     //check lower and upper bounds
     clique_UB = degeneracy_UB(d);
     std::vector<Vertex*> lb_vertices = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoodsT);
-    LB_clique_vertices = get_str_clique(lb_vertices, G);
-    clique_LB = (int) LB_clique_vertices.size();
+    initial_LB_solution = get_str_clique(lb_vertices, G);
+    LB_clique_vertices = &initial_LB_solution; // store to ptr so we don't have to copy in update_LB
+    clique_LB = (int) LB_clique_vertices->size();
 
     #if DEBUG
         cout << "Computed LB=" << clique_LB << ", UB=" << clique_UB << std::endl;
@@ -55,7 +56,7 @@ int SolverViaVC::solve_via_vc(Graph& G)
     // terminate early
     if(clique_LB == clique_UB)
     {
-        maximum_clique = LB_clique_vertices;
+        maximum_clique = *LB_clique_vertices;
         return clique_LB;
     }
 
@@ -88,7 +89,7 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
             {
                 //vc size is <= 0 to have at least all vertices of Vf in clique
                 remaining_set_solution.first = Vf.size() - clique_LB; 
-                (remaining_set_solution.second) = LB_clique_vertices;
+                (remaining_set_solution.second) = *LB_clique_vertices;
             }
             else
             {
@@ -129,7 +130,7 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
                 if(r_neighbourhood_ub <= clique_LB) // LB already better solution
                 {
                     right_neighbourhoods[cur_vertex_id].vc_size = r_neighbourhood_size + 1 - clique_LB;
-                    right_neighbourhoods[cur_vertex_id].sol = LB_clique_vertices;
+                    right_neighbourhoods[cur_vertex_id].sol = *LB_clique_vertices;
                 }
                 else
                 {
@@ -406,7 +407,7 @@ void SolverViaVC::update_LB(std::vector<std::string>& solution_candidate)
     if((int) solution_candidate.size() > clique_LB)
     {
         clique_LB = solution_candidate.size();
-        LB_clique_vertices = solution_candidate;
+        LB_clique_vertices = &solution_candidate;
     }
 }
 

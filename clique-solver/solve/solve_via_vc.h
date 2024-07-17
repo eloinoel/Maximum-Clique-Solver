@@ -35,7 +35,7 @@ public:
 
     int clique_UB; // simple bound: d + 1
     int clique_LB;
-    std::vector<std::string> LB_clique_vertices;
+    std::vector<std::string>* LB_clique_vertices;
 
     /** 
      * this will be filled after solve_via_vc() is called
@@ -46,6 +46,7 @@ private:
     //Graph solution_complement_graph;
     Buckets sorted_candidate_set;
     bool sorted_candidate_set_initialised = false;
+    std::vector<std::string> initial_LB_solution;
     
 
 //-----------------------Functions-----------------------
