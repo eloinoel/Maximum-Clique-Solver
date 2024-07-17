@@ -8,6 +8,7 @@
 #include <vector>
 #include <cstddef>
 #include <string>
+#include <limits>
 
 #include "bucket_sort.h" // sadly necessary, make sure that no cyclic dependencies are created
 #include "rn.h"
@@ -15,24 +16,29 @@
 class Graph;
 class Vertex;
 
-
+constexpr int N_INF = -std::numeric_limits<int>::infinity();
 
 class SolverViaVC
 {
 //-----------------------Variables-----------------------
 public:
+    bool BINARY_SEARCH = true;
+
 
     std::vector<Vertex*> degeneracy_ordering;
+    /* vertex ids mapped to right neighbourhoods, right neighbourhoods store solutions*/
     std::vector<rn> right_neighbourhoods;
-    std::pair<int, std::vector<std::string>> remaining_set_solution = std::make_pair(-1, std::vector<std::string>()); // avoid recomputation of vertex cover
+    /* first: VC_size, second: Vf - VC --> size will be Vf_size - VC_size */
+    std::pair<int, std::vector<std::string>> remaining_set_solution = std::make_pair(N_INF, std::vector<std::string>()); // avoid recomputation of vertex cover
+    /* degeneracy of the Graph */
     int d;
 
-    int clique_UB;
+    int clique_UB; // simple bound: d + 1
     int clique_LB;
     std::vector<Vertex*> LB_clique_vertices;
 
     /** 
-     * this will be filled after solve_via_vc() is called 
+     * this will be filled after solve_via_vc() is called
      * */
     std::vector<std::string> maximum_clique;
 
@@ -68,7 +74,7 @@ private:
     /**
      * Sort the candidate set with descending rdeg
      */
-    bool solve_via_vc_for_p_with_sorting(Graph& G, size_t p, int LB);
+    bool solve_via_vc_for_p_with_sorting(Graph& G, size_t p);
 
     /**
      * @param p max assumed possible clique-core gap in current iteration
@@ -84,7 +90,7 @@ private:
      */
     std::vector<Vertex*> get_remaining_set();
 
-    Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set, int LB);
+    Graph get_complement_subgraph(Graph & G, std::vector<Vertex*>& induced_set);
 
     /**
      * @param complementGraph graph where vertex cover was solved for
@@ -94,13 +100,14 @@ private:
     std::vector<std::string> extract_maximum_clique_solution(Graph& complementGraph, Vertex* o = nullptr);
     std::vector<std::string> extract_maximum_clique_solution_from_rn(rn& right, Graph& complementGraph);
 
-    Vertex* get_vertex_by_name(Graph& G, std::string name);
+    void update_LB(int LB_candidate);
 
     /**
-     * @brief Sets @maximum_clique to the vertices in the input vector
-     * 
+     * @brief convert vertices to string
      */
-    void set_maximum_clique(std::vector<Vertex*>& vertices, Graph& G);
+    std::vector<std::string> get_str_maximum_clique(std::vector<Vertex*>& vertices, Graph& G);
+
+    Vertex* get_vertex_by_name(Graph& G, std::string name);
 };
 
 
