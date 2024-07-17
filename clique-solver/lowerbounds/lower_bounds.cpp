@@ -33,7 +33,6 @@ std::vector<Vertex*> degeneracy_ordering_LB(const std::vector<Vertex*>& degenera
     }
 
     // extract LB clique
-    int lower_bound = n - i; //{vertex} ∪ rN(vertex) => clique
     std::vector<Vertex*> LBclique = std::vector<Vertex*>();
     LBclique.push_back(degeneracy_ordering[i]);
     for(Vertex* v : right_neighbourhoods[degeneracy_ordering[i]->id])

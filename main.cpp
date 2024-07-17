@@ -9,7 +9,7 @@
 #define BENCHMARK 0
 #define ACTIVE_SOLVER SOLVER::VIA_VC
 
-int main(int argc, char**argv){
+int main(){
 
     if(BENCHMARK)
     {

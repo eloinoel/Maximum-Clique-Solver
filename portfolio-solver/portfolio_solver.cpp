@@ -35,7 +35,7 @@ vector<string> launch_cli(Graph& G){
 }
 
 vector<string> launch_vc_comp(Graph G){
-    int edges = G.E.size();
+    //int edges = G.E.size();
     solve(G);
     auto in_sol = G.new_timestamp();
     for(Vertex* v : G.partial)
@@ -162,7 +162,7 @@ void PortfolioSolver::run_parallel_solver(Graph& G)
     if(density > 0.4 && N < 8000) {
         using_comp_vc = true;
         Graph H = G.complementary_graph(G);
-        int count = H.E.size();
+        //int count = H.E.size();
         parallel_solver_results[2] = std::async(std::launch::async, launch_vc_comp, H);
     }
 

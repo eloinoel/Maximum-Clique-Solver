@@ -17,7 +17,7 @@ Buckets::Buckets(std::vector<Vertex*>& degeneracy_ordering, std::vector<rn>& rig
         int vertex_id = degeneracy_ordering[i]->id;
         int rdeg = right_neighbourhoods[vertex_id].neigh.size();
 
-        assert(buckets.size() > rdeg); //Should always be the case due to degeneracy definition
+        assert((int)buckets.size() > rdeg); //Should always be the case due to degeneracy definition
         buckets[rdeg].push_back(vertex_id);
 
         // update iterator variables
@@ -33,7 +33,7 @@ Buckets::Buckets(std::vector<Vertex*>& degeneracy_ordering, std::vector<rn>& rig
 
 void Buckets::insert(int vertex_index, int neighbourhood_size)
 {
-    assert(neighbourhood_size < buckets.size()); // d + 1 < buckets.size() per definition
+    assert(neighbourhood_size < (int) buckets.size()); // d + 1 < buckets.size() per definition
 
     buckets[neighbourhood_size].push_back(vertex_index);
 
@@ -53,8 +53,8 @@ int Buckets::get_next(int rdeg_beq)
         return -1;
     }
     
-    assert(buckets.size() > current_bucket);
-    assert(buckets[current_bucket].size() > current_index);
+    assert((int)buckets.size() > current_bucket);
+    assert((int)buckets[current_bucket].size() > current_index);
 
     // if there are more elements in the current bucket
     current_index--;
@@ -77,8 +77,8 @@ int Buckets::get_next(int rdeg_beq)
     current_index = buckets[current_bucket].size() - 1;
     
 
-    assert(buckets.size() > current_bucket);
-    assert(buckets[current_bucket].size() > current_index);
+    assert((int)buckets.size() > current_bucket);
+    assert((int)buckets[current_bucket].size() > current_index);
     return buckets[current_bucket][current_index];
 }
 
@@ -87,8 +87,8 @@ int Buckets::get(int rdeg_beq)
     if(current_bucket == -1 || current_index == -1 || current_bucket < rdeg_beq)
         return -1;
 
-    assert(buckets.size() > current_bucket);
-    assert(buckets[current_bucket].size() > current_index);
+    assert((int)buckets.size() > current_bucket);
+    assert((int)buckets[current_bucket].size() > current_index);
     return buckets[current_bucket][current_index];
 }
 

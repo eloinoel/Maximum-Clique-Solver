@@ -80,11 +80,11 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
         auto Vf = get_remaining_set();
         remaining_set_solution.first = 0;
         Graph complement;
-        size_t vc_UB = p;
+        //size_t vc_UB = p;
         if(Vf.size() > 0) 
         {
             //cout << "Vf size: " << Vf.size() << ", LB: " << clique_LB << endl;
-            if(Vf.size() <= clique_LB) //don't need to solve
+            if((int) Vf.size() <= clique_LB) //don't need to solve
             {
                 //vc size is <= 0 to have at least all vertices of Vf in clique
                 remaining_set_solution.first = Vf.size() - clique_LB; 
@@ -118,7 +118,7 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
     while(cur_vertex_id != D.end())
     {
         size_t r_neighbourhood_size = right_neighbourhoods[cur_vertex_id].neigh.size();
-        size_t vc_UB = r_neighbourhood_size + p - d + 1;
+        //size_t vc_UB = r_neighbourhood_size + p - d + 1;
 
         if(r_neighbourhood_size > 0)
         {
@@ -137,7 +137,7 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
                     //complement.UB = vc_UB; //bound search tree
                     int vc_size = solve(complement);
                     right_neighbourhoods[cur_vertex_id].vc_size = vc_size;
-                    right_neighbourhoods[cur_vertex_id].sol = extract_maximum_clique_solution_from_rn(right_neighbourhoods[cur_vertex_id], complement);
+                    right_neighbourhoods[cur_vertex_id].sol = extract_maximum_clique_solution_from_rn(complement);
                     right_neighbourhoods[cur_vertex_id].sol.push_back(complement.name_table[cur_vertex_id]);
                     complement.delete_all();
                     update_LB(right_neighbourhoods[cur_vertex_id].sol);
@@ -166,7 +166,7 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
 }
 
 //MARK: SOLVER NO SORTING
-bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p, int LB)
+bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p)
 {
     //get candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}
     vector<Vertex*> D = get_candidate_set(p);
@@ -176,7 +176,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p, int LB)
         // a) construct ¬G[Vi], where Vi is the right-neighborhood of vi
         Vertex* vi = D[i];
         size_t r_neighbourhood_size = right_neighbourhoods[vi->id].neigh.size();
-        size_t vc_UB = r_neighbourhood_size + p - d + 1;
+        //size_t vc_UB = r_neighbourhood_size + p - d + 1;
         if(r_neighbourhood_size > 0)
         {
             //if not already solved
@@ -186,7 +186,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p, int LB)
                 //complement.UB = vc_UB; //bound search tree
                 int vc_size = solve(complement);
                 right_neighbourhoods[vi->id].vc_size = vc_size;
-                right_neighbourhoods[vi->id].sol = extract_maximum_clique_solution_from_rn(right_neighbourhoods[vi->id], complement);
+                right_neighbourhoods[vi->id].sol = extract_maximum_clique_solution_from_rn(complement);
                 right_neighbourhoods[vi->id].sol.push_back(complement.name_table[vi->id]);
                 complement.delete_all();
             }
@@ -214,7 +214,7 @@ bool SolverViaVC::solve_via_vc_for_p(Graph &G, size_t p, int LB)
     auto Vf = get_remaining_set();
     int vc_size_r = 0;
     Graph complement;
-    size_t vc_UB = p;
+    //size_t vc_UB = p;
     if(Vf.size() > 0)
     {
         complement = get_complement_subgraph(G, Vf);
@@ -293,13 +293,13 @@ Buckets& SolverViaVC::get_sorted_candidate_set()
             }
         }
         assert(sorted_candidate_set.max_bucket == max_bucket);
-        assert(sorted_candidate_set.max_index == sorted_candidate_set.buckets[max_bucket].size() - 1);
+        assert(sorted_candidate_set.max_index == (int) sorted_candidate_set.buckets[max_bucket].size() - 1);
 
         // test iterator functions
         for(size_t i = 0; i < degeneracy_ordering.size() - d; ++i)
         {
             int v_id = degeneracy_ordering[i]->id;
-            if(right_neighbourhoods[v_id].neigh.size() < d)
+            if((int) right_neighbourhoods[v_id].neigh.size() < d)
                 continue;
             int current = sorted_candidate_set.get(d);
             bool found = false;
@@ -351,10 +351,9 @@ Graph SolverViaVC::get_complement_subgraph(Graph & G, std::vector<Vertex*>& indu
 
 //MARK: EXTRACT SOLUTION
 
-std::vector<std::string> SolverViaVC::extract_maximum_clique_solution_from_rn(rn& right, Graph& complementGraph){
+std::vector<std::string> SolverViaVC::extract_maximum_clique_solution_from_rn(Graph& complementGraph){
     vector<string> max_clique_str;
     //fill maximum_clique
-    size_t i = 0;
     auto mark_sol = complementGraph.new_timestamp();
     for(Vertex* v : complementGraph.partial)
         v->marked = mark_sol;
@@ -372,7 +371,6 @@ vector<string> SolverViaVC::extract_maximum_clique_solution(Graph& complementGra
 {
     vector<Vertex*> max_clique;
     //fill maximum_clique
-    size_t i = 0;
     auto mark_sol = complementGraph.new_timestamp();
     for(Vertex* v : complementGraph.partial)
         v->marked = mark_sol;

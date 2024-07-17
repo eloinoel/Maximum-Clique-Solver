@@ -17,7 +17,7 @@ enum KERNEL{
 };
 
 inline int next2(int befor, Graph& G){
-    for(int i = max(0, befor-1); i<G.deg_lists.size(); i++){
+    for(int i = max(0, befor-1); i<(int)G.deg_lists.size(); i++){
         if(!G.deg_lists[i].empty())return i;
     }
     return -1;
@@ -63,7 +63,7 @@ inline std::pair<int, int> get_lb_and_degeneracy(Graph &G)
     }
     G.restore();
 
-    if(C_0.size()>lb){
+    if((int)C_0.size()>lb){
         lb=C_0.size();
     }
     vector<Vertex*> new_ordering;
@@ -88,7 +88,7 @@ inline Predict_status sgn(float arg){
 
 float rbf_kernel(vector<float> input, vector<float> support_vectors, float gamma){
     float sum = 0;
-    for(int i =0; i< input.size(); i++){
+    for(int i =0; i< (int) input.size(); i++){
         sum+= (input[i] - support_vectors[i])*(input[i] - support_vectors[i]);
     }
     return exp(-gamma * sum);
@@ -96,7 +96,7 @@ float rbf_kernel(vector<float> input, vector<float> support_vectors, float gamma
 
 float linear_kernel(vector<float> input, vector<float> support_vectors){
     float sum = 0;
-    for(int i =0; i< input.size(); i++){
+    for(int i =0; i< (int) input.size(); i++){
         sum+= input[i]*support_vectors[i];
     }
     return sum;
@@ -105,7 +105,7 @@ float linear_kernel(vector<float> input, vector<float> support_vectors){
 
 float poly_kernel(vector<float> input, vector<float> support_vectors, float gamma, float coef, int degree) {
     float sum = 0;
-    for (int i = 0; i < input.size(); i++) {
+    for (int i = 0; i < (int) input.size(); i++) {
         sum += input[i] * support_vectors[i];
     }
     return pow(gamma * sum + coef, degree);
@@ -114,17 +114,17 @@ float poly_kernel(vector<float> input, vector<float> support_vectors, float gamm
 inline float intern_predict(vector<vector<float>> X, vector<float> input, vector<int> support_vector_indices, vector<float> dual_Coeff, float intercept, KERNEL kernel, float gamma = 0, float coef = 0, int degree = 0){
     float sum = intercept;
     if(kernel == RBF){
-        for(int i =0; i<support_vector_indices.size(); i++){
+        for(int i =0; i<(int)support_vector_indices.size(); i++){
             sum+= dual_Coeff[i] * rbf_kernel(input, X[support_vector_indices[i]], gamma);
         }
     }
     if(kernel == LINEAR){
-        for(int i =0; i<support_vector_indices.size(); i++){
+        for(int i =0; i<(int)support_vector_indices.size(); i++){
             sum+= dual_Coeff[i] * linear_kernel(input, X[support_vector_indices[i]]);
         } 
     }
     if(kernel == POLY){
-        for(int i =0; i<support_vector_indices.size(); i++){
+        for(int i =0; i<(int)support_vector_indices.size(); i++){
             sum+= dual_Coeff[i] * poly_kernel(input, X[support_vector_indices[i]], gamma, coef, degree);
         }   
     }

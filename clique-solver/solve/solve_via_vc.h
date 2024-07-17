@@ -69,7 +69,7 @@ private:
      * it determines whether the clique-core gap is at most p.
      * @note call `solve_via_vc()` instead of this function
      */
-    bool solve_via_vc_for_p(Graph& G, size_t p, int LB);
+    bool solve_via_vc_for_p(Graph& G, size_t p);
 
     /**
      * Sort the candidate set with descending rdeg
@@ -98,7 +98,7 @@ private:
      * @note stores solution in this.maximum_clique, O(complement.V * vc_size)
      */
     std::vector<std::string> extract_maximum_clique_solution(Graph& complementGraph, Vertex* o = nullptr);
-    std::vector<std::string> extract_maximum_clique_solution_from_rn(rn& right, Graph& complementGraph);
+    std::vector<std::string> extract_maximum_clique_solution_from_rn(Graph& complementGraph);
 
 
     void update_LB(std::vector<std::string>& solution_candidate);
