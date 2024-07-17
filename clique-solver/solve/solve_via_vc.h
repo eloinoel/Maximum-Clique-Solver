@@ -29,13 +29,13 @@ public:
     /* vertex ids mapped to right neighbourhoods, right neighbourhoods store solutions*/
     std::vector<rn> right_neighbourhoods;
     /* first: VC_size, second: Vf - VC --> size will be Vf_size - VC_size */
-    std::pair<int, std::vector<std::string>> remaining_set_solution = std::make_pair(N_INF, std::vector<std::string>()); // avoid recomputation of vertex cover
+    std::pair<int, std::vector<std::string>> remaining_set_solution = {N_INF, std::vector<std::string>()}; // avoid recomputation of vertex cover
     /* degeneracy of the Graph */
     int d;
 
     int clique_UB; // simple bound: d + 1
     int clique_LB;
-    std::vector<Vertex*> LB_clique_vertices;
+    std::vector<std::string> LB_clique_vertices;
 
     /** 
      * this will be filled after solve_via_vc() is called
@@ -100,12 +100,13 @@ private:
     std::vector<std::string> extract_maximum_clique_solution(Graph& complementGraph, Vertex* o = nullptr);
     std::vector<std::string> extract_maximum_clique_solution_from_rn(rn& right, Graph& complementGraph);
 
-    void update_LB(int LB_candidate);
+
+    void update_LB(std::vector<std::string>& solution_candidate);
 
     /**
      * @brief convert vertices to string
      */
-    std::vector<std::string> get_str_maximum_clique(std::vector<Vertex*>& vertices, Graph& G);
+    std::vector<std::string> get_str_clique(std::vector<Vertex*>& vertices, Graph& G);
 
     Vertex* get_vertex_by_name(Graph& G, std::string name);
 };

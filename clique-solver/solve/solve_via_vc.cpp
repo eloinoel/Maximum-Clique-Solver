@@ -11,7 +11,7 @@
 
 using namespace std;
 
-
+//TODO: update LB is copying vertices every time
 //TODO: binary search for p
 //TODO: maybe optimise subgraph/complement graph construction
 //TODO: use better data reductions
@@ -44,8 +44,9 @@ int SolverViaVC::solve_via_vc(Graph& G)
     }
     //check lower and upper bounds
     clique_UB = degeneracy_UB(d);
-    auto LB_maximum_clique = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoodsT);
-    clique_LB = (int) LB_maximum_clique.size();
+    std::vector<Vertex*> lb_vertices = degeneracy_ordering_LB(degeneracy_ordering, right_neighbourhoodsT);
+    LB_clique_vertices = get_str_clique(lb_vertices, G);
+    clique_LB = (int) LB_clique_vertices.size();
 
     #if DEBUG
         cout << "Computed LB=" << clique_LB << ", UB=" << clique_UB << std::endl;
@@ -54,7 +55,7 @@ int SolverViaVC::solve_via_vc(Graph& G)
     // terminate early
     if(clique_LB == clique_UB)
     {
-        maximum_clique = get_str_maximum_clique(LB_maximum_clique, G);
+        maximum_clique = LB_clique_vertices;
         return clique_LB;
     }
 
@@ -87,15 +88,15 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
             {
                 //vc size is <= 0 to have at least all vertices of Vf in clique
                 remaining_set_solution.first = Vf.size() - clique_LB; 
-                remaining_set_solution.second = get_str_maximum_clique(LB_clique_vertices, G);
+                (remaining_set_solution.second) = LB_clique_vertices;
             }
-            //else
+            else
             {
                 complement = get_complement_subgraph(G, Vf);
                 //complement.UB = vc_UB; //bound vc search tree
                 remaining_set_solution.first = solve(complement);
                 remaining_set_solution.second = extract_maximum_clique_solution(complement);
-                update_LB(remaining_set_solution.second.size());
+                update_LB(remaining_set_solution.second);
             }
         }
         complement.delete_all();
@@ -103,6 +104,7 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
     //if G[Vf] has a vertex cover of size qf := p − 1, return true
     if(remaining_set_solution.first == (int) p - 1)
     {
+        //cout << "Found solution in remaining set" << endl;
         maximum_clique = remaining_set_solution.second;
         //complement.delete_all();
         return true;
@@ -120,21 +122,26 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
 
         if(r_neighbourhood_size > 0)
         {
-            // if(r_neighbourhood_size + 1 < clique_LB) // if not enough vertices to form a clique, don't need to solve
-            // {
-            //     right_neighbourhoods[cur_vertex_id].vc_size = clique_LB;
-            // }
             //if not already solved
             if(right_neighbourhoods[cur_vertex_id].vc_size == -1)
             {
-                Graph complement = get_complement_subgraph(G, right_neighbourhoods[cur_vertex_id].neigh);
-                //complement.UB = vc_UB; //bound search tree
-                int vc_size = solve(complement);
-                right_neighbourhoods[cur_vertex_id].vc_size = vc_size;
-                right_neighbourhoods[cur_vertex_id].sol = extract_maximum_clique_solution_from_rn(right_neighbourhoods[cur_vertex_id], complement);
-                right_neighbourhoods[cur_vertex_id].sol.push_back(complement.name_table[cur_vertex_id]);
-                complement.delete_all();
-                //update_LB(vc_size);
+                int r_neighbourhood_ub = r_neighbourhood_size + 1;
+                if(r_neighbourhood_ub <= clique_LB) // LB already better solution
+                {
+                    right_neighbourhoods[cur_vertex_id].vc_size = r_neighbourhood_size + 1 - clique_LB;
+                    right_neighbourhoods[cur_vertex_id].sol = LB_clique_vertices;
+                }
+                else
+                {
+                    Graph complement = get_complement_subgraph(G, right_neighbourhoods[cur_vertex_id].neigh);
+                    //complement.UB = vc_UB; //bound search tree
+                    int vc_size = solve(complement);
+                    right_neighbourhoods[cur_vertex_id].vc_size = vc_size;
+                    right_neighbourhoods[cur_vertex_id].sol = extract_maximum_clique_solution_from_rn(right_neighbourhoods[cur_vertex_id], complement);
+                    right_neighbourhoods[cur_vertex_id].sol.push_back(complement.name_table[cur_vertex_id]);
+                    complement.delete_all();
+                    update_LB(right_neighbourhoods[cur_vertex_id].sol);
+                }
             }
         }
 
@@ -385,7 +392,7 @@ vector<string> SolverViaVC::extract_maximum_clique_solution(Graph& complementGra
     return max_str_clique;
 }
 
-vector<string> SolverViaVC::get_str_maximum_clique(std::vector<Vertex*>& vertices, Graph& G)
+vector<string> SolverViaVC::get_str_clique(std::vector<Vertex*>& vertices, Graph& G)
 {
     std::vector<string> str_clique = std::vector<std::string>();
     for(size_t i = 0; i < vertices.size(); ++i)
@@ -396,11 +403,12 @@ vector<string> SolverViaVC::get_str_maximum_clique(std::vector<Vertex*>& vertice
     return str_clique;
 }
 
-void SolverViaVC::update_LB(int LB_candidate)
+void SolverViaVC::update_LB(std::vector<std::string>& solution_candidate)
 {
-    if(LB_candidate > clique_LB)
+    if((int) solution_candidate.size() > clique_LB)
     {
-        clique_LB = LB_candidate;
+        clique_LB = solution_candidate.size();
+        LB_clique_vertices = solution_candidate;
     }
 }
 
