@@ -132,7 +132,7 @@ public:
     /* undo last operation on stack */
     void undo();
 
-    Graph shallow_copy();
+    const Graph shallow_copy() const;
 
     Graph complementary_graph(Graph& G);
 

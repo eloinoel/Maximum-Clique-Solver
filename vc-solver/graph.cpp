@@ -352,7 +352,7 @@ void Graph::delete_from_deglist(Vertex* v){
 }
 
 
-Graph Graph::shallow_copy(){
+const Graph Graph::shallow_copy() const {
     Graph H;
     unordered_map<Vertex*, Vertex*> G_to_H;
     
