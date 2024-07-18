@@ -82,6 +82,7 @@ add_executable(mc_solver
     clique-solver/upperbounds/upper_bounds.cpp
     clique-solver/lowerbounds/lower_bounds.cpp
     clique-solver/reductions/k_core.cpp
+    clique-solver/reductions/k_truss.cpp
     clique-solver/orderings/degeneracy_ordering.cpp
     clique-solver/solve/solve_via_vc.cpp
     clique-solver/solve/bucket_sort.cpp
