@@ -161,44 +161,51 @@ void PortfolioSolver::run_parallel_solver(Graph& G)
 
     // ALL BUT ONE NEED TO BE COPIED
     bool copy_domega = false;
-    bool copy_cli = true; 
+    bool copy_cli = true;
+
+    Graph H = G.shallow_copy();
+
+    // optional third solver
+    if(density > 0.4 && N < 8000)
+    {
+        using_comp_vc = true;
+        Graph H1 = G.complementary_graph(G); // this makes a copy
+        parallel_solver_results[2] = std::async(std::launch::async, launch_vc_comp, H1); //TODO: unnecessary copy of already copied graph H1 (call by value)
+    }
 
     // first solver
-    if(copy_domega){
-        Graph H = G.shallow_copy();
-        parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, std::ref(H));
-    }else{
+    if(copy_domega)
+    {
+        parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, H); //TODO: unnecessary copy of already copied graph H
+    }
+    else
+    {
         parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, std::ref(G));
     }
 
     // second solver
     if(density <= 0.2) // cli paper said that LMC is better for large graphs with low density around 0.1, test this value
     {
-        if(copy_cli){
-            Graph H = G.shallow_copy();
-            parallel_solver_results[1] = std::async(std::launch::async, launch_lmc, std::ref(H));
-        }else{
+        if(copy_cli)
+        {
+            parallel_solver_results[1] = std::async(std::launch::async, launch_lmc, H);//TODO: unnecessary copy of already copied graph H
+        }
+        else
+        {
             parallel_solver_results[1] = std::async(std::launch::async, launch_lmc, std::ref(G));
         }
     }
     else
     {
-        if(copy_cli){
-            Graph H = G.shallow_copy();
-            parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(H));
-        }else{
+        if(copy_cli)
+        {
+            parallel_solver_results[1] = std::async(std::launch::async, launch_cli, H);//TODO: unnecessary copy of already copied graph H
+        }
+        else
+        {
             parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(G));
         }
     }
-
-    // optional third solver
-    if(density > 0.4 && N < 8000) {
-        using_comp_vc = true;
-        Graph H = G.complementary_graph(G); // this makes a copy
-        //int count = H.E.size();
-        parallel_solver_results[2] = std::async(std::launch::async, launch_vc_comp, std::ref(H));
-    }
-
 }
 
 void PortfolioSolver::run_classifier_solver(Graph &G)
