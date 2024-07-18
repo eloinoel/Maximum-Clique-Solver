@@ -22,7 +22,7 @@ class SolverViaVC
 {
 //-----------------------Variables-----------------------
 public:
-    bool BINARY_SEARCH = true;
+    bool BINARY_SEARCH = false;
 
 
     std::vector<Vertex*> degeneracy_ordering;

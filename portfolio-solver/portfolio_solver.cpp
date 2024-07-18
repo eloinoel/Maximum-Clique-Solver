@@ -14,7 +14,7 @@
 
 #include <thread>
 
-vector<string> launch_lmc(Graph& G){
+vector<string> launch_lmc(Graph G){
     vector<Vertex*> maximum_clique = lmc(G);
     vector<string> output;
     for(Vertex* v: maximum_clique){
@@ -29,7 +29,7 @@ vector<string> launch_dOmega(Graph G){
     return solver.maximum_clique;
 }
 
-vector<string> launch_cli(Graph& G){
+vector<string> launch_cli(Graph G){
     solve_clique(G, false);
     return get_cli_output(G);
 }
@@ -157,27 +157,48 @@ void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
 
 void PortfolioSolver::run_parallel_solver(Graph& G)
 {
-    bool copy_domega = true;
-    bool copy_cli = false; // ALL BUT LAST NEED TO BE COPIED
-    if(density > 0.4 && N < 8000) {
-        using_comp_vc = true;
-        Graph H = G.complementary_graph(G);
-        //int count = H.E.size();
-        parallel_solver_results[2] = std::async(std::launch::async, launch_vc_comp, H);
-    }
+    //vector<string> (*first_solver)(Graph&) = launch_dOmega;
 
+    // ALL BUT ONE NEED TO BE COPIED
+    bool copy_domega = false;
+    bool copy_cli = true; 
+
+    // first solver
     if(copy_domega){
         Graph H = G.shallow_copy();
-        parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, H);
+        parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, std::ref(H));
     }else{
         parallel_solver_results[0] = std::async(std::launch::async, launch_dOmega, std::ref(G));
     }
-    if(copy_cli){
-        Graph H = G.shallow_copy();
-        parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(H));
-    }else{
-        parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(G));
+
+    // second solver
+    if(density <= 0.2) // cli paper said that LMC is better for large graphs with low density around 0.1, test this value
+    {
+        if(copy_cli){
+            Graph H = G.shallow_copy();
+            parallel_solver_results[1] = std::async(std::launch::async, launch_lmc, std::ref(H));
+        }else{
+            parallel_solver_results[1] = std::async(std::launch::async, launch_lmc, std::ref(G));
+        }
     }
+    else
+    {
+        if(copy_cli){
+            Graph H = G.shallow_copy();
+            parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(H));
+        }else{
+            parallel_solver_results[1] = std::async(std::launch::async, launch_cli, std::ref(G));
+        }
+    }
+
+    // optional third solver
+    if(density > 0.4 && N < 8000) {
+        using_comp_vc = true;
+        Graph H = G.complementary_graph(G); // this makes a copy
+        //int count = H.E.size();
+        parallel_solver_results[2] = std::async(std::launch::async, launch_vc_comp, std::ref(H));
+    }
+
 }
 
 void PortfolioSolver::run_classifier_solver(Graph &G)
@@ -208,7 +229,7 @@ void PortfolioSolver::run_classifier_solver(Graph &G)
         first_future = std::async(std::launch::async, launch_cli, std::ref(H1));
     }else{
         Graph H2 = G.complementary_graph(G);
-        first_future = std::async(std::launch::async, launch_vc_comp, H2);
+        first_future = std::async(std::launch::async, launch_vc_comp, std::ref(H2));
     }
     if(sec == 0){
         second_future = std::async(std::launch::async, launch_lmc, std::ref(G));

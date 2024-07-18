@@ -11,12 +11,8 @@
 
 using namespace std;
 
-//TODO: update LB is copying vertices every time
 //TODO: binary search for p
 //TODO: maybe optimise subgraph/complement graph construction
-//TODO: use better data reductions
-//TODO: make better use of lower and upper Bounds, eg. heuristical lower bound
-//TODO: store complement graphs for each right neighbourhood
 int SolverViaVC::solve_via_vc(Graph& G)
 {
     #if DEBUG
@@ -63,12 +59,34 @@ int SolverViaVC::solve_via_vc(Graph& G)
     // solve for increasing values of p (clique core gap)
     for(int p = 0; p <= clique_UB - clique_LB; p++)
     {
-        if(solve_via_vc_for_p_with_sorting(G, p))
+        if(BINARY_SEARCH)
         {
-            return clique_UB - p;
+            if(p + clique_LB > clique_UB) //TODO: fix this condition
+            {
+                //cout << "return clique_UB - p : " << clique_UB - p << endl;
+                return clique_UB - p;
+            }
+            int p_ub = clique_UB - clique_LB; // can change due to clique_LB getting updated in solver
+            int binary_search_p = (p + p_ub) / 2; //TODO: fix this, its only incrementing half of the time (obviously)
+            solve_via_vc_for_p_with_sorting(G, binary_search_p);
+            update_LB(maximum_clique);
+            // cout << "Found solution with binary search: size=" << clique_UB - p 
+            // << ", should be: " << 95 << endl;
+            // cout << "bs_p: " << GREEN << binary_search_p << RESET <<", p: " << p << ", p_ub: " << p_ub << endl;
         }
+        else // linear search
+        {
+            if(solve_via_vc_for_p_with_sorting(G, p))
+            {
+                //cout << "Found solution with linear search: size=" << clique_UB - p << endl;
+                //cout << "p: " << p << endl;
+                return clique_UB - p;
+            }
+        }
+        
     }
-    return clique_LB;
+    //cout << "after for loop, returning " << maximum_clique.size() << endl;
+    return maximum_clique.size();
 }
 
 //MARK: SOLVER SORTING
@@ -158,6 +176,7 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
             {
                 maximum_clique = right_neighbourhoods[cur_vertex_id].sol;
             }
+            //cout << "Found solution in candidate set for vertex " << cur_vertex_id << endl;
             //complement.delete_all();
             return true;
         }
