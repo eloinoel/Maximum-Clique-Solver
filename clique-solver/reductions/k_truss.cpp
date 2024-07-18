@@ -1,6 +1,8 @@
 #include "k_truss.h"
 #include "graph.h"
 
+#include <cassert>
+
 using namespace std;
 
 KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
@@ -23,9 +25,52 @@ KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
 
 KTruss::~KTruss()
 {
+
     for(edge* e : edge_support)
     {
         delete e;
+    }
+}
+
+void KTruss::compute_k_classes()
+{
+    int k = 2;
+    for(size_t i = 0; i < sorted_edges.size(); ++i)
+    {
+        edge* e = sorted_edges[i]; //edge with lowest support
+        assert(e != nullptr);
+        assert(e->support >= 0);
+        while(e->support < k - 2)
+        {
+            k++;
+        }
+
+        //we want u to have the smaller degree
+        assert(e->id >= 0);
+        Vertex* u = H->E[e->id]->ends[0].v;
+        Vertex* v = H->E[e->id]->ends[1].v;
+        if (deg(u) > deg(v))
+        {
+            std::swap(u, v);
+        }
+
+        for(int j = 0; j < u->neighbors.size(); ++j)
+        {
+            Vertex* w = u->neighbors[j];
+            // found triangle --> update supports and remove edge
+            if(is_edge(v->id, w->id))
+            {
+                //TODO: 
+                //update support
+
+                //reorder (u,w) and (v, w) according to new support
+
+            }
+        }
+        //add edge to k-class
+
+        //remove edge from graph
+
     }
 }
 

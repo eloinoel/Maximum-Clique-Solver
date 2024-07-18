@@ -53,7 +53,7 @@ public:
 
     /* k-class: edges of trussness k stored as edge ids*/
     std::vector<std::vector<int>> k_classes;
-    int max_k = 0;
+
 
 private:
 
@@ -69,6 +69,14 @@ public:
      * @brief need to free edge pointers
      */
     ~KTruss();
+
+    /**
+     * @brief compute k-classes, which contain all edges of trussness k
+     * where k is the largest number for which the edge is contained in a k-truss.
+     * @note Algorithm 2 in http://vldb.org/pvldb/vol5/p812_jiawang_vldb2012.pdf
+     * @returns results are written to variable `k_classes`
+     */
+    void compute_k_classes();
 
     /**
      * @brief remove all edges in graph whose endpoints have fewer than L - 2 common neighbours (triangles)
@@ -95,6 +103,11 @@ private:
      * @note O(m^1.5)
      */
     void compute_support(std::vector<Triangle>& triangles, const Graph& G);
+
+    inline bool is_edge(unsigned int u, unsigned int v)
+    {
+        return edge_map.find(std::make_pair(u, v)) != edge_map.end();
+    };
 };
 
 #pragma once
