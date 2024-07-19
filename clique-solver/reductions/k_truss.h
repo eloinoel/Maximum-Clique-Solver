@@ -32,7 +32,7 @@ struct undirected_pair_hash {
 };
 
 /* a triangle contains three vertex indices */
-using Triangle = unsigned int[3];
+using Triangle = std::array<unsigned int, 3>;
 
 typedef struct _edge {
     int id;

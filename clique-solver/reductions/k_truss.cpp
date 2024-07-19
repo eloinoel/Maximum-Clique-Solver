@@ -83,11 +83,41 @@ void KTruss::compute_k_classes()
     }
 }
 
+inline vector<Vertex*> intersection(vector<Vertex*>& ordered_array1, vector<Vertex*>& ordered_array2, unordered_map<Vertex*, unsigned int>& ordering){
+    vector<Vertex*> result;
+    for(int i =0 ,j =0; i<ordered_array1.size() && j<ordered_array2.size();){
+        if(ordering[ordered_array1[i]]<ordering[ordered_array2[j]])i++;
+        else if(ordering[ordered_array1[i]]>ordering[ordered_array2[j]])j++;
+        else {
+            result.push_back(ordered_array1[i]);
+            i++;
+            j++;
+        }
+    }
+    return result;
+}
 
 std::vector<Triangle> KTruss::compute_triangles(Graph& G, std::vector<Vertex*>& degeneracy_ordering)
 {
-    //TODO:
-    return std::vector<Triangle>();
+    vector<Triangle> triangles;
+    unordered_map<Vertex*, vector<Vertex*>> A;
+    A.reserve(degeneracy_ordering.size());
+    unordered_map<Vertex*, unsigned int> ordering;
+    for( unsigned int i =0; i<degeneracy_ordering.size(); i++){
+        ordering[degeneracy_ordering[i]]=i;
+    }
+    for(Vertex* v_i:degeneracy_ordering){
+        for(Vertex* v_l: v_i->neighbors){
+            if(ordering[v_i]<ordering[v_l]){
+                for(Vertex* v: intersection(A[v_i], A[v_l], ordering)){
+                    Triangle t = {ordering[v],ordering[v_i],ordering[v_l]};
+                    triangles.push_back(t);
+                }
+                A[v_l].push_back(v_i);
+            }
+        }
+    }
+    return triangles;
 }
 
 void KTruss::init_edge_map(Graph& G)
