@@ -1,8 +1,6 @@
 #include "k_truss.h"
 #include "graph.h"
 
-#include <cassert>
-
 using namespace std;
 
 KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
@@ -12,28 +10,29 @@ KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
 
     //block scope to free variable memory when not needed anymore
     {
-    std::vector<Triangle> triangles = compute_triangles(*(H.get()), degeneracy_ordering);
-    //compute support for each edge, i.e. how many triangles it is a part of
-    compute_support(triangles, *(H.get()));
+        std::vector<Triangle> triangles = compute_triangles(*(H.get()), degeneracy_ordering);
+        //compute support for each edge, i.e. how many triangles it is a part of
+        compute_support(triangles, *(H.get()));
     }
     {
         //sort all edges in ascending order of their support
-        Buckets b = Buckets(edge_support);
+        BucketSort b = BucketSort(edge_support);
         sorted_edges = b.get_sorted_edges();
     }
 }
 
 KTruss::~KTruss()
 {
-
     for(edge* e : edge_support)
     {
+        assert(e != nullptr);
         delete e;
     }
 }
 
 void KTruss::compute_k_classes()
 {
+    k_classes = std::vector<std::vector<int>>();
     int k = 2;
     for(size_t i = 0; i < sorted_edges.size(); ++i)
     {
@@ -45,7 +44,7 @@ void KTruss::compute_k_classes()
             k++;
         }
 
-        //we want u to have the smaller degree
+        //we want u to have the smaller degree for efficiency
         assert(e->id >= 0);
         Vertex* u = H->E[e->id]->ends[0].v;
         Vertex* v = H->E[e->id]->ends[1].v;
@@ -60,17 +59,27 @@ void KTruss::compute_k_classes()
             // found triangle --> update supports and remove edge
             if(is_edge(v->id, w->id))
             {
-                //TODO: 
+                edge* u_w = get_edge(u->id, w->id);
+                edge* v_w = get_edge(v->id, w->id);
+
                 //update support
+                decrement_support(u_w);
+                decrement_support(v_w);
 
                 //reorder (u,w) and (v, w) according to new support
-
+                reorder_edge(u_w, i);
+                reorder_edge(v_w, i);
             }
         }
         //add edge to k-class
+        if(k_classes.size() <= k)
+        {
+            k_classes.resize(k+1);
+        }
+        k_classes[k].push_back(e->id);
 
         //remove edge from graph
-
+        H->remove_edge(H->E[e->id]);
     }
 }
 
@@ -115,16 +124,98 @@ void KTruss::compute_support(std::vector<Triangle>& triangles, const Graph& G)
             assert(it != edge_map.end());
 
             int edge_id = it->second;
-            edge_support[edge_id]->support++;
+            edge* e = edge_support[edge_id];
+            assert(e != nullptr);
+            e->support++;
         }
     }
+}
+
+edge* KTruss::get_edge(unsigned int u, unsigned int v)
+{
+    auto it = edge_map.find(std::make_pair(u, v));
+    assert(it != edge_map.end());
+    int edge_id = it->second;
+    assert(edge_id >= 0);
+    assert(edge_id < (int) edge_support.size());
+    return edge_support[edge_id];
+}
+
+void KTruss::decrement_support(edge* e)
+{
+    assert(e != nullptr);
+    e->support--;
+}
+
+bool is_swap_index_valid(int swap_index, int current_iteration_index)
+{
+    return swap_index > current_iteration_index && swap_index > 0;
+}
+
+int KTruss::reorder_edge(edge* e, int current_iteration_index)
+{
+    assert(e != nullptr);
+    assert(current_iteration_index < e->sorted_edges_index);
+    assert(current_iteration_index < (int) sorted_edges.size());
+    assert(current_iteration_index >= 0);
+    
+    assert(e == sorted_edges[e->sorted_edges_index]);
+    if(e->sorted_edges_index - 1 > current_iteration_index)
+    {
+        assert(support(e) >= support(sorted_edges[e->sorted_edges_index - 1])); // e is in correct support region
+    }
+
+    int swap_index = e->sorted_edges_index;
+    while(is_swap_index_valid(swap_index, current_iteration_index))
+    {
+        if(support(sorted_edges[swap_index - 1]) < support(e)) // swap_index is last element in new support region of e
+        {
+            break;
+        }
+        swap_index--;
+    }
+    swap_edge(e, swap_index);
+
+    assert(e->sorted_edges_index > current_iteration_index);
+
+    // test order preserved after swap
+    #if !NDEBUG
+    for(int i = current_iteration_index + 1; i < (int) sorted_edges.size() - 1; ++i)
+    {
+        assert(support(sorted_edges[i]) <= support(sorted_edges[i + 1]));
+    }
+    #endif
+}
+
+void KTruss::swap_edge(edge* e, int swap_index)
+{
+    assert(e != nullptr);
+    assert(swap_index >= 0);
+    assert(swap_index < (int) sorted_edges.size());
+    assert(e->sorted_edges_index < (int) sorted_edges.size());
+    assert(e == sorted_edges[e->sorted_edges_index]);
+
+    edge* e2 = sorted_edges[swap_index];
+    assert(e2 != nullptr);
+    assert(e2->sorted_edges_index == swap_index);
+
+    assert(support(e) == support(e2)); // should not disrupt sorted order
+
+    //swap
+    sorted_edges[e->sorted_edges_index] = e2;
+    sorted_edges[swap_index] = e;
+    e2->sorted_edges_index = e->sorted_edges_index;
+    e->sorted_edges_index = swap_index;
+
+    assert(sorted_edges[e->sorted_edges_index] == e);
+    assert(sorted_edges[e2->sorted_edges_index] == e2);
 }
 
 // --------------------------------------------------------------------------------
 // --------------------------- MARK: BUCKET SORT ----------------------------------
 // --------------------------------------------------------------------------------
 
-Buckets::Buckets(vector<edge*>& edge_support)
+BucketSort::BucketSort(vector<edge*>& edge_support)
 {
     _size = 0;
     for(size_t i = 0; i < edge_support.size(); ++i)
@@ -133,7 +224,7 @@ Buckets::Buckets(vector<edge*>& edge_support)
     }
 }
 
-void Buckets::insert(edge* e)
+void BucketSort::insert(edge* e)
 {
     assert(e != nullptr);
     if(e->support >= (int) buckets.size())
@@ -144,15 +235,21 @@ void Buckets::insert(edge* e)
     _size++;
 }
 
-vector<edge*> Buckets::get_sorted_edges()
+vector<edge*> BucketSort::get_sorted_edges()
 {
     assert(!buckets.empty());
-    vector<edge*> sorted_edges;
+    vector<edge*> sorted_edges = vector<edge*>(size());
+    int i = 0;
     for(vector<edge*>& bucket : buckets)
     {
         for(edge* e : bucket)
         {
-            sorted_edges.push_back(e);
+            assert((int) sorted_edges.size() > i);
+            assert(e != nullptr);
+            sorted_edges[i] = e;
+            e->sorted_edges_index = i;
+            i++;
         }
     }
+    return sorted_edges;
 }

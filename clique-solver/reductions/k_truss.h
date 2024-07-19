@@ -13,6 +13,7 @@
 #include <utility>
 #include <limits>
 #include <memory>
+#include <cassert>
 
 class Graph;
 class Vertex;
@@ -36,6 +37,7 @@ using Triangle = unsigned int[3];
 typedef struct _edge {
     int id;
     int support;
+    int sorted_edges_index;
 } edge;
 
 class KTruss
@@ -108,6 +110,28 @@ private:
     {
         return edge_map.find(std::make_pair(u, v)) != edge_map.end();
     };
+
+    edge* get_edge(unsigned int u, unsigned int v);
+
+    /**
+     * @brief support(edge*)--
+     */
+    void decrement_support(edge* e);
+
+    /**
+     * @brief update the position of edge e in sorted_edges one support to the left
+     * @param current_iteration_index edge that is currently being looked at in `compute_k_classes`
+     * @returns new_index where new_index > current_iteration_index
+     */
+    int reorder_edge(edge* e, int current_iteration_index);
+
+    void swap_edge(edge*e, int swap_index);
+
+    inline int support(edge* e)
+    {
+        assert(e != nullptr);
+        return e->support;
+    }
 };
 
 #pragma once
@@ -118,7 +142,7 @@ private:
  * Bucketsort for edges
  * @note
  */
-class Buckets
+class BucketSort
 {
 public:
     /** store the neighbourhood indeces in buckets --> sorted */
@@ -128,12 +152,12 @@ private:
 
 public:
     //default constructor
-    Buckets() = default;
+    BucketSort() = default;
 
     /**
      * put the first N - d right neighbourhoods in buckets (sort)
      */
-    Buckets(std::vector<edge*>& edge_support);
+    BucketSort(std::vector<edge*>& edge_support);
     void insert(edge* e);
 
     std::vector<edge*> get_sorted_edges();
