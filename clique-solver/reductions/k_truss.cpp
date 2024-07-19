@@ -10,7 +10,7 @@ KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
 
     //block scope to free variable memory when not needed anymore
     {
-        std::vector<Triangle> triangles = compute_triangles(*(H.get()), degeneracy_ordering);
+        std::vector<Triangle> triangles = compute_triangles(degeneracy_ordering);
         //compute support for each edge, i.e. how many triangles it is a part of
         compute_support(triangles, *(H.get()));
     }
@@ -19,6 +19,14 @@ KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
         BucketSort b = BucketSort(edge_support);
         sorted_edges = b.get_sorted_edges();
     }
+
+    // assert correctly sorted
+    #if !NDEBUG
+    for(int i = 0; i < (int) sorted_edges.size() - 1; ++i)
+    {
+        assert(support(sorted_edges[i]) <= support(sorted_edges[i + 1]));
+    }
+    #endif
 }
 
 KTruss::~KTruss()
@@ -53,7 +61,7 @@ void KTruss::compute_k_classes()
             std::swap(u, v);
         }
 
-        for(int j = 0; j < u->neighbors.size(); ++j)
+        for(int j = 0; j < (int) u->neighbors.size(); ++j)
         {
             Vertex* w = u->neighbors[j];
             // found triangle --> update supports and remove edge
@@ -72,20 +80,20 @@ void KTruss::compute_k_classes()
             }
         }
         //add edge to k-class
-        if(k_classes.size() <= k)
+        if((int) k_classes.size() <= k)
         {
             k_classes.resize(k+1);
         }
         k_classes[k].push_back(e->id);
 
         //remove edge from graph
-        H->remove_edge(H->E[e->id]);
+        (void)H->remove_edge(H->E[e->id]);
     }
 }
 
 inline vector<Vertex*> intersection(vector<Vertex*>& ordered_array1, vector<Vertex*>& ordered_array2, unordered_map<Vertex*, unsigned int>& ordering){
     vector<Vertex*> result;
-    for(int i =0 ,j =0; i<ordered_array1.size() && j<ordered_array2.size();){
+    for(int i =0 ,j =0; i<(int)ordered_array1.size() && j<(int)ordered_array2.size();){
         if(ordering[ordered_array1[i]]<ordering[ordered_array2[j]])i++;
         else if(ordering[ordered_array1[i]]>ordering[ordered_array2[j]])j++;
         else {
@@ -97,7 +105,7 @@ inline vector<Vertex*> intersection(vector<Vertex*>& ordered_array1, vector<Vert
     return result;
 }
 
-std::vector<Triangle> KTruss::compute_triangles(Graph& G, std::vector<Vertex*>& degeneracy_ordering)
+std::vector<Triangle> KTruss::compute_triangles(std::vector<Vertex*>& degeneracy_ordering)
 {
     vector<Triangle> triangles;
     unordered_map<Vertex*, vector<Vertex*>> A;
@@ -110,7 +118,7 @@ std::vector<Triangle> KTruss::compute_triangles(Graph& G, std::vector<Vertex*>& 
         for(Vertex* v_l: v_i->neighbors){
             if(ordering[v_i]<ordering[v_l]){
                 for(Vertex* v: intersection(A[v_i], A[v_l], ordering)){
-                    Triangle t = {ordering[v],ordering[v_i],ordering[v_l]};
+                    Triangle t = {(unsigned int) v->id, (unsigned int) v_i->id,  (unsigned int) v_l->id};
                     triangles.push_back(t);
                 }
                 A[v_l].push_back(v_i);
@@ -129,9 +137,9 @@ void KTruss::init_edge_map(Graph& G)
         edge_map[std::make_pair(v0, v1)] = i;
 
         #if !NDEBUG
-        auto it = edge_map.find(std::make_pair(v1, v0));
+        auto it = edge_map.find(std::make_pair(v0, v1));
         assert(it != edge_map.end());
-        it = edge_map.find(std::make_pair(v0, v1));
+        it = edge_map.find(std::make_pair(v1, v0));
         assert(it != edge_map.end());
         #endif
     }
@@ -139,10 +147,10 @@ void KTruss::init_edge_map(Graph& G)
 
 void KTruss::compute_support(std::vector<Triangle>& triangles, const Graph& G)
 {
-    edge_support.resize(G.E.size(), new edge({-1, 0}));
+    edge_support.resize(G.E.size(), nullptr);
     for(int i = 0; i < (int) edge_support.size(); ++i) //TODO: probably dont need id
     {
-        edge_support[i]->id = i;
+        edge_support[i] = new edge({i, 0, -1});
     }
     for(const Triangle& t : triangles)
     {
@@ -159,6 +167,18 @@ void KTruss::compute_support(std::vector<Triangle>& triangles, const Graph& G)
             e->support++;
         }
     }
+
+    #if !NDEBUG
+    unordered_map<edge*, int> edge_count;
+    for(edge* e : edge_support)
+    {
+        edge_count[e]++;
+    }
+    for(auto it = edge_count.begin(); it != edge_count.end(); ++it)
+    {
+        assert(it->second == 1);
+    }
+    #endif
 }
 
 edge* KTruss::get_edge(unsigned int u, unsigned int v)
@@ -215,6 +235,7 @@ int KTruss::reorder_edge(edge* e, int current_iteration_index)
         assert(support(sorted_edges[i]) <= support(sorted_edges[i + 1]));
     }
     #endif
+    return e->sorted_edges_index;
 }
 
 void KTruss::swap_edge(edge* e, int swap_index)

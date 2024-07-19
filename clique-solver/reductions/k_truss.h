@@ -14,6 +14,7 @@
 #include <limits>
 #include <memory>
 #include <cassert>
+#include <array>
 
 class Graph;
 class Vertex;
@@ -23,11 +24,22 @@ constexpr int INF = std::numeric_limits<int>::infinity();
 // Custom hash function for undirected pairs, mapping edges (u, v) and (v, u) to the same id
 struct undirected_pair_hash {
     std::size_t operator()(const std::pair<unsigned int, unsigned int>& p) const {
-        // Ensure that (u, v) and (v, u) hash to the same value
+        unsigned int first = std::min(p.first, p.second);
+        unsigned int second = std::max(p.first, p.second);
+
         std::size_t seed = 0;
-        seed ^= std::hash<unsigned int>{}(p.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<unsigned int>{}(p.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<unsigned int>{}(first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<unsigned int>{}(second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
         return seed;
+    }
+};
+
+struct undirected_pair_equal {
+    bool operator()(const std::pair<unsigned int, unsigned int>& lhs,
+                    const std::pair<unsigned int, unsigned int>& rhs) const {
+        return (lhs.first == rhs.first && lhs.second == rhs.second) ||
+               (lhs.first == rhs.second && lhs.second == rhs.first);
     }
 };
 
@@ -45,7 +57,7 @@ class KTruss
 //variables
 public:
     /* map: edge (u, v) --> edge_id */
-    std::unordered_map<std::pair<unsigned int, unsigned int>, int, undirected_pair_hash> edge_map;
+    std::unordered_map<std::pair<unsigned int, unsigned int>, int, undirected_pair_hash, undirected_pair_equal> edge_map;
     /* how many triangles each edge is a part of */
     std::vector<edge*> edge_support;
     /* sorted edges in ascending order of their support */
@@ -94,7 +106,7 @@ private:
     /**
      * Elias TODO: forward algorithm in https://publikationen.bibliothek.kit.edu/1000007159/4541 p. 32 
      */ 
-    std::vector<Triangle> compute_triangles(Graph& G, std::vector<Vertex*>& degeneracy_ordering);
+    std::vector<Triangle> compute_triangles(std::vector<Vertex*>& degeneracy_ordering);
 
     /**
      * @note O(E)
