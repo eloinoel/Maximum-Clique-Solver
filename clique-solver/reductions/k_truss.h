@@ -52,6 +52,13 @@ typedef struct _edge {
     int sorted_edges_index;
 } edge;
 
+enum class PrintVertices
+{
+    Names,
+    IDs,
+    None
+};
+
 class KTruss
 {
 //variables
@@ -68,8 +75,11 @@ public:
     /* k-class: edges of trussness k stored as edge ids*/
     std::vector<std::vector<int>> k_classes;
 
-
 private:
+    #if !NDEBUG
+    std::unordered_map<int, bool> removed_edges;
+    #endif
+    bool computed_k_classes = false;
 
 //functions
 public:
@@ -94,13 +104,19 @@ public:
 
     /**
      * @brief remove all edges in graph whose endpoints have fewer than L - 2 common neighbours (triangles)
+     * @param G graph to reduce, needs to be same as the one used in constructor
+     * @note can be called before executing `compute_k_classes` or after
+     * @returns number of removed edges
      */
-    void reduce(int lower_clique_bound);
+    size_t reduce(Graph& G, int lower_clique_bound);
 
     /**
      * @brief compute community degeneracy c. UB = c + 2
+     * @note requires `compute_k_classes` to be called first	
      */
-    size_t upper_bound();
+    int upper_bound();
+
+    void print_support(PrintVertices print_vertices = PrintVertices::IDs);
 
 private:
     /**

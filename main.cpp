@@ -25,8 +25,12 @@ int main(){
     load_graph(G);
 
     //TODO: delete after testing
+    {
     std::pair<std::vector<Vertex*>,std::vector<int>> ordering = degeneracy_ordering(G);
     KTruss k_truss = KTruss(G, ordering.first);
+    //k_truss.print_support(PrintVertices::Names);
+    k_truss.compute_k_classes();
+    }
 
     // PortfolioSolver solver;
     // solver.run(G, ACTIVE_SOLVER);

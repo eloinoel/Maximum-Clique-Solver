@@ -1,5 +1,6 @@
 #include "k_truss.h"
 #include "graph.h"
+#include "colors.h"
 
 using namespace std;
 
@@ -37,6 +38,8 @@ KTruss::~KTruss()
         delete e;
     }
 }
+
+//MARK: K-Classes
 
 void KTruss::compute_k_classes()
 {
@@ -80,16 +83,115 @@ void KTruss::compute_k_classes()
             }
         }
         //add edge to k-class
-        if((int) k_classes.size() <= k)
-        {
-            k_classes.resize(k+1);
-        }
+        // if((int) k_classes.size() <= k)
+        // {
+        //     k_classes.resize(k+1);
+        // }
+        k_classes.push_back(std::vector<int>());
         k_classes[k].push_back(e->id);
 
         //remove edge from graph
+        #if !NDEBUG
+        // verify that not already deleted
+        removed_edges.find(e->id);
+        assert(removed_edges.find(e->id) == removed_edges.end());
+        removed_edges[e->id] = true;
+        #endif
         (void)H->remove_edge(H->E[e->id]);
     }
+    computed_k_classes = true;
 }
+
+size_t KTruss::reduce(Graph& G, int lower_clique_bound)
+{
+    // verify that contents in G and H are the same
+    #if !NDEBUG
+    for(int i = 0; i < (int) G.E.size(); ++i)
+    {
+        assert(G.E[i]->ends[0].v->id == H->E[i]->ends[0].v->id);
+        assert(G.E[i]->ends[1].v->id == H->E[i]->ends[1].v->id);
+    }
+    #endif
+
+    size_t num_deleted_edges = 0;
+    // deduce from k_classes
+    if(computed_k_classes)
+    {
+        for(int i = 0; i < (int) k_classes.size() && lower_clique_bound - 2; ++i)
+        {
+            for(int edge_id : k_classes[i])
+            {
+                #if !NDEBUG
+                // verify that not already deleted
+                removed_edges.find(edge_id);
+                assert(removed_edges.find(edge_id) == removed_edges.end());
+                removed_edges[edge_id] = true;
+                #endif
+                (void)H->remove_edge(G.E[edge_id]);
+                num_deleted_edges++;
+            }
+        }
+    }
+    // deduce from edge_support
+    else
+    {
+        for(edge* e : sorted_edges)
+        {
+            if(support(e) < lower_clique_bound - 2)
+            {
+                #if !NDEBUG
+                // verify that not already deleted
+                removed_edges.find(e->id);
+                assert(removed_edges.find(e->id) == removed_edges.end());
+                removed_edges[e->id] = true;
+                #endif
+                (void)H->remove_edge(G.E[e->id]);
+                num_deleted_edges++;
+            }
+            else // since sorted edges are in ascending order of support, we can break
+            {
+                break;
+            }
+        }
+    }
+    return num_deleted_edges;
+}
+
+int KTruss::upper_bound()
+{
+    if(computed_k_classes)
+    {
+        return (int) k_classes.size() + 2;
+    }
+    else
+    {
+        compute_k_classes();
+        return (int) k_classes.size() + 2;
+    }
+}
+
+void KTruss::print_support(PrintVertices print_vertices)
+{
+    for(edge* e : edge_support)
+    {
+        assert(e != nullptr);
+        switch(print_vertices)
+        {
+            case PrintVertices::Names:
+                cout << "edge " << GREEN << H->name_table[H->E[e->id]->ends[0].v->id] << " - " << H->name_table[H->E[e->id]->ends[1].v->id] << RESET << " support: " << CYAN << e->support << RESET << endl;
+                break;
+            case PrintVertices::IDs:
+                cout << "edge " << GREEN << H->E[e->id]->ends[0].v->id << " - " << H->E[e->id]->ends[1].v->id << RESET << " support: " << CYAN << e->support << RESET << endl;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+
+
+//MARK: Triangles
 
 inline vector<Vertex*> intersection(vector<Vertex*>& ordered_array1, vector<Vertex*>& ordered_array2, unordered_map<Vertex*, unsigned int>& ordering){
     vector<Vertex*> result;
@@ -128,6 +230,8 @@ std::vector<Triangle> KTruss::compute_triangles(std::vector<Vertex*>& degeneracy
     return triangles;
 }
 
+//MARK: Edges & Support
+
 void KTruss::init_edge_map(Graph& G)
 {
     for(size_t i = 0; i < G.E.size(); ++i)
@@ -162,12 +266,14 @@ void KTruss::compute_support(std::vector<Triangle>& triangles, const Graph& G)
             assert(it != edge_map.end());
 
             int edge_id = it->second;
+            assert(edge_id >= 0 && edge_id < (int) edge_support.size());
             edge* e = edge_support[edge_id];
             assert(e != nullptr);
             e->support++;
         }
     }
 
+    //edge pointers are unique
     #if !NDEBUG
     unordered_map<edge*, int> edge_count;
     for(edge* e : edge_support)
@@ -199,8 +305,10 @@ void KTruss::decrement_support(edge* e)
 
 bool is_swap_index_valid(int swap_index, int current_iteration_index)
 {
-    return swap_index > current_iteration_index && swap_index > 0;
+    return swap_index - 1 > current_iteration_index && swap_index > 0;
 }
+
+//MARK: Reordering
 
 int KTruss::reorder_edge(edge* e, int current_iteration_index)
 {
@@ -210,10 +318,13 @@ int KTruss::reorder_edge(edge* e, int current_iteration_index)
     assert(current_iteration_index >= 0);
     
     assert(e == sorted_edges[e->sorted_edges_index]);
+    #if !NDEBUG
     if(e->sorted_edges_index - 1 > current_iteration_index)
     {
-        assert(support(e) >= support(sorted_edges[e->sorted_edges_index - 1])); // e is in correct support region
+        edge* left = sorted_edges[e->sorted_edges_index - 1];
+        assert(support(e) >= support(left) - 1); // e is in correct support region
     }
+    #endif
 
     int swap_index = e->sorted_edges_index;
     while(is_swap_index_valid(swap_index, current_iteration_index))
@@ -250,7 +361,7 @@ void KTruss::swap_edge(edge* e, int swap_index)
     assert(e2 != nullptr);
     assert(e2->sorted_edges_index == swap_index);
 
-    assert(support(e) == support(e2)); // should not disrupt sorted order
+    assert(support(e) >= support(e2) - 1); // should not disrupt sorted order
 
     //swap
     sorted_edges[e->sorted_edges_index] = e2;
