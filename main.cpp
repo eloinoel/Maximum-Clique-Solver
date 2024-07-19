@@ -26,14 +26,14 @@ int main(){
 
     //TODO: delete after testing
     {
-    std::pair<std::vector<Vertex*>,std::vector<int>> ordering = degeneracy_ordering(G);
-    KTruss k_truss = KTruss(G, ordering.first);
-    //k_truss.print_support(PrintVertices::Names);
-    k_truss.compute_k_classes();
+    // std::pair<std::vector<Vertex*>,std::vector<int>> ordering = degeneracy_ordering(G);
+    // KTruss k_truss = KTruss(G, ordering.first);
+    // //k_truss.print_support(PrintVertices::Names);
+    // k_truss.compute_k_classes();
     }
 
-    // PortfolioSolver solver;
-    // solver.run(G, ACTIVE_SOLVER);
+    PortfolioSolver solver;
+    solver.run(G, ACTIVE_SOLVER);
 
     #ifdef RELEASE
         solver.print_maximum_clique(G, ACTIVE_SOLVER);
