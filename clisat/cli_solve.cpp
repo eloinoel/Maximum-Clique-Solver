@@ -45,8 +45,8 @@ vector<Vertex*> solve_clique(Graph& G, bool output){
     }
    
     apply_k_core(G, clique_LB);*/
-
-
+    
+    if(G.N == 0){return {};}
     
     auto order = cli_degeneracy_ordering(G);
   
@@ -88,7 +88,7 @@ vector<Vertex*> solve_clique(Graph& G, bool output){
 
     for(int i = 1; i < G.N; i++){
         //cout << "trying " << i << ", best = "  << G.best_sol.size() << "\n";
-        cout << "G.N = " << G.N << "\n"; 
+    
         if(deg(order[i]) + 1 < G.LB){
             order[i]->mu = G.LB;
             continue;
