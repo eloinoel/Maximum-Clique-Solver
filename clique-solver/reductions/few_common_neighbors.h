@@ -25,7 +25,7 @@ vector<string> reduce(Graph& G,  unordered_map<string, state>& sol, vector<_reco
 
 void zero_dependencies(Graph& G);
 
-int get_LB_wrapper(Graph& G);
+vector<string> get_LB_wrapper(Graph& G);
 
 void few_common_rule(Graph& G, int LB = -1);
 

@@ -11,18 +11,20 @@ void zero_dependencies(Graph& G){
 }
 
 vector<string> reduce(Graph& G,  unordered_map<string, state>& sol, vector<_recover_unit>& rec){
-    int LB = get_LB_wrapper(G);
-    G.LB = LB;
+    vector<string> init_clique = get_LB_wrapper(G);
+    G.LB = init_clique.size();
     //cout << "LB = " << LB << "\n";
 
     int old_N = G.N;
 
     AMTS amts = AMTS(G);
 
-    vector<string> amts_clique = amts.find_best(LB, 500, G);
-
-    if(amts_clique.size() > LB)
-        G.LB = amts_clique.size();
+    vector<string> amts_clique = amts.find_best(G.LB, 500, G);
+    if(amts_clique.size() > init_clique.size())
+        init_clique = amts_clique;
+   
+    if(init_clique.size() > G.LB)
+        G.LB = init_clique.size();
 
     do{
         old_N = G.N;
@@ -42,16 +44,19 @@ vector<string> reduce(Graph& G,  unordered_map<string, state>& sol, vector<_reco
 
     }while(old_N != G.N);
 
-    return amts_clique;
+    return init_clique;
 
 }
 
-int get_LB_wrapper(Graph& G){
+vector<string> get_LB_wrapper(Graph& G){
     auto result = degeneracy_ordering_rN(G);
     //check lower and upper bounds
     auto LB_maximum_clique = degeneracy_ordering_LB(move(result.first), move(result.second));
-    int clique_LB = (int) LB_maximum_clique.size();
-    return clique_LB;
+    vector<string> lb_s;
+    for(auto& v : LB_maximum_clique){
+        lb_s.push_back(G.name_table[v->id]);
+    }
+    return lb_s;
 }
 
 
