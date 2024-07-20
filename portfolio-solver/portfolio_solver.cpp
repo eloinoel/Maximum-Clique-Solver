@@ -84,8 +84,8 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
         case SOLVER::VIA_VC:
             dOmega_solver = SolverViaVC();
             max_clique_size = dOmega_solver.solve_via_vc(*(G_reduced.get()));
-            cout << "dOmega vc_size=" << max_clique_size << "\n";
-            cout << "reduction vc_size=" << maximum_clique_s.size() << "\n";
+            cout << "dOmega mc_size=" << max_clique_size << "\n";
+            cout << "reduction mc_size=" << maximum_clique_s.size() << "\n";
             break;
         case SOLVER::BRANCH_AND_BOUND:
             maximum_clique = branch_and_bound_mc(*(G_reduced.get()));
