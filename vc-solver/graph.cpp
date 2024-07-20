@@ -231,8 +231,6 @@ void Graph::delete_edge(Edge* e){
         swap(u->edges[end.idx], u->edges.back());
         u->edges.pop_back();
 
-        M--;
-
         update_deglists(u);
 
         #if AUTO_DEG0
@@ -243,6 +241,8 @@ void Graph::delete_edge(Edge* e){
         #endif
     }
 
+    M--;
+    
     E.back()->idx = e->idx;
     swap(E[e->idx], E.back());
     E.pop_back();

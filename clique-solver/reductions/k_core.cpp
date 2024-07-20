@@ -10,12 +10,16 @@ void apply_k_core(Graph &G, vector<Vertex*>& maximum_clique) {
 }
 
 void apply_k_core(Graph &G, int lowerCliqueBound)
-{
+{   
+    int _deleted = 0;
     while((int) G.min_degree < lowerCliqueBound - 1)
     {
         Vertex* lowest_degree_vertex = G.deg_lists[G.min_degree].front();
+
         G.MM_discard_vertex(lowest_degree_vertex);
+        _deleted++;
     }
+    //cout << "[deleted k-core] " << _deleted << "\n";
 }
 
 /**

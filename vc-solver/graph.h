@@ -272,6 +272,10 @@ public:
         flip_count++;
         #endif
     }
+
+    Vertex* other_end_of(Vertex* v){
+        return (ends[0].v == v)? ends[1].v : ends[0].v;
+    }
     
 };
 
@@ -348,6 +352,8 @@ public:
 
         state resolved_status;
 
+        bool has_dependency;
+
         Vertex* found;
 
         struct {
@@ -397,6 +403,16 @@ public:
         swap(neighbors[end_idx], neighbors.back());
         neighbors.pop_back();
     }
+
+    void push_edge(Edge* e){
+        assert(e->ends[0].v == this || e->ends[1].v == this);
+        size_t side = (e->ends[0].v == this)? 0 : 1;
+        e->ends[side].idx = this->neighbors.size();
+        this->edges.push_back(e);
+        this->neighbors.push_back(e->ends[1-side].v);
+    }
+
+
 
     /** 
      * linear search through smaller neighborhood, sufficient for sparse graphs

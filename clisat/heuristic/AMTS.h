@@ -4,6 +4,8 @@
 
 using ts = chrono::high_resolution_clock::time_point;
 
+#define degS(x) (x->data.tabu.dS)
+
 class AMTS{
 public:
     double density;
@@ -42,12 +44,15 @@ public:
     pair<bool, pair<Vertex*, Vertex*>> constrained_move(Graph& G);
     pair<Vertex*, Vertex*> probability_move(Graph& G);
 
+    vector<string> find_best(int LB, int max_ms, Graph& G);
+
     void mark_tabu(Vertex* v, bool moved_to_S, Graph& G);
 
     int f_S(){
         int sum = 0;
         for(Vertex* s : S){
-            sum += s->data.tabu.dS;
+            //sum += s->data.tabu.dS;
+            sum += degS(s);
         }
         return sum/2;
     }
