@@ -118,6 +118,8 @@ public:
      */
     int upper_bound();
 
+    void print_edge(edge* e, PrintVertices print_vertices = PrintVertices::IDs);
+
     void print_triangles(std::vector<Triangle>& triangles);
 
     void print_support(PrintVertices print_vertices = PrintVertices::IDs);

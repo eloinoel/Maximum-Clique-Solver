@@ -12,7 +12,7 @@ KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
     //block scope to free variable memory when not needed anymore
     {
         std::vector<Triangle> triangles = compute_triangles(degeneracy_ordering);
-        print_triangles(triangles);
+        //print_triangles(triangles);
         //compute support for each edge, i.e. how many triangles it is a part of
         compute_support(triangles, *(H.get()));
     }
@@ -48,15 +48,21 @@ void KTruss::compute_k_classes()
         removed_edges.clear();
     #endif
     k_classes = std::vector<std::vector<Edge*>>();
-    int k = 2;
-    print_support(PrintVertices::Names);
+    int k = 0;
+    //print_support(PrintVertices::Names);
     for(size_t i = 0; i < sorted_edges.size(); ++i)
     {
         edge* e = sorted_edges[i]; //edge with lowest support
         assert(e != nullptr);
         assert(e->support >= 0);
         assert(e->id >= 0);
-        while(e->support < k - 2)
+        
+        //TODO: remove debug
+        //cout << "-------" << endl;
+        //cout << "k = " << k << "\n" << i << "th ";
+        //print_edge(e, PrintVertices::Names);
+
+        while(e->support > k)
         {
             k++;
         }
@@ -176,6 +182,30 @@ int KTruss::upper_bound()
         compute_k_classes();
         return ((int) k_classes.size() - 1) + 2;
     }
+}
+
+// MARK: Prints
+
+void KTruss::print_edge(edge* e, PrintVertices print_vertices)
+{
+    assert(e != nullptr);
+    Vertex* v0 = e->graph_edge->ends[0].v;
+    Vertex* v1 = e->graph_edge->ends[1].v;
+    assert(v0 != nullptr);
+    assert(v1 != nullptr);
+    switch(print_vertices)
+    {
+        case PrintVertices::Names:
+            cout << "edge(" << RED << e->id << RESET << ") " << "sup=" << CYAN << e->support << RESET << ", " << GREEN << H->name_table[v0->id] << " - " << H->name_table[v1->id] << RESET << endl;
+            break;
+        case PrintVertices::IDs:
+            cout << "edge(" << RED << e->id << RESET << ") " << "sup=" << CYAN << e->support << RESET << ", " << GREEN << v0->id << " - " << v1->id << RESET << endl;
+            break;
+        default:
+            break;
+    }
+    
+
 }
 
 void KTruss::print_triangles(std::vector<Triangle>& triangles)

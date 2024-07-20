@@ -1,5 +1,5 @@
 #include "few_common_neighbors.h"
-#include "degeneracy_ordering.h"
+#include "./../orderings/degeneracy_ordering.h"
 #include "lower_bounds.h"
 #include "k_core.h"
 #include "AMTS.h"
@@ -23,9 +23,9 @@ vector<string> reduce(Graph& G,  unordered_map<string, state>& sol, vector<_reco
     if(amts_clique.size() > init_clique.size())
         init_clique = amts_clique;
 
-    cout << "lower bound " << G.LB << "\n";
-    cout << "amts clique " << amts_clique.size() << "\n";
-    cout << "init clique " << init_clique.size() << "\n";
+    //cout << "lower bound " << G.LB << "\n";
+    //cout << "amts clique " << amts_clique.size() << "\n";
+    //cout << "init clique " << init_clique.size() << "\n";
 
     if(init_clique.size() > G.LB)
         G.LB = init_clique.size();
