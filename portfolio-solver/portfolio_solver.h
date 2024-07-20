@@ -7,6 +7,7 @@
 #include <future>
 #include <vector>
 #include <string>
+#include <memory>
 
 // need to include this because PortfolioSolver class needs complete type
 #include "solve_via_vc.h"
@@ -33,6 +34,8 @@ class PortfolioSolver
 {
 //variables
 public:
+    bool USE_REDUCTIONS = true;
+
     vector<Vertex*> maximum_clique;
     vector<string> maximum_clique_s;
     int max_clique_size = -1;
@@ -44,6 +47,8 @@ public:
     int N;
     int M;
     double density;
+
+    std::shared_ptr<Graph> G_reduced = nullptr;
 
 private:
     bool using_comp_vc = false; // used in parallel solver

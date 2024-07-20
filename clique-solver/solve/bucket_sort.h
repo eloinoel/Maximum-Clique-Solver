@@ -14,7 +14,7 @@ class Buckets
 {
 public:
     /** store the neighbourhood indeces in buckets --> sorted */
-    std::vector<std::vector<int>> buckets;
+    std::vector<std::vector<Vertex*>> buckets;
 
     // iterator variables
     int current_bucket = -1;
@@ -31,21 +31,20 @@ public:
      * put the first N - d right neighbourhoods in buckets (sort)
      */
     Buckets(std::vector<Vertex*>& degeneracy_ordering, std::vector<rn>& right_neighbourhoods, int d);
-    void insert(int vertex_index, int neighbourhood_size);
 
     /** 
-     * @returns neighbourhood index <= the current index, -1 if no more elements
+     * @returns neighbourhood index <= the current index, nullptr if no more elements
      * iterate from biggest bucket to smallest
      * 
      * @param rdeg_beq we only need to iterate over right neighbourshoods with rdeg >= d - p
      */
-    int get_next(int rdeg_beq);
+    Vertex* get_next(int rdeg_beq);
 
     /**
      * @returns current element of the iterator
-     * @returns -1 if there is no right neighbourhood with rdeg >= d - p
+     * @returns nullptr if there is no right neighbourhood with rdeg >= d - p
      */
-    int get(int rdeg_beq);
+    Vertex* get(int rdeg_beq);
 
     /**
      * @returns (-1, -1) if not found

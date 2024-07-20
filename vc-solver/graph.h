@@ -134,6 +134,8 @@ public:
 
     const Graph shallow_copy() const;
 
+    const Graph copy_from_reduced() const;
+
     Graph complementary_graph(Graph& G);
 
     void delete_all();

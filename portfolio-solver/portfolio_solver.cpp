@@ -51,16 +51,26 @@ vector<string> launch_vc_comp(Graph G){
 
 void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
 {
-    N = G.V.size();
-    M = G.E.size();
-    density =  (double) (2*M)/(N * (N-1));
 
     G.set_restore();
 
     //cout << "N = " << G.N << " M = " << G.M << " min/max = " << G.min_degree << " / " << G.max_degree <<"\n";
 
-    //maximum_clique_s = reduce(G, sol, rec);
+    if(USE_REDUCTIONS)
+    {
+        maximum_clique_s = reduce(G, sol, rec);
+        G_reduced = make_shared<Graph>(G.copy_from_reduced()); // make a copy to avoid reduction related errors in solvers
+    }
+    else
+    {
+        G_reduced = make_shared<Graph>(G);
+    }
 
+    N = G_reduced->N;
+    cout << "G.N=" << G.N << ", G_reduced.N=" << G_reduced->N << endl;
+    M = G_reduced->M;
+    density =  (double) (2*M)/(N * (N-1));
+    
     //cout << "N = " << G.N << " M = " << G.M << "\n";
 
     #if DEBUG
@@ -69,32 +79,34 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
 
     switch(ACTIVE_SOLVER) {
         case SOLVER::LMC:
-            maximum_clique = lmc(G);
+            maximum_clique = lmc(*(G_reduced.get()));
             break;
         case SOLVER::VIA_VC:
             dOmega_solver = SolverViaVC();
-            max_clique_size = dOmega_solver.solve_via_vc(G);
+            max_clique_size = dOmega_solver.solve_via_vc(*(G_reduced.get()));
+            cout << "dOmega vc_size=" << max_clique_size << "\n";
+            cout << "reduction vc_size=" << maximum_clique_s.size() << "\n";
             break;
         case SOLVER::BRANCH_AND_BOUND:
-            maximum_clique = branch_and_bound_mc(G);
+            maximum_clique = branch_and_bound_mc(*(G_reduced.get()));
             max_clique_size = maximum_clique.size();
             break;
         case SOLVER::CLISAT:
-            solve_clique(G);
+            solve_clique(*(G_reduced.get()));
             //TODO: implement compatability with reductions, see print function below
             break;
         case SOLVER::PARALLEL:
-            run_parallel_solver(G);
+            run_parallel_solver(*(G_reduced.get()));
             break;
         case SOLVER::VC_COMP:
         {
-            Graph H = G.complementary_graph(G);
+            Graph H = G_reduced->complementary_graph(*(G_reduced.get()));
             cout << solve(H) << "\n";
             exit(0);
             break;
         }
         case SOLVER::CLASSIFIER:
-            run_classifier_solver(G);
+            run_classifier_solver(*(G_reduced.get()));
             break;
         default:
             print_warning("No solver selected");
@@ -113,7 +125,7 @@ void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
     //print maximum clique
     switch(ACTIVE_SOLVER){
         case SOLVER::LMC:
-            str_clique = get_str_clique(maximum_clique, G);
+            str_clique = get_str_clique(maximum_clique, *(G_reduced.get()));
             solution = resolve_reductions(str_clique);
             for(string s : solution)
                 cout << s << endl;
@@ -127,11 +139,12 @@ void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
             exit(EXIT_SUCCESS);
             break;
         case SOLVER::BRANCH_AND_BOUND:
-            str_clique = get_str_clique(maximum_clique, G);
+            str_clique = get_str_clique(maximum_clique, *(G_reduced.get()));
             solution = resolve_reductions(str_clique);
-            for(Vertex* v : maximum_clique){
-                cout << G.name_table[v->id] << endl;
+            for(std::string v : solution){
+                cout << v << endl;
             }
+            exit(EXIT_SUCCESS);
             break;
         case SOLVER::CLISAT:
             // NOTE: CLISAT solver prints the maximum clique in the function itself
@@ -190,7 +203,7 @@ void PortfolioSolver::run_parallel_solver(Graph& G)
     //vector<string> (*first_solver)(Graph&) = launch_dOmega;
 
     // ALL BUT ONE NEED TO BE COPIED
-    bool copy_domega = false;
+    bool copy_domega = true;
     bool copy_cli = true;
 
     Graph H = G.shallow_copy();

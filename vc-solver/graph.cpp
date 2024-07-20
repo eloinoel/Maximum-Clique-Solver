@@ -169,6 +169,7 @@ void Graph::MM_induced_neighborhood(Vertex* v){
 }
 
 Edge* Graph::add_edge(Vertex* u, Vertex* v){
+    assert(u != nullptr && v != nullptr);
     assert(!u->adjacent_to(v));
     Edge *e = new Edge;
     e->ends[0] = {u, static_cast<size_t>(deg(u))};
@@ -368,6 +369,45 @@ const Graph Graph::shallow_copy() const {
     H.name_table = name_table;
     H.N = H.total_N;
     
+    return H;
+}
+
+const Graph Graph::copy_from_reduced() const
+{
+    Graph H;
+    unordered_map<Vertex*, Vertex*> G_to_H;
+    
+    for(Vertex* v : V){
+        if(v->list_idx != (size_t) -1 && v->status == UNKNOWN) {
+            Vertex* vh = H.add_vertex();
+            G_to_H[v] = vh;
+            // correctly set vertex names corresponding to G
+            assert(v->id != size_t(-1));
+            while(H.name_table.size() <= vh->id)
+                H.name_table.push_back("");
+            H.name_table[vh->id] = name_table[v->id];
+        }
+    }
+
+    H.N = H.total_N;
+
+    for(Vertex* v : V)
+    {
+        if(v->list_idx != (size_t) -1 && v->status == UNKNOWN)
+        {
+            for(Vertex* n : v->neighbors)
+            {
+                if(v->id > n->id) //avoid duplicates
+                {
+                    H.add_edge(G_to_H[v], G_to_H[n]);
+                }
+            }
+        }
+    }
+    // for(Edge* e : E){
+    //     H.add_edge(G_to_H[e->ends[0].v], G_to_H[e->ends[1].v]);
+    // }
+
     return H;
 }
 

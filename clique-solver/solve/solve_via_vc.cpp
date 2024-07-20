@@ -194,56 +194,56 @@ bool SolverViaVC::solve_via_vc_for_p_with_sorting(Graph &G, size_t p)
 
     // get candidate set D = {vi ∈ V | i ≤ n − d, rdeg(vi) ≥ d − p}, sorted descending by their right degree
     Buckets D = get_sorted_candidate_set();
-    int cur_vertex_id = D.get(d - p);
+    Vertex* cur_vertex = D.get(d - p);
 
     // iterate through all right neighbourhoods where rdeg(vi) >= d - p
-    while(cur_vertex_id != D.end())
+    while(cur_vertex != nullptr && (int) cur_vertex->id != D.end())
     {
-        size_t r_neighbourhood_size = right_neighbourhoods[cur_vertex_id].neigh.size();
+        size_t r_neighbourhood_size = right_neighbourhoods[cur_vertex->id].neigh.size();
         //size_t vc_UB = r_neighbourhood_size + p - d + 1;
 
         if(r_neighbourhood_size > 0)
         {
             //if not already solved
-            if(right_neighbourhoods[cur_vertex_id].vc_size == -1)
+            if(right_neighbourhoods[cur_vertex->id].vc_size == -1)
             {
                 int r_neighbourhood_ub = r_neighbourhood_size + 1;
                 if(r_neighbourhood_ub <= clique_LB) // LB already better solution
                 {
-                    right_neighbourhoods[cur_vertex_id].vc_size = r_neighbourhood_size + 1 - clique_LB;
-                    right_neighbourhoods[cur_vertex_id].sol = *LB_clique_vertices;
+                    right_neighbourhoods[cur_vertex->id].vc_size = r_neighbourhood_size + 1 - clique_LB;
+                    right_neighbourhoods[cur_vertex->id].sol = *LB_clique_vertices;
                 }
                 else
                 {
-                    Graph complement = get_complement_subgraph(G, right_neighbourhoods[cur_vertex_id].neigh);
+                    Graph complement = get_complement_subgraph(G, right_neighbourhoods[cur_vertex->id].neigh);
                     //complement.UB = vc_UB; //bound search tree
                     int vc_size = solve(complement);
-                    right_neighbourhoods[cur_vertex_id].vc_size = vc_size;
-                    right_neighbourhoods[cur_vertex_id].sol = extract_maximum_clique_solution_from_rn(complement);
-                    right_neighbourhoods[cur_vertex_id].sol.push_back(complement.name_table[cur_vertex_id]);
+                    right_neighbourhoods[cur_vertex->id].vc_size = vc_size;
+                    right_neighbourhoods[cur_vertex->id].sol = extract_maximum_clique_solution_from_rn(complement);
+                    right_neighbourhoods[cur_vertex->id].sol.push_back(complement.name_table[cur_vertex->id]);
                     complement.delete_all();
-                    update_LB(right_neighbourhoods[cur_vertex_id].sol);
+                    update_LB(right_neighbourhoods[cur_vertex->id].sol);
                 }
             }
         }
 
         //  b) if ¬G[Vi] has a vertex cover of size qi := |Vi| + p − d, return true
         int target = r_neighbourhood_size + p - d;
-        int current_vc_size = right_neighbourhoods[cur_vertex_id].vc_size;
+        int current_vc_size = right_neighbourhoods[cur_vertex->id].vc_size;
         if(current_vc_size == target){
-            if(right_neighbourhoods[cur_vertex_id].neigh.empty())
+            if(right_neighbourhoods[cur_vertex->id].neigh.empty())
             {
-                maximum_clique.push_back(G.name_table[cur_vertex_id]);
+                maximum_clique.push_back(G.name_table[cur_vertex->id]);
             }
             else
             {
-                maximum_clique = right_neighbourhoods[cur_vertex_id].sol;
+                maximum_clique = right_neighbourhoods[cur_vertex->id].sol;
             }
             //cout << "Found solution in candidate set for vertex " << cur_vertex_id << endl;
             //complement.delete_all();
             return true;
         }
-        cur_vertex_id = D.get_next(d - p);
+        cur_vertex = D.get_next(d - p);
     }
     return false;
 }
@@ -354,7 +354,7 @@ Buckets& SolverViaVC::get_sorted_candidate_set()
         {
             for(size_t j = 0; j < sorted_candidate_set.buckets[i].size(); ++j)
             {
-                assert(right_neighbourhoods[sorted_candidate_set.buckets[i][j]].neigh.size() == i);
+                assert(right_neighbourhoods[sorted_candidate_set.buckets[i][j]->id].neigh.size() == i);
             }
         }
 
@@ -384,11 +384,11 @@ Buckets& SolverViaVC::get_sorted_candidate_set()
             int v_id = degeneracy_ordering[i]->id;
             if((int) right_neighbourhoods[v_id].neigh.size() < d)
                 continue;
-            int current = sorted_candidate_set.get(d);
+            Vertex* current = sorted_candidate_set.get(d);
             bool found = false;
-            while(current != sorted_candidate_set.end())
+            while(current != nullptr)
             {
-                if(current == v_id)
+                if((int) current->id == v_id)
                 {
                     found = true;
                     break;
