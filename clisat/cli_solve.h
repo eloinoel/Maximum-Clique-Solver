@@ -7,6 +7,6 @@
 
 class Graph;
 
-void solve_clique(Graph& G, bool output = true);
+vector<Vertex*> solve_clique(Graph& G, bool output = true);
 vector<string> get_cli_output(Graph& G);
 void switch_to_subproblem(Graph& G, vector<Vertex*>& order, int i);

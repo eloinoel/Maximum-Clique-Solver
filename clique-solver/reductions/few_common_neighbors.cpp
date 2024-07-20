@@ -22,7 +22,11 @@ vector<string> reduce(Graph& G,  unordered_map<string, state>& sol, vector<_reco
     vector<string> amts_clique = amts.find_best(G.LB, 500, G);
     if(amts_clique.size() > init_clique.size())
         init_clique = amts_clique;
-   
+
+    cout << "lower bound " << G.LB << "\n";
+    cout << "amts clique " << amts_clique.size() << "\n";
+    cout << "init clique " << init_clique.size() << "\n";
+
     if(init_clique.size() > G.LB)
         G.LB = init_clique.size();
 

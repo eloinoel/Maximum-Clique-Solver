@@ -92,7 +92,9 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
             max_clique_size = maximum_clique.size();
             break;
         case SOLVER::CLISAT:
-            solve_clique(*(G_reduced.get()));
+            //solve_clique(*(G_reduced.get()), false);
+            maximum_clique = solve_clique(*(G_reduced.get()));
+            max_clique_size = maximum_clique.size();
             //TODO: implement compatability with reductions, see print function below
             break;
         case SOLVER::PARALLEL:
@@ -147,8 +149,11 @@ void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
             exit(EXIT_SUCCESS);
             break;
         case SOLVER::CLISAT:
-            // NOTE: CLISAT solver prints the maximum clique in the function itself
-            //TODO: implement compatability with reductions, see other solvers
+            str_clique = get_str_clique(maximum_clique, *(G_reduced.get()));
+            solution = resolve_reductions(str_clique);
+            for(string s : solution)
+                cout << s << endl;
+            exit(EXIT_SUCCESS);
             break;
         case SOLVER::PARALLEL:
         {

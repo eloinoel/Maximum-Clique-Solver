@@ -5,7 +5,7 @@
 #include "degeneracy_ordering.h"
 
 
-void solve_clique(Graph& G, bool output){
+vector<Vertex*> solve_clique(Graph& G, bool output){
 
     /*std::vector<Vertex*> degeneracy_ordering;
     std::vector<std::vector<Vertex*>> right_neighbourhoods;
@@ -88,6 +88,7 @@ void solve_clique(Graph& G, bool output){
 
     for(int i = 1; i < G.N; i++){
         //cout << "trying " << i << ", best = "  << G.best_sol.size() << "\n";
+        cout << "G.N = " << G.N << "\n"; 
         if(deg(order[i]) + 1 < G.LB){
             order[i]->mu = G.LB;
             continue;
@@ -102,11 +103,13 @@ void solve_clique(Graph& G, bool output){
         order[i]->mu = G.LB;
     }
 
+    return G.best_sol;
+
    // #if !NDEBUG
-    if(output){
+    /*if(output){
         for(Vertex* v : G.best_sol)
             cout << G.name_table[v->id]<< "\n";
-    }
+    }*/
     //#endif
     //cout << "max clique size = " << G.LB << ", recursive steps = " << G.num_branches << "\n";
 }
