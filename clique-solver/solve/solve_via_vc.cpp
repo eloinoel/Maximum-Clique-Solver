@@ -8,6 +8,7 @@
 #include "debug_utils.h"
 #include "tests.h"
 #include "colors.h"
+#include "heuristic/AMTS.h"
 
 using namespace std;
 
@@ -44,6 +45,17 @@ int SolverViaVC::solve_via_vc(Graph& G)
     initial_LB_solution = get_str_clique(lb_vertices, G);
     LB_clique_vertices = &initial_LB_solution; // store to ptr so we don't have to copy in update_LB
     clique_LB = (int) LB_clique_vertices->size();
+
+    if(USE_AMTS_MILLISECONDS > 0)
+    {
+        vector<Vertex*> heuristic_clique = compute_amts_LB(G);
+        if((int) heuristic_clique.size() > clique_LB)
+        {
+            vector<string> str_clique = get_str_clique(heuristic_clique, G);
+            LB_clique_vertices = &str_clique;
+            clique_LB = (int) str_clique.size();
+        }
+    }
 
     #if DEBUG
         cout << "Computed LB=" << clique_LB << ", UB=" << clique_UB << std::endl;
@@ -86,6 +98,30 @@ int SolverViaVC::linear_solve(Graph& G)
     return maximum_clique.size();
 }
 
+vector<Vertex*> SolverViaVC::compute_amts_LB(Graph& G)
+{
+    AMTS amts = AMTS(G);
+    vector<Vertex*> heuristic_clique;
+    auto start = chrono::high_resolution_clock::now();
+    
+    int max_ms = USE_AMTS_MILLISECONDS;
+    int current_LB = clique_LB;
+    for(int k_lb = current_LB; k_lb < (int) G.N; k_lb++){
+        bool found = amts.execute_timed(G, k_lb, start, max_ms);
+        if(found){
+            current_LB = k_lb;
+            heuristic_clique = amts.S_star;
+        }
+        else{
+            break;
+        }
+
+        if(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count() > max_ms)
+            break;
+    }
+    return heuristic_clique;
+}
+
 bool check_found_maximum_clique(int p, int clique_LB, int clique_UB)
 {
     return p + clique_LB >= clique_UB;
@@ -121,7 +157,7 @@ int SolverViaVC::binary_search_solve(Graph& G)
             }
         }
 
-        if(p + clique_LB >= clique_UB) //TODO: fix this condition
+        if(p + clique_LB >= clique_UB)
         {
             //cout << "return clique_UB - p : " << clique_UB - p << endl;
             maximum_clique = *LB_clique_vertices;

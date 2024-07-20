@@ -22,7 +22,8 @@ class SolverViaVC
 {
 //-----------------------Variables-----------------------
 public:
-    bool BINARY_SEARCH = true;
+    bool BINARY_SEARCH = false;
+    int USE_AMTS_MILLISECONDS = 0; //500-1000
 
 
     std::vector<Vertex*> degeneracy_ordering;
@@ -34,7 +35,7 @@ public:
     int d;
 
     int clique_UB; // simple bound: d + 1
-    int clique_LB;
+    int clique_LB = 0;
     std::vector<std::string>* LB_clique_vertices;
 
     /** 
@@ -86,6 +87,8 @@ private:
      * binary fashion search for clique core gap
      */
     int binary_search_solve(Graph& G);
+
+    std::vector<Vertex*> compute_amts_LB(Graph& G);
 
     /**
      * @param p max assumed possible clique-core gap in current iteration
