@@ -18,6 +18,7 @@
 
 class Graph;
 class Vertex;
+class Edge;
 
 constexpr int INF = std::numeric_limits<int>::infinity();
 
@@ -47,7 +48,8 @@ struct undirected_pair_equal {
 using Triangle = std::array<unsigned int, 3>;
 
 typedef struct _edge {
-    int id;
+    Edge* graph_edge;
+    int id; //this is used for all data structures in KTruss
     int support;
     int sorted_edges_index;
 } edge;
@@ -63,7 +65,7 @@ class KTruss
 {
 //variables
 public:
-    /* map: edge (u, v) --> edge_id */
+    /* map: edge (u, v) --> edge_id, map will be empty after calling `compute_k_classes`*/
     std::unordered_map<std::pair<unsigned int, unsigned int>, int, undirected_pair_hash, undirected_pair_equal> edge_map;
     /* how many triangles each edge is a part of */
     std::vector<edge*> edge_support;
@@ -73,7 +75,7 @@ public:
     std::shared_ptr<Graph> H = nullptr;
 
     /* k-class: edges of trussness k stored as edge ids*/
-    std::vector<std::vector<int>> k_classes;
+    std::vector<std::vector<Edge*>> k_classes;
 
 private:
     #if !NDEBUG
@@ -116,7 +118,11 @@ public:
      */
     int upper_bound();
 
+    void print_triangles(std::vector<Triangle>& triangles);
+
     void print_support(PrintVertices print_vertices = PrintVertices::IDs);
+
+    void print_k_classes(PrintVertices print_vertices = PrintVertices::IDs);
 
 private:
     /**
@@ -154,6 +160,8 @@ private:
     int reorder_edge(edge* e, int current_iteration_index);
 
     void swap_edge(edge*e, int swap_index);
+
+    void remove_edge_from_graph(edge* e);
 
     inline int support(edge* e)
     {

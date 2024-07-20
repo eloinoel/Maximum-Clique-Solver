@@ -30,6 +30,7 @@ int main(){
     // KTruss k_truss = KTruss(G, ordering.first);
     // //k_truss.print_support(PrintVertices::Names);
     // k_truss.compute_k_classes();
+    // k_truss.print_k_classes();
     }
 
     PortfolioSolver solver;
