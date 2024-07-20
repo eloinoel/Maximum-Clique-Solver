@@ -22,8 +22,8 @@ class SolverViaVC
 {
 //-----------------------Variables-----------------------
 public:
-    bool BINARY_SEARCH = false;
-    int USE_AMTS_MILLISECONDS = false; //500-1000
+    bool BINARY_SEARCH = false; //Binary search performs worse
+    int USE_AMTS_MILLISECONDS = 1000; //500-1000
 
 
     std::vector<Vertex*> degeneracy_ordering;

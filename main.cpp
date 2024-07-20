@@ -11,7 +11,7 @@
 
 
 #define BENCHMARK 0
-#define ACTIVE_SOLVER SOLVER::VIA_VC
+#define ACTIVE_SOLVER SOLVER::PARALLEL
 
 int main(){
 
@@ -26,24 +26,24 @@ int main(){
 
     //TODO: delete after testing
     {
-    std::pair<std::vector<Vertex*>,std::vector<int>> ordering = degeneracy_ordering(G);
-    KTruss k_truss = KTruss(G, ordering.first);
-    //k_truss.print_support(PrintVertices::Names);
-    k_truss.compute_k_classes();
-    //k_truss.print_k_classes();
-    int ub = k_truss.upper_bound();
-    cout << /* "k-truss upper bound: " << */ ub << endl;
+    // std::pair<std::vector<Vertex*>,std::vector<int>> ordering = degeneracy_ordering(G);
+    // KTruss k_truss = KTruss(G, ordering.first);
+    // //k_truss.print_support(PrintVertices::Names);
+    // k_truss.compute_k_classes();
+    // //k_truss.print_k_classes();
+    // int ub = k_truss.upper_bound();
+    // cout << /* "k-truss upper bound: " << */ ub << endl;
     // cout << "G.E = " << G.M << endl;
     // k_truss.reduce(G, ub);
     // cout << "after reduction: G.E = " << G.M << endl;
     }
 
-    // PortfolioSolver solver;
-    // solver.run(G, ACTIVE_SOLVER);
+    PortfolioSolver solver;
+    solver.run(G, ACTIVE_SOLVER);
 
-    // #ifdef RELEASE
-    //     solver.print_maximum_clique(G, ACTIVE_SOLVER);
-    // #endif
+    #ifdef RELEASE
+        solver.print_maximum_clique(G, ACTIVE_SOLVER);
+    #endif
 
     return 0;
 }

@@ -67,7 +67,7 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
     }
 
     N = G_reduced->N;
-    cout << "G.N=" << G.N << ", G_reduced.N=" << G_reduced->N << endl;
+    //cout << "G.N=" << G.N << ", G_reduced.N=" << G_reduced->N << endl;
     M = G_reduced->M;
     density =  (double) (2*M)/(N * (N-1));
     
@@ -84,8 +84,8 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
         case SOLVER::VIA_VC:
             dOmega_solver = SolverViaVC();
             max_clique_size = dOmega_solver.solve_via_vc(*(G_reduced.get()));
-            cout << "dOmega mc_size=" << max_clique_size << "\n";
-            cout << "reduction mc_size=" << maximum_clique_s.size() << "\n";
+            //cout << "dOmega mc_size=" << max_clique_size << "\n";
+            //cout << "reduction mc_size=" << maximum_clique_s.size() << "\n";
             break;
         case SOLVER::BRANCH_AND_BOUND:
             maximum_clique = branch_and_bound_mc(*(G_reduced.get()));
@@ -196,10 +196,10 @@ void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
 
 std::vector<std::string> PortfolioSolver::resolve_reductions(std::vector<std::string>& mc)
 {
-    if(maximum_clique_s.size() > mc.size()){
+    if(maximum_clique_s.size() > (mc.size() + sol.size())){
         return maximum_clique_s;
     }
-
+    
     return get_clique_solution_r(mc, sol, rec);
 }
 
@@ -208,7 +208,7 @@ void PortfolioSolver::run_parallel_solver(Graph& G)
     //vector<string> (*first_solver)(Graph&) = launch_dOmega;
 
     // ALL BUT ONE NEED TO BE COPIED
-    bool copy_domega = true;
+    bool copy_domega = false;
     bool copy_cli = true;
 
     Graph H = G.shallow_copy();

@@ -29,6 +29,39 @@ KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
         assert(support(sorted_edges[i]) <= support(sorted_edges[i + 1]));
     }
     #endif
+
+    //initialize support region indices
+    if(!sorted_edges.empty())
+    {
+        int current_support_region = -1;
+        for(int i = 0; i < (int) sorted_edges.size(); ++i)
+        {
+            edge* current_edge = sorted_edges[i];
+            assert(current_edge != nullptr);
+            while(current_edge->support > (int) support_region_index.size() - 1)
+            {
+                support_region_index.push_back(i);
+                assert((int) support_region_index.size() > current_edge->support);
+                support_region_index[current_support_region] = i;
+                current_support_region++;
+            }
+        }
+    }
+
+    #if !NDEBUG
+    for(int i = 0; i < (int) support_region_index.size(); ++i)
+    {
+        assert(support_region_index[i] >= 0);
+        assert(support_region_index[i] < (int) sorted_edges.size());
+        assert(support_region_index[i] <= i);
+        assert(sorted_edges[support_region_index[i]]->support >= i);
+        //is first
+        if(support_region_index[i] > 0)
+        {
+            assert(sorted_edges[support_region_index[i] - 1]->support < i);
+        }
+    }
+    #endif
 }
 
 KTruss::~KTruss()
@@ -389,7 +422,6 @@ int KTruss::reorder_edge(edge* e, int current_iteration_index)
 {
     assert(e != nullptr);
     assert(current_iteration_index < e->sorted_edges_index);
-    //TODO: fails probably due to neighbours not getting correctly updated in graph or swap error
     assert(current_iteration_index < (int) sorted_edges.size());
     assert(current_iteration_index >= 0);
     
@@ -405,6 +437,16 @@ int KTruss::reorder_edge(edge* e, int current_iteration_index)
     int original_index = e->sorted_edges_index;
     int original_e_support = support(e) + 1;
     int swap_index = original_index;
+
+    //TODO: update support_region_index when current_iteration_index advances
+    //swap_index = support_region_index[original_e_support];
+    //assert(swap_index > current_iteration_index);
+    //TODO: update support_region_index after swap
+    // if(swap_index < (int) sorted_edges.size() && support(sorted_edges[swap_index + 1]) == original_e_support)
+    // {
+    //     //TODO:
+    // }
+    // inefficent garbage that is in the worst case O(n)
     while(is_swap_index_valid(swap_index, current_iteration_index))
     {
         if(support(sorted_edges[swap_index - 1]) < original_e_support) // swap_index is last element in new support region of e

@@ -71,6 +71,8 @@ public:
     std::vector<edge*> edge_support;
     /* sorted edges in ascending order of their support */
     std::vector<edge*> sorted_edges;
+    /* for each support contains the index of the first element of the support region in `sorted_edges`*/
+    std::vector<int> support_region_index;
     /* shallow copy in case needed */
     std::shared_ptr<Graph> H = nullptr;
 
