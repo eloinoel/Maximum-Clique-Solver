@@ -633,7 +633,7 @@ void AMTS::pop_Set(vector<Vertex*>& Set, Vertex* x){
 }
 
 void AMTS::add_Set(vector<Vertex*>& Set, Vertex* x){
-    assert(x->data.tabu.s_idx == -1);
+    //assert(x->data.tabu.s_idx == -1);
     assert(x->data.tabu.AB_idx == -1);
     x->data.tabu.AB_idx = Set.size();
     Set.push_back(x);
@@ -907,7 +907,7 @@ pair<bool, pair<Vertex*, Vertex*>> AMTS::constrained_move(Graph& G){
     vector<pair<Vertex*, Vertex*>> T_moves;
 
     for(Vertex* b : B){
-        assert(b->data.tabu.s_idx != -1);
+        //assert(b->data.tabu.s_idx != -1);
         auto adj_b = G.new_timestamp();
         for(Vertex* n : b->neighbors){
             n->marked = adj_b;

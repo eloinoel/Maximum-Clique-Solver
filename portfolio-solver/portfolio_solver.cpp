@@ -81,6 +81,7 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
             break;
         case SOLVER::CLISAT:
             solve_clique(G);
+            //TODO: implement compatability with reductions, see print function below
             break;
         case SOLVER::PARALLEL:
             run_parallel_solver(G);
@@ -107,39 +108,34 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
 
 void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
 {
+    vector<string> str_clique;
+    vector<string> solution;
     //print maximum clique
     switch(ACTIVE_SOLVER){
         case SOLVER::LMC:
-            {   
-                
-                if(maximum_clique_s.size() > maximum_clique.size()){
-                    for(auto& s : maximum_clique_s){
-                        cout << s << "\n";
-                    }
-                    exit(0);
-                }
-
-                std::vector<string> clique_s;
-                for(Vertex* v : maximum_clique){
-                    //cout << G.name_table[v->id] << endl;
-                    clique_s.push_back(G.name_table[v->id]);
-                }
-
-                get_clique_solution_r(clique_s, sol, rec);
-            }
+            str_clique = get_str_clique(maximum_clique, G);
+            solution = resolve_reductions(str_clique);
+            for(string s : solution)
+                cout << s << endl;
+            exit(EXIT_SUCCESS);
             break;
         case SOLVER::VIA_VC:
-            for(std::string v : dOmega_solver.maximum_clique){
-                cout << v << "\n";
+            solution = resolve_reductions(dOmega_solver.maximum_clique);
+            for(std::string v : solution){
+                cout << v << endl;
             }
+            exit(EXIT_SUCCESS);
             break;
         case SOLVER::BRANCH_AND_BOUND:
+            str_clique = get_str_clique(maximum_clique, G);
+            solution = resolve_reductions(str_clique);
             for(Vertex* v : maximum_clique){
                 cout << G.name_table[v->id] << endl;
             }
             break;
         case SOLVER::CLISAT:
             // NOTE: CLISAT solver prints the maximum clique in the function itself
+            //TODO: implement compatability with reductions, see other solvers
             break;
         case SOLVER::PARALLEL:
         {
@@ -160,10 +156,11 @@ void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
             }
             auto clique_found = parallel_solver_results[num].get();
             //cout << "num" << num << " size " << clique_found.size() << "\n";
-            for(string& s : clique_found)
-                cout << s << "\n";
-        }
+            solution = resolve_reductions(clique_found);
+            for(string s : solution)
+                cout << s << endl;
             exit(EXIT_SUCCESS);
+        }
             break;
         case SOLVER::VC_COMP:
             break;
@@ -175,6 +172,17 @@ void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
         default:
             break;
     }
+}
+
+// MARK: Resolve
+
+std::vector<std::string> PortfolioSolver::resolve_reductions(std::vector<std::string>& mc)
+{
+    if(maximum_clique_s.size() > mc.size()){
+        return maximum_clique_s;
+    }
+
+    return get_clique_solution_r(mc, sol, rec);
 }
 
 void PortfolioSolver::run_parallel_solver(Graph& G)
@@ -283,4 +291,15 @@ void PortfolioSolver::run_classifier_solver(Graph &G)
             break;
         }
     }
+}
+
+vector<string> PortfolioSolver::get_str_clique(std::vector<Vertex*>& vertices, Graph& G)
+{
+    std::vector<string> str_clique = std::vector<std::string>();
+    for(size_t i = 0; i < vertices.size(); ++i)
+    {
+        size_t v_id = vertices[i]->id;
+        str_clique.push_back(G.name_table[v_id]);
+    }
+    return str_clique;
 }

@@ -22,7 +22,7 @@ class SolverViaVC
 {
 //-----------------------Variables-----------------------
 public:
-    bool BINARY_SEARCH = false;
+    bool BINARY_SEARCH = true;
     int USE_AMTS_MILLISECONDS = 1000; //500-1000
 
 

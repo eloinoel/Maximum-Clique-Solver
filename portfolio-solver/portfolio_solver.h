@@ -56,7 +56,7 @@ public:
 
     void print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER);
 
-    void get_clique_solution_r(vector<string>& clique, unordered_map<string, state>& sol, vector<_recover_unit>& rec){
+    std::vector<std::string> get_clique_solution_r(vector<string>& clique, unordered_map<string, state>& sol, vector<_recover_unit>& rec){
         for(auto& c : clique)
             sol[c] = CLIQUE;
         
@@ -64,19 +64,24 @@ public:
             (*it).resolve(sol);
         }
 
+        std::vector<std::string> solution;
         int _sol_count = 0;
         for(auto& [v_name, s] : sol){
             if(s == CLIQUE){
-                cout << v_name << "\n";
+                solution.push_back(v_name);
                 _sol_count++;
             }
         }
-        cout << "count = " << _sol_count << "\n";
+        //cout << "count = " << _sol_count << "\n";
+        return solution;
     }
+
+    std::vector<std::string> resolve_reductions(std::vector<std::string>& mc);
 
 private:
     void run_parallel_solver(Graph& G);
     void run_classifier_solver(Graph& G);
+    std::vector<std::string> get_str_clique(std::vector<Vertex*>& vertices, Graph& G);
 
 };
 
