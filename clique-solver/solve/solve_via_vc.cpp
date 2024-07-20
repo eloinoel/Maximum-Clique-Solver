@@ -56,36 +56,79 @@ int SolverViaVC::solve_via_vc(Graph& G)
         return clique_LB;
     }
 
-    // solve for increasing values of p (clique core gap)
+    
+    if(BINARY_SEARCH)
+    {
+        return binary_search_solve(G);
+    }
+    else
+    {
+        // linear search: solve for increasing values of p (clique core gap)
+        return linear_solve(G);
+    }
+
+    //cout << "after for loop, returning " << maximum_clique.size() << endl;
+    return maximum_clique.size();
+}
+
+//MARK: LINEAR & BINARY 
+
+int SolverViaVC::linear_solve(Graph& G)
+{
+    int clique_size = 0;
     for(int p = 0; p <= clique_UB - clique_LB; p++)
     {
-        if(BINARY_SEARCH)
+        if(solve_via_vc_for_p_with_sorting(G, p))
         {
-            if(p + clique_LB > clique_UB) //TODO: fix this condition
+            return clique_size = clique_UB - p;
+        }
+    }
+    return maximum_clique.size();
+}
+
+bool check_found_maximum_clique(int p, int clique_LB, int clique_UB)
+{
+    return p + clique_LB >= clique_UB;
+}
+
+int SolverViaVC::binary_search_solve(Graph& G)
+{
+    int p = 0;
+    while(p <= clique_UB - clique_LB)
+    {
+        int p_ub = clique_UB - clique_LB; // can change due to clique_LB getting updated in solver
+        int binary_search_p = (p + p_ub) / 2;
+        //cout << "bs_p: " << GREEN << binary_search_p << RESET << ", p: " << p << ", p_ub: " << p_ub << endl;
+        bool found_clique = solve_via_vc_for_p_with_sorting(G, binary_search_p);
+        if(found_clique && (int) maximum_clique.size() > clique_LB)
+        {
+            //cout << "Found clique of size=" << maximum_clique.size() << endl;
+            update_LB(maximum_clique);
+        }
+        else 
+        {
+            p++;
+            if(p + clique_LB >= clique_UB)
             {
                 //cout << "return clique_UB - p : " << clique_UB - p << endl;
+                maximum_clique = *LB_clique_vertices;
                 return clique_UB - p;
             }
-            int p_ub = clique_UB - clique_LB; // can change due to clique_LB getting updated in solver
-            int binary_search_p = (p + p_ub) / 2; //TODO: fix this, its only incrementing half of the time (obviously)
-            solve_via_vc_for_p_with_sorting(G, binary_search_p);
-            update_LB(maximum_clique);
-            // cout << "Found solution with binary search: size=" << clique_UB - p 
-            // << ", should be: " << 95 << endl;
-            // cout << "bs_p: " << GREEN << binary_search_p << RESET <<", p: " << p << ", p_ub: " << p_ub << endl;
-        }
-        else // linear search
-        {
-            if(solve_via_vc_for_p_with_sorting(G, p))
+            int next_binary_search_p = (p + p_ub) / 2;
+            if(next_binary_search_p == binary_search_p)
             {
-                //cout << "Found solution with linear search: size=" << clique_UB - p << endl;
-                //cout << "p: " << p << endl;
-                return clique_UB - p;
+                p++;
             }
         }
-        
+
+        if(p + clique_LB >= clique_UB) //TODO: fix this condition
+        {
+            //cout << "return clique_UB - p : " << clique_UB - p << endl;
+            maximum_clique = *LB_clique_vertices;
+            return clique_UB - p;
+        }
+
     }
-    //cout << "after for loop, returning " << maximum_clique.size() << endl;
     return maximum_clique.size();
 }
 

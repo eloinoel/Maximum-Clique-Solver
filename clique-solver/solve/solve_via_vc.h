@@ -22,7 +22,7 @@ class SolverViaVC
 {
 //-----------------------Variables-----------------------
 public:
-    bool BINARY_SEARCH = false;
+    bool BINARY_SEARCH = true;
 
 
     std::vector<Vertex*> degeneracy_ordering;
@@ -76,6 +76,16 @@ private:
      * Sort the candidate set with descending rdeg
      */
     bool solve_via_vc_for_p_with_sorting(Graph& G, size_t p);
+
+    /**
+     * linear search: solve for increasing values of p (clique core gap)
+     */
+    int linear_solve(Graph& G);
+
+    /**
+     * binary fashion search for clique core gap
+     */
+    int binary_search_solve(Graph& G);
 
     /**
      * @param p max assumed possible clique-core gap in current iteration

@@ -11,7 +11,7 @@
 
 
 #define BENCHMARK 0
-#define ACTIVE_SOLVER SOLVER::PARALLEL
+#define ACTIVE_SOLVER SOLVER::VIA_VC
 
 int main(){
 
