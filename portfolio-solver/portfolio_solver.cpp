@@ -55,6 +55,14 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
     M = G.E.size();
     density =  (double) (2*M)/(N * (N-1));
 
+    G.set_restore();
+
+    //cout << "N = " << G.N << " M = " << G.M << " min/max = " << G.min_degree << " / " << G.max_degree <<"\n";
+
+    maximum_clique_s = reduce(G, sol, rec);
+
+    //cout << "N = " << G.N << " M = " << G.M << "\n";
+
     #if DEBUG
         G.timer.start("solve");
     #endif
@@ -102,8 +110,22 @@ void PortfolioSolver::print_maximum_clique(Graph& G, SOLVER ACTIVE_SOLVER)
     //print maximum clique
     switch(ACTIVE_SOLVER){
         case SOLVER::LMC:
-            for(Vertex* v : maximum_clique){
-                cout << G.name_table[v->id] << endl;
+            {   
+                
+                if(maximum_clique_s.size() > maximum_clique.size()){
+                    for(auto& s : maximum_clique_s){
+                        cout << s << "\n";
+                    }
+                    exit(0);
+                }
+
+                std::vector<string> clique_s;
+                for(Vertex* v : maximum_clique){
+                    //cout << G.name_table[v->id] << endl;
+                    clique_s.push_back(G.name_table[v->id]);
+                }
+
+                get_clique_solution_r(clique_s, sol, rec);
             }
             break;
         case SOLVER::VIA_VC:

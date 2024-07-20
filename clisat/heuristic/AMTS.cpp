@@ -10,6 +10,29 @@
 
 #define LEGAL_CLIQUE ((k*(k-1))/2)
 
+
+ vector<string> AMTS::find_best(int LB, int max_ms, Graph& G){
+    vector<string> clique_found;
+
+    ts start = chrono::high_resolution_clock::now();
+  
+    for(int _k = LB; _k <= G.N; _k++){
+       
+        initalize(G, _k);
+        if(execute_timed(G, _k, start, max_ms)){
+            
+            clique_found.clear();
+            for(Vertex* x : S_star){
+                clique_found.push_back(G.name_table[x->id]);
+            }
+        }else{
+             cout << "amts did not find " << _k << "\n";
+            break;
+        }
+    }
+    return clique_found;
+ }
+
 void AMTS::initalize(Graph& G, int k_){
 
     iter            =  0;
@@ -26,7 +49,7 @@ void AMTS::initalize(Graph& G, int k_){
         v->data.tabu.frequency  =  0;
         v->data.tabu.s_idx      = -1;
         v->data.tabu.AB_idx     = -1;
-        v->data.tabu.dS         =  0;
+        degS(v)                 =  0;
         v->data.tabu.tabu_time  =  0;
     }
 
@@ -246,7 +269,7 @@ bool AMTS::tabu_search(Graph& G, int L){
         w->data.tabu.frequency++;
 
         update_AB(G, {u, w});
-        //cout << "NEEDED " << LEGAL_CLIQUE << ", CURRENT " << f_S() << ", STAR " << f_S_star() << "\n";
+        cout << "NEEDED " << LEGAL_CLIQUE << ", CURRENT " << f_S() << ", STAR " << f_star << "\n";
 
         if(f_S() == LEGAL_CLIQUE){
             S_star = S;
@@ -405,6 +428,7 @@ bool AMTS::execute(Graph& G, int k_, int iter_max){
     initalize(G, k_);
     create_AB(G);
 
+
     for(Vertex* a : A)
         assert(in_S(a));
     for(Vertex* b : B)
@@ -412,6 +436,10 @@ bool AMTS::execute(Graph& G, int k_, int iter_max){
 
     S_star = S;
     f_star = f_S();
+
+    if(f_S() == LEGAL_CLIQUE){
+        return true;
+    }
 
     while(iter < iter_max){
         bool is_clique = tabu_search(G, N * k);
@@ -436,6 +464,11 @@ bool AMTS::execute_timed(Graph& G, int k_, ts start, int max_ms ){
 
     S_star = S;
     f_star = f_S();
+    
+    /* catches the case that all of G is a clique, i.e B is empty */
+    if(f_S() == LEGAL_CLIQUE){
+        return true;
+    }
 
     while(!OUT_OF_TIME){
         bool is_clique = tabu_search_timed(G, N * k, start, max_ms);
@@ -514,8 +547,8 @@ void AMTS::create_AB(Graph& G){
     for(Vertex* s : S){
         for(Vertex* n: s->neighbors){
             n->marked = max(n->marked + 1, s_time);
-            const int d_n = (int) (n->marked - s_time);
-            n->data.tabu.dS = d_n;
+            const int d_n = (int) 1 + (n->marked - s_time);
+            degS(n) = d_n;
             if(!TABU(n)){
                 if(not_in_S(n)){
                     if (d_n > B_deg){
