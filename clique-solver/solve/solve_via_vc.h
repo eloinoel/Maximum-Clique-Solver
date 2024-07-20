@@ -23,7 +23,7 @@ class SolverViaVC
 //-----------------------Variables-----------------------
 public:
     bool BINARY_SEARCH = false;
-    int USE_AMTS_MILLISECONDS = 0; //500-1000
+    int USE_AMTS_MILLISECONDS = 1000; //500-1000
 
 
     std::vector<Vertex*> degeneracy_ordering;
@@ -88,7 +88,7 @@ private:
      */
     int binary_search_solve(Graph& G);
 
-    std::vector<Vertex*> compute_amts_LB(Graph& G);
+    std::vector<std::string> compute_amts_LB(Graph& G);
 
     /**
      * @param p max assumed possible clique-core gap in current iteration

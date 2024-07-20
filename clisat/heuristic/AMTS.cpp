@@ -11,7 +11,7 @@
 #define LEGAL_CLIQUE ((k*(k-1))/2)
 
 
- vector<string> AMTS::find_best(int LB, int max_ms, Graph& G){
+vector<string> AMTS::find_best(int LB, int max_ms, Graph& G){
     vector<string> clique_found;
 
     ts start = chrono::high_resolution_clock::now();
@@ -26,7 +26,7 @@
                 clique_found.push_back(G.name_table[x->id]);
             }
         }else{
-             cout << "amts did not find " << _k << "\n";
+            //cout << "amts did not find " << _k << "\n";
             break;
         }
     }

@@ -46,14 +46,15 @@ int SolverViaVC::solve_via_vc(Graph& G)
     LB_clique_vertices = &initial_LB_solution; // store to ptr so we don't have to copy in update_LB
     clique_LB = (int) LB_clique_vertices->size();
 
+    vector<string> amts_clique;
     if(USE_AMTS_MILLISECONDS > 0)
     {
-        vector<Vertex*> heuristic_clique = compute_amts_LB(G);
-        if((int) heuristic_clique.size() > clique_LB)
+        amts_clique = compute_amts_LB(G);
+        if((int) amts_clique.size() > clique_LB)
         {
-            vector<string> str_clique = get_str_clique(heuristic_clique, G);
-            LB_clique_vertices = &str_clique;
-            clique_LB = (int) str_clique.size();
+            //cout << "amts LB better " << amts_clique.size() << " > " << clique_LB << endl;
+            LB_clique_vertices = &amts_clique;
+            clique_LB = (int) amts_clique.size();
         }
     }
 
@@ -98,27 +99,10 @@ int SolverViaVC::linear_solve(Graph& G)
     return maximum_clique.size();
 }
 
-vector<Vertex*> SolverViaVC::compute_amts_LB(Graph& G)
+vector<string> SolverViaVC::compute_amts_LB(Graph& G)
 {
     AMTS amts = AMTS(G);
-    vector<Vertex*> heuristic_clique;
-    auto start = chrono::high_resolution_clock::now();
-    
-    int max_ms = USE_AMTS_MILLISECONDS;
-    int current_LB = clique_LB;
-    for(int k_lb = current_LB; k_lb < (int) G.N; k_lb++){
-        bool found = amts.execute_timed(G, k_lb, start, max_ms);
-        if(found){
-            current_LB = k_lb;
-            heuristic_clique = amts.S_star;
-        }
-        else{
-            break;
-        }
-
-        if(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count() > max_ms)
-            break;
-    }
+    vector<string> heuristic_clique = amts.find_best(clique_LB, USE_AMTS_MILLISECONDS, G);
     return heuristic_clique;
 }
 

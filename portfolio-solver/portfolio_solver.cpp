@@ -59,7 +59,7 @@ void PortfolioSolver::run(Graph& G, SOLVER ACTIVE_SOLVER)
 
     //cout << "N = " << G.N << " M = " << G.M << " min/max = " << G.min_degree << " / " << G.max_degree <<"\n";
 
-    maximum_clique_s = reduce(G, sol, rec);
+    //maximum_clique_s = reduce(G, sol, rec);
 
     //cout << "N = " << G.N << " M = " << G.M << "\n";
 
