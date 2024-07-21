@@ -111,6 +111,7 @@ public:
      * @param G graph to reduce, needs to be same as the one used in constructor
      * @note can be called before executing `compute_k_classes` or after
      * @returns number of removed edges
+     * TODO: doesn't work yet - seg fault
      */
     size_t reduce(Graph& G, int lower_clique_bound);
 
@@ -123,6 +124,8 @@ public:
     void print_edge(edge* e, PrintVertices print_vertices = PrintVertices::IDs);
 
     void print_triangles(std::vector<Triangle>& triangles);
+
+    void print_support_region_indices();
 
     void print_support(PrintVertices print_vertices = PrintVertices::IDs);
 

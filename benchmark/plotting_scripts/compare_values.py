@@ -19,4 +19,4 @@ for line in in_file:
     val2 = int(split[col2])
 
     div = val2 - val1
-    print(div)
+    print(div, end=", ")

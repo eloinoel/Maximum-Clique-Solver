@@ -33,27 +33,34 @@ KTruss::KTruss(const Graph& G, std::vector<Vertex*>& degeneracy_ordering)
     //initialize support region indices
     if(!sorted_edges.empty())
     {
+        support_region_index.resize(sorted_edges.back()->support + 1, -1);
         int current_support_region = -1;
         for(int i = 0; i < (int) sorted_edges.size(); ++i)
         {
             edge* current_edge = sorted_edges[i];
             assert(current_edge != nullptr);
-            while(current_edge->support > (int) support_region_index.size() - 1)
+            //cout << current_edge->support << " " << current_support_region << endl;
+            while(current_edge->support > current_support_region)
             {
-                support_region_index.push_back(i);
                 assert((int) support_region_index.size() > current_edge->support);
-                support_region_index[current_support_region] = i;
+                assert((int)support_region_index.size() > current_support_region + 1);
+                support_region_index[current_support_region + 1] = i;
                 current_support_region++;
             }
         }
     }
+
+    //print_support(PrintVertices::Names);
+    //print_support_region_indices();
+    //cout << "finished setting up support region indices" << endl;
+    //cout << "H.M = " << H->M << endl;
+
 
     #if !NDEBUG
     for(int i = 0; i < (int) support_region_index.size(); ++i)
     {
         assert(support_region_index[i] >= 0);
         assert(support_region_index[i] < (int) sorted_edges.size());
-        assert(support_region_index[i] <= i);
         assert(sorted_edges[support_region_index[i]]->support >= i);
         //is first
         if(support_region_index[i] > 0)
@@ -89,6 +96,15 @@ void KTruss::compute_k_classes()
         assert(e != nullptr);
         assert(e->support >= 0);
         assert(e->id >= 0);
+
+        //cout << i << "-th edge: " << e->id << ", support: " << e->support << endl;
+
+        // update support_region_index when current_iteration_index advances
+        support_region_index[support(e)] = i + 1;
+        if(support(e) - 1 >= 0)
+        {
+            support_region_index[support(e) - 1] = support_region_index[support(e)];
+        }
         
         //TODO: remove debug
         //cout << "-------" << endl;
@@ -247,6 +263,14 @@ void KTruss::print_triangles(std::vector<Triangle>& triangles)
     for(Triangle t : triangles)
     {
         cout << "triangle: " << H->name_table[t[0]] << " - " << H->name_table[t[1]] << " - " << H->name_table[t[2]] << endl;
+    }
+}
+
+void KTruss::print_support_region_indices()
+{
+    for(int i = 0; i < (int) support_region_index.size(); ++i)
+    {
+        cout << "sup(" << GREEN << i << RESET << ")" << " --> " << RED << support_region_index[i] << RESET << endl;
     }
 }
 
@@ -438,25 +462,51 @@ int KTruss::reorder_edge(edge* e, int current_iteration_index)
     int original_e_support = support(e) + 1;
     int swap_index = original_index;
 
-    //TODO: update support_region_index when current_iteration_index advances
-    //swap_index = support_region_index[original_e_support];
-    //assert(swap_index > current_iteration_index);
-    //TODO: update support_region_index after swap
-    // if(swap_index < (int) sorted_edges.size() && support(sorted_edges[swap_index + 1]) == original_e_support)
-    // {
-    //     //TODO:
-    // }
+    swap_index = support_region_index[original_e_support];
+    
+    //print_support(PrintVertices::Names);
+    //print_support_region_indices();
+    //cout << "current_iteration_index: " << current_iteration_index << endl;
+    //cout << "swap index: " << swap_index << ", original index: " << original_index << endl;
+    
+    assert(swap_index > current_iteration_index);
+    
+    //TODO: update support_region_indices after swap, is this sufficient?
+    //to the right
+
     // inefficent garbage that is in the worst case O(n)
-    while(is_swap_index_valid(swap_index, current_iteration_index))
-    {
-        if(support(sorted_edges[swap_index - 1]) < original_e_support) // swap_index is last element in new support region of e
-        {
-            break;
-        }
-        swap_index--;
-    }
+    // while(is_swap_index_valid(swap_index, current_iteration_index))
+    // {
+    //     if(support(sorted_edges[swap_index - 1]) < original_e_support) // swap_index is last element in new support region of e
+    //     {
+    //         break;
+    //     }
+    //     swap_index--;
+    // }
 
     swap_edge(e, swap_index);
+
+    if(swap_index + 1 < (int) sorted_edges.size() && support(sorted_edges[swap_index + 1]) >= original_e_support)
+    {
+        assert((int) support_region_index.size() > support(sorted_edges[swap_index + 1]));
+        support_region_index[original_e_support] = swap_index + 1;
+        //cout << "support_region_index[" << original_e_support << "] = " << swap_index + 1 << endl;
+    }
+
+    if(swap_index == original_index)
+    {
+        support_region_index[original_e_support] = swap_index + 1;
+    }
+
+    // if no elements to the left, update support_region_index of current support
+    if(is_swap_index_valid(swap_index, current_iteration_index) && support(sorted_edges[swap_index - 1]) < support(e))
+    {
+        support_region_index[support(e)] = swap_index;
+        // if((int) sorted_edges.size() > swap_index + 1)
+        // {
+        //     support_region_index[original_e_support] = swap_index + 1;
+        // }
+    }
 
     assert(e->sorted_edges_index > current_iteration_index);
 
@@ -468,7 +518,8 @@ int KTruss::reorder_edge(edge* e, int current_iteration_index)
         edge* e2 = sorted_edges[i + 1];
         if(!(support(e1) <= support(e2)))
         {
-            print_support();
+            //print_support();
+            //print_support_region_indices();
         }
         assert(support(e1) <= support(e2));
     }

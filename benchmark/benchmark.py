@@ -152,7 +152,7 @@ def main():
 
     score = 0
 
-    for dataset in ["random", "datacenter", "bio", "dimacs", "pace"]:
+    for dataset in ["bhoshlib", "misc", "random", "datacenter", "bio", "dimacs", "pace"]:
         dataset_score = 0
         if found_error:
             break
